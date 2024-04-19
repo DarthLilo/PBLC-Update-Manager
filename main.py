@@ -15,7 +15,7 @@ from urllib import request
 
 print("Loading...")
 
-PBLC_Update_Manager_Version = "0.0.4"
+PBLC_Update_Manager_Version = "0.0.5"
 
 github_repo_versoin_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
@@ -199,7 +199,7 @@ def updateManager(github_api_manager):
     decompress_zip(target_zip,temp_download_folder)
 
     print("Finished extracting, installing now...")
-    
+
     subprocess.Popen(["python",resource_path("updater.py")])
     sys.exit()
 
