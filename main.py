@@ -78,6 +78,13 @@ def download_from_google_drive(source,destination):
     print(f"Beginning download of {source} from Google Drive...")
     gdown.download(id=source,output=destination)
 
+def migrate_update_files(source,destination):
+    files = os.listdir(source)
+
+    for file in files:
+        file_path = os.path.join(source,file)
+        destination_path = os.path.join(destination,file)
+        shutil.move(file_path,destination_path)
 
 LC_Path = locate_lethal_company()
 downloads_folder = os.path.normpath(f"{LC_Path}/downloads")
@@ -165,6 +172,22 @@ def updateLauncher(github_api_launcher):
     print("Download finished, beginning extraction...")
 
     decompress_zip(target_zip,temp_download_folder)
+
+    print("Finished extracting, installing now...")
+
+    target_directory = None
+
+    for file in os.listdir(temp_download_folder):
+        if file.startswith("DarthLilo-PBLC"):
+            target_directory = os.path.join(temp_download_folder,file)
+            break
+    
+    if target_directory:
+        migrate_update_files(target_directory,os.path.dirname(__file__))
+    
+    os.rmdir(temp_download_folder)
+    
+    print("Installed, restart now to update!")
 
 def checkForUpdates(update_type):
 
