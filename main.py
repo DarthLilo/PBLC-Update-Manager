@@ -15,7 +15,7 @@ from urllib import request
 
 print("Loading...")
 
-PBLC_Update_Manager_Version = "0.0.8"
+PBLC_Update_Manager_Version = "0.0.9"
 
 github_repo_versoin_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
@@ -30,12 +30,9 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
-pyglet.font.add_file(resource_path('3270-Regular.ttf'))
+pyglet.options['win32_gdi_font'] = True
 
-if os.path.exists(resource_path('3270-Regular.ttf')):
-    print("FOUND FONT FILE")
-else:
-    print("MISSING FONT FILE")
+pyglet.font.add_file(resource_path('3270-Regular.ttf'))
 
 def read_reg(ep, p = r"", k = ''):
     try:
@@ -316,20 +313,20 @@ class PBLCApp(customtkinter.CTk):
         self.lethal_install_border.grid_columnconfigure(0, weight=1)
         self.lethal_install_border.grid(row=1, column=0)
 
-        self.lci_label = customtkinter.CTkLabel(self.lethal_install_border,text="Lethal Company Install Location:",font=('IBM 3270',25))
+        self.lci_label = customtkinter.CTkLabel(self.lethal_install_border,text="Lethal Company Install Location:",font=('IBM 3270',26))
         self.lci_label.grid(row=0, column=0,padx=15,pady=10)
         
-        self.lethal_install_path = customtkinter.CTkLabel(self.lethal_install_border,text=LC_Path,font=('Segoe UI',12))
+        self.lethal_install_path = customtkinter.CTkLabel(self.lethal_install_border,text=LC_Path,font=('Segoe UI',13))
         self.lethal_install_path.grid(row=1, column=0,padx=15,pady=10)
 
         self.actions_border = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color="#191919",bg_color="transparent",corner_radius=5)
         self.actions_border.grid_columnconfigure(0, weight=1)
         self.actions_border.grid(row=2, column=0)
 
-        self.update_button_main = customtkinter.CTkButton(self.actions_border, text="Check for Updates",font=('IBM 3270',15),fg_color=self.button_color,hover_color=self.button_hover_color,command=self.check_for_updates_main)
+        self.update_button_main = customtkinter.CTkButton(self.actions_border, text="Check for Updates",font=('IBM 3270',16),fg_color=self.button_color,hover_color=self.button_hover_color,command=self.check_for_updates_main)
         self.update_button_main.grid(row=0, column=0, padx=10, pady=20)
 
-        self.update_button_main_2 = customtkinter.CTkButton(self.actions_border, text="Check for Updates (BETA)",font=('IBM 3270',15),fg_color=self.button_color,hover_color=self.button_hover_color,command=self.check_for_updates_beta)
+        self.update_button_main_2 = customtkinter.CTkButton(self.actions_border, text="Check for Updates (BETA)",font=('IBM 3270',16),fg_color=self.button_color,hover_color=self.button_hover_color,command=self.check_for_updates_beta)
         self.update_button_main_2.grid(row=0, column=1, padx=10, pady=20)
 
         newEmptyRow(self,2,30)
@@ -339,7 +336,7 @@ class PBLCApp(customtkinter.CTk):
         self.update_manager.grid_columnconfigure(0, weight=1)
         self.update_manager.grid(row=4, column=0)
 
-        self.update_self_button = customtkinter.CTkButton(self.update_manager, text="Check for Manager Updates",font=('IBM 3270',15),fg_color=self.button_color,hover_color=self.button_hover_color,command=self.check_for_updates_manager)
+        self.update_self_button = customtkinter.CTkButton(self.update_manager, text="Check for Manager Updates",font=('IBM 3270',16),fg_color=self.button_color,hover_color=self.button_hover_color,command=self.check_for_updates_manager)
         self.update_self_button.grid(row=0, column=0, padx=20, pady=20)
 
         installed_version_disp, installed_beta_version_disp, json_data_internal_disp = get_current_version()
@@ -353,7 +350,7 @@ class PBLCApp(customtkinter.CTk):
         newEmptyRow(self,5,5)
         self.update_manager = customtkinter.CTkLabel(self.main_frame,text=f"Manager Version: {PBLC_Update_Manager_Version}\n\nDeveloped by DarthLilo  |  Testing by ExoticBuilder",font=('IBM 3270',16))
         self.update_manager.grid(row=6, column=0)
-        self.update_manager = customtkinter.CTkLabel(self.main_frame,text=f"\n\nCurrently Running: {display_text}",font=('IBM 3270',14))
+        self.update_manager = customtkinter.CTkLabel(self.main_frame,text=f"\n\nCurrently Running: {display_text}",font=('IBM 3270',15))
         self.update_manager.grid(row=8, column=0)
 
 
