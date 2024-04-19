@@ -10,12 +10,15 @@ import sys
 import customtkinter
 import pyglet
 import subprocess
+import progressbar
 from PIL import Image
 from urllib import request
 
 print("Loading...")
 
-PBLC_Update_Manager_Version = "0.1.2"
+pbar = None
+
+PBLC_Update_Manager_Version = "0.1.4"
 
 github_repo_versoin_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
@@ -33,6 +36,19 @@ def resource_path(relative_path):
 pyglet.options['win32_gdi_font'] = True
 
 pyglet.font.add_file(resource_path('3270-Regular.ttf'))
+
+def show_progress(block_num, block_size, total_size):
+    global pbar
+    if pbar is None:
+        pbar = progressbar.ProgressBar(maxval=total_size)
+        pbar.start()
+
+    downloaded = block_num * block_size
+    if downloaded < total_size:
+        pbar.update(downloaded)
+    else:
+        pbar.finish()
+        pbar = None
 
 def read_reg(ep, p = r"", k = ''):
     try:
@@ -210,7 +226,7 @@ def updateManager(github_api_manager):
     else:
         os.mkdir(temp_download_folder)
 
-    request.urlretrieve(zip_link,target_zip)
+    request.urlretrieve(zip_link,target_zip,show_progress)
 
     print("Download finished, beginning extraction...")
 
@@ -305,6 +321,7 @@ class PBLCApp(customtkinter.CTk):
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
+        print(f"Welcome to PBLC {PBLC_Update_Manager_Version}, the launcher is still currently in alpha and could be unstable, report any bugs to DarthLilo!")
 
         self.button_color = "#C44438"
         self.button_hover_color = "#89271E"
