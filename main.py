@@ -254,7 +254,7 @@ def checkForUpdatesLauncher():
     if current_launcher < latest_launcher:
         print("Launcher update found, prompting user.")
         
-        prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"A new launcher version has been found, would you like to update?",4)
+        prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"A new launcher version has been found, would you like to update?","PBLC Update Manager",4)
         if prompt_answer == 6:
             updateLauncher(github_api_launcher)
 
