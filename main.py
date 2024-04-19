@@ -160,12 +160,15 @@ def startUpdate(update_data,update_type):
                     shutil.rmtree(f)
                 elif os.path.isfile(f):
                     os.remove(f)
-        
+
         decompress_zip(latest_update_zip,LC_Path)
         shutil.rmtree(downloads_folder)
         print("Updating version cache...")
 
-        current_installed_versions = open_json(pblc_vers)
+        try:
+            current_installed_versions = open_json(pblc_vers)
+        except:
+            current_installed_versions = {"version": "0.0.0", "beta_version": "0.0.0", "beta_goal": "0.0.0"}
 
         if update_type == "release":
             current_installed_versions["version"] = update_data['version']
@@ -175,7 +178,7 @@ def startUpdate(update_data,update_type):
             current_installed_versions["beta_version"] = update_data['beta_version']
             current_installed_versions["version"] = "0.0.0"
             current_installed_versions["beta_goal"] = update_data['version']
-            
+
         with open(pblc_vers, "w") as pblc_vers_upd:
             pblc_vers_upd.write(json.dumps(current_installed_versions))
 

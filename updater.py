@@ -1,6 +1,7 @@
 import os
 import shutil
 import time
+import subprocess
 
 time.sleep(1)
 
@@ -46,3 +47,10 @@ try:
     shutil.rmtree(f"{final_install_path}\\_internal\\_internal")
 except FileNotFoundError:
     pass
+
+relaunch_location = os.path.normpath(os.path.join(os.path.dirname(os.path.dirname(__file__)),"PBLC Update Manager.exe"))
+
+if os.path.exists(relaunch_location):
+    subprocess.run(relaunch_location)
+else:
+    print("Couldn't run EXE")
