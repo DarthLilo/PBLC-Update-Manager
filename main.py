@@ -175,7 +175,7 @@ def updateLauncher(github_api_launcher):
 
     print("Finished extracting, installing now...")
 
-    target_directory = None
+    target_directory = temp_download_folder
 
     for file in os.listdir(temp_download_folder):
         if file.startswith("DarthLilo-PBLC"):
@@ -185,7 +185,7 @@ def updateLauncher(github_api_launcher):
     if target_directory:
         migrate_update_files(target_directory,os.path.dirname(__file__))
     
-    os.rmdir(temp_download_folder)
+    shutil.rmtree(temp_download_folder)
     
     print("Installed, restart now to update!")
 
