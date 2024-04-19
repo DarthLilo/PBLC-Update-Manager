@@ -1,3 +1,8 @@
 {
-    "name":"PBLC","description":"Initial update for v50, might have issues!","version": "7.0.0","release_date":"4-13-2024","source":"1DTZMbnJaiDVulkzSHR8toduq-YZhJLOt"
+    "release" : {
+        "name":"PBLC","description":"Initial update for v50, might have issues!","version": "7.0.0","release_date":"4-13-2024","source":"1DTZMbnJaiDVulkzSHR8toduq-YZhJLOt"
+    },
+    "beta" : {
+        "name":"PBLC BETA","description":"Beta Pack for v50 Patch 1 along with many improvements and fixes.","version": "7.0.1","beta_version":"0.0.1","release_date":"4-18-2024","source":"1Ah9YObapSssitzkbjPzVUDNWtVeJRmnL"
+    }
 }
