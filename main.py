@@ -14,6 +14,8 @@ from urllib import request
 pyglet.font.add_file('Minecraft_Five.otf')
 pyglet.font.add_file('Minecraft_Five_Bold.otf')
 
+PBLC_Update_Manager_Version = "0.0.1"
+
 github_repo_versoin_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
 
 def read_reg(ep, p = r"", k = ''):
