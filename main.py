@@ -14,9 +14,10 @@ from urllib import request
 pyglet.font.add_file('Minecraft_Five.otf')
 pyglet.font.add_file('Minecraft_Five_Bold.otf')
 
-PBLC_Update_Manager_Version = "0.0.1"
+PBLC_Update_Manager_Version = "0.0.0"
 
 github_repo_versoin_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
+github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
 
 def read_reg(ep, p = r"", k = ''):
     try:
@@ -101,13 +102,11 @@ def download_update(update_data):
     download_from_google_drive(update_data['source'],latest_update_zip)
     return latest_update_zip
 
-def decompress_zip(latest_update_zip):
+def decompress_zip(latest_update_zip,destination):
     print("Unzipping file...")
     with zipfile.ZipFile(latest_update_zip, 'r') as zip_ref:
-        zip_ref.extractall(LC_Path)
+        zip_ref.extractall(destination)
     os.remove(latest_update_zip)
-    shutil.rmtree(downloads_folder)
-    print("Updating version cache...")
 
 def startUpdate(update_data,update_type):
     try:
@@ -127,7 +126,9 @@ def startUpdate(update_data,update_type):
                 elif os.path.isfile(f):
                     os.remove(f)
         
-        decompress_zip(latest_update_zip)
+        decompress_zip(latest_update_zip,LC_Path)
+        shutil.rmtree(downloads_folder)
+        print("Updating version cache...")
 
         current_installed_versions = open_json(pblc_vers)
 
@@ -144,6 +145,26 @@ def startUpdate(update_data,update_type):
         ctypes.windll.user32.MessageBoxW(0, "Succsessfully installed update!", "PBLC Update Manager")
     except:
         ctypes.windll.user32.MessageBoxW(0, "Error (ask lilo this message isn't supposed to show up LMFAO)", "PBLC Update Manager")
+
+def updateLauncher(github_api_launcher):
+    print("Beginning launcher update download...")
+
+    zip_link = github_api_launcher['zipball_url']
+
+    temp_download_folder = os.path.normpath(f"{os.path.dirname(__file__)}/download_cache")
+    target_zip = f"{temp_download_folder}/latest_launcher.zip"
+
+    if os.path.exists(temp_download_folder):
+        shutil.rmtree(temp_download_folder)
+        os.mkdir(temp_download_folder)
+    else:
+        os.mkdir(temp_download_folder)
+
+    request.urlretrieve(zip_link,target_zip)
+
+    print("Download finished, beginning extraction...")
+
+    decompress_zip(target_zip,temp_download_folder)
 
 def checkForUpdates(update_type):
 
@@ -189,6 +210,15 @@ def checkForUpdates(update_type):
             print("No updates found.")
             ctypes.windll.user32.MessageBoxW(0, "No updates available.", "PBLC Update Manager")
 
+def checkForUpdatesLauncher():
+    github_api_launcher = json.loads(request.urlopen(github_repo_latest_release).read().decode())
+    latest_launcher = str(github_api_launcher['tag_name']).replace(".","")
+    current_launcher = PBLC_Update_Manager_Version.replace(".","")
+
+    if current_launcher < latest_launcher:
+        print("New Launcher Update!")
+        updateLauncher(github_api_launcher)
+
 #UI MANAGEMENT
 class PBLCApp(customtkinter.CTk):
     def __init__(self):
@@ -212,8 +242,6 @@ class PBLCApp(customtkinter.CTk):
         self.main_frame_logo = customtkinter.CTkLabel(self.main_frame, text="", image=self.ice_cube_logo)
         self.main_frame_logo.grid(row=0, column=0, padx=20, pady=20)
 
-        newEmptyRow(self,1,5)
-
         self.lethal_install_border = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color="#191919")
         self.lethal_install_border.grid_columnconfigure(0, weight=1)
         self.lethal_install_border.grid(row=1, column=0)
@@ -223,8 +251,6 @@ class PBLCApp(customtkinter.CTk):
         
         self.lethal_install_path = customtkinter.CTkLabel(self.lethal_install_border,text=LC_Path)
         self.lethal_install_path.grid(row=1, column=0,padx=15,pady=10)
-
-        newEmptyRow(self,1,40)
 
         self.actions_border = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color="#191919")
         self.actions_border.grid_columnconfigure(0, weight=1)
@@ -236,12 +262,26 @@ class PBLCApp(customtkinter.CTk):
         self.update_button_main_2 = customtkinter.CTkButton(self.actions_border, text="Check For Updates (BETA)",command=self.check_for_updates_beta)
         self.update_button_main_2.grid(row=0, column=1, padx=20, pady=20)
 
+        newEmptyRow(self,2,30)
+        newEmptyRow(self,3,20)
+
+        self.update_launcher = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color="#191919")
+        self.update_launcher.grid_columnconfigure(0, weight=1)
+        self.update_launcher.grid(row=4, column=0)
+
+        self.update_self_button = customtkinter.CTkButton(self.update_launcher, text="Check for Launcher Updates",command=self.check_for_updates_launcher)
+        self.update_self_button.grid(row=0, column=0, padx=20, pady=20)
+
+
     # click_methods
     def check_for_updates_main(self):
         checkForUpdates("release")
     
     def check_for_updates_beta(self):
         checkForUpdates("beta")
+    
+    def check_for_updates_launcher(self):
+        checkForUpdatesLauncher()
 
 app = PBLCApp()
 app.mainloop()
