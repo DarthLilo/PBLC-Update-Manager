@@ -96,11 +96,11 @@ winhttp_path = os.path.normpath(f"{LC_Path}/winhttp.dll")
 #checking for updates
 
 if os.path.exists(pblc_vers):
-    installed_version = str(open_json(pblc_vers)['version']).replace(".","")
-    installed_beta_version = str(open_json(pblc_vers)['beta_version']).replace(".","")
+    installed_version = int(str(open_json(pblc_vers)['version']).replace(".",""))
+    installed_beta_version = int(str(open_json(pblc_vers)['beta_version']).replace(".",""))
 else:
-    installed_version = "0"
-    installed_beta_version = "0"
+    installed_version = 0
+    installed_beta_version = 0
 
 
 
@@ -196,13 +196,13 @@ def checkForUpdates(update_type):
     #fetching latest version
     #github_repo_json = json.loads(request.urlopen(github_repo_versoin_db).read().decode())
     github_repo_json = open_json("version_db.json")
-    latest_version = str(github_repo_json[update_type]['version']).replace(".","") if update_type == "release" else str(github_repo_json[update_type]['beta_version']).replace(".","")
+    latest_version = int(str(github_repo_json[update_type]['version']).replace(".","")) if update_type == "release" else int(str(github_repo_json[update_type]['beta_version']).replace(".",""))
 
 
     #RELEASE
     if update_type == "release":
 
-        if installed_beta_version:
+        if installed_beta_version > 0:
             print("Beta release detected, prompting switch...")
             prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"It looks like you're using a beta version of our modpack, would you like to switch back to the last stable release?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer == 6:
@@ -225,7 +225,7 @@ def checkForUpdates(update_type):
 
     #BETA
     else:
-        if installed_version:
+        if installed_version > 0:
             print("Stable release found, prompting switch...")
             prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"It looks like you're on the stable release of our modpack, would you like to switch to the latest beta?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer == 6:
