@@ -120,6 +120,7 @@ def get_current_version(int_only = False):
             except KeyError:
                 installed_beta_version = "0"
     else:
+        cur_vers_json = {"version": "0.0.0", "beta_version": "0.0.0", "beta_goal": "0.0.0"}
         installed_version = 0
         installed_beta_version = 0
     
@@ -346,6 +347,8 @@ class PBLCApp(customtkinter.CTk):
             display_text = f"PBLC Stable v{installed_version_disp}"
         elif installed_beta_version > 0:
             display_text = f"PBLC Beta v{installed_beta_version_disp} | v{json_data_internal['beta_goal']}"
+        else:
+            display_text = f"Vanilla Lethal Company"
 
         newEmptyRow(self,5,5)
         self.update_manager = customtkinter.CTkLabel(self.main_frame,text=f"Manager Version: {PBLC_Update_Manager_Version}\n\nDeveloped by DarthLilo  |  Testing by ExoticBuilder",font=('IBM 3270',16))
