@@ -9,12 +9,13 @@ import gdown
 import sys
 import customtkinter
 import pyglet
+import subprocess
 from PIL import Image
 from urllib import request
 
 print("Loading...")
 
-PBLC_Update_Manager_Version = "0.0.5"
+PBLC_Update_Manager_Version = "0.0.4"
 
 github_repo_versoin_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
@@ -87,6 +88,10 @@ def migrate_update_files(source,destination):
     for file in files:
         file_path = os.path.join(source,file)
         destination_path = os.path.join(destination,file)
+
+        if os.path.exists(destination_path):
+            os.remove(destination_path)
+
         shutil.move(file_path,destination_path)
 
 LC_Path = locate_lethal_company()
@@ -175,7 +180,8 @@ def startUpdate(update_data,update_type):
 def updateManager(github_api_manager):
     print("Beginning manager update download...")
 
-    zip_link = github_api_manager['zipball_url']
+    zip_link = github_api_manager['assets'][0]['browser_download_url']
+
 
     temp_download_folder = os.path.normpath(f"{current_file_loc}/download_cache")
     target_zip = f"{temp_download_folder}/latest_manager.zip"
@@ -193,21 +199,9 @@ def updateManager(github_api_manager):
     decompress_zip(target_zip,temp_download_folder)
 
     print("Finished extracting, installing now...")
-
-    target_directory = temp_download_folder
-
-    for file in os.listdir(temp_download_folder):
-        if file.startswith("DarthLilo-PBLC"):
-            target_directory = os.path.join(temp_download_folder,file)
-            break
     
-    if target_directory:
-        migrate_update_files(target_directory,os.path.dirname(__file__))
-    
-    shutil.rmtree(temp_download_folder)
-    
-    print("Installed, app will close automatically.")
-    app.after(1500,app.destroy)
+    subprocess.Popen(["python",resource_path("updater.py")])
+    sys.exit()
 
 def checkForUpdates(update_type):
 
@@ -369,4 +363,3 @@ class PBLCApp(customtkinter.CTk):
 
 app = PBLCApp()
 app.mainloop()
-
