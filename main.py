@@ -15,7 +15,7 @@ from urllib import request
 
 print("Loading...")
 
-PBLC_Update_Manager_Version = "0.1.0"
+PBLC_Update_Manager_Version = "0.1.2"
 
 github_repo_versoin_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
