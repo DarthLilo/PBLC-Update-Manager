@@ -11,8 +11,7 @@ import customtkinter
 import pyglet
 from PIL import Image
 from urllib import request
-pyglet.font.add_file('Minecraft_Five.otf')
-pyglet.font.add_file('Minecraft_Five_Bold.otf')
+pyglet.font.add_file('3270-Regular.ttf')
 
 PBLC_Update_Manager_Version = "0.0.0"
 
@@ -92,6 +91,7 @@ pblc_vers = os.path.normpath(f"{LC_Path}/pblc_version")
 bepinex_path = os.path.normpath(f"{LC_Path}/BepInEx")
 doorstop_path = os.path.normpath(f"{LC_Path}/doorstop_config.ini")
 winhttp_path = os.path.normpath(f"{LC_Path}/winhttp.dll")
+current_file_loc = os.path.dirname(__file__)
 
 #checking for updates
 
@@ -154,13 +154,13 @@ def startUpdate(update_data,update_type):
     except:
         ctypes.windll.user32.MessageBoxW(0, "Error (ask lilo this message isn't supposed to show up LMFAO)", "PBLC Update Manager")
 
-def updateLauncher(github_api_launcher):
-    print("Beginning launcher update download...")
+def updateManager(github_api_manager):
+    print("Beginning manager update download...")
 
-    zip_link = github_api_launcher['zipball_url']
+    zip_link = github_api_manager['zipball_url']
 
-    temp_download_folder = os.path.normpath(f"{os.path.dirname(__file__)}/download_cache")
-    target_zip = f"{temp_download_folder}/latest_launcher.zip"
+    temp_download_folder = os.path.normpath(f"{current_file_loc}/download_cache")
+    target_zip = f"{temp_download_folder}/latest_manager.zip"
 
     if os.path.exists(temp_download_folder):
         shutil.rmtree(temp_download_folder)
@@ -246,70 +246,77 @@ def checkForUpdates(update_type):
             print("No updates found.")
             ctypes.windll.user32.MessageBoxW(0, "No updates available.", "PBLC Update Manager")
 
-def checkForUpdatesLauncher():
-    github_api_launcher = json.loads(request.urlopen(github_repo_latest_release).read().decode())
-    latest_launcher = str(github_api_launcher['tag_name']).replace(".","")
-    current_launcher = PBLC_Update_Manager_Version.replace(".","")
+def checkForUpdatesmanager():
+    github_api_manager = json.loads(request.urlopen(github_repo_latest_release).read().decode())
+    latest_manager = str(github_api_manager['tag_name']).replace(".","")
+    current_manager = PBLC_Update_Manager_Version.replace(".","")
 
-    if current_launcher < latest_launcher:
-        print("Launcher update found, prompting user.")
+    if current_manager < latest_manager:
+        print("Manager update found, prompting user.")
         
-        prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"A new launcher version has been found, would you like to update?","PBLC Update Manager",4)
+        prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"A new manager version has been found, would you like to update?","PBLC Update Manager",4)
         if prompt_answer == 6:
-            updateLauncher(github_api_launcher)
+            updateManager(github_api_manager)
 
 #UI MANAGEMENT
 class PBLCApp(customtkinter.CTk):
     def __init__(self):
         super().__init__()
-        self.geometry("600x500")
-        self.title("Lethal Company Update Manager")
+        self.geometry("1000x500")
+        self.title("PBLC Update Manager")
         self.resizable(False,False)
         self.iconbitmap(resource_path("pill_bottle.ico"))
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
-        #images
-        self.ice_cube_logo = customtkinter.CTkImage(Image.open(resource_path("pill_bottle.jpg")),size=(1050, 100))
+        self.button_color = "#C44438"
+        self.button_hover_color = "#89271E"
+
+        self.bg_image = customtkinter.CTkImage(Image.open(f"{current_file_loc}/lethal_art.png"),
+                                               size=(500, 500))
+        self.bg_image_label = customtkinter.CTkLabel(self, image=self.bg_image,text="")
+        self.bg_image_label.grid(row=0, column=0)
 
         #frame
         self.main_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.main_frame.grid_columnconfigure(0, weight=1)
-        self.main_frame.grid(row=0, column=1, sticky="nsew")
-
-        self.main_frame_logo = customtkinter.CTkLabel(self.main_frame, text="", image=self.ice_cube_logo)
-        self.main_frame_logo.grid(row=0, column=0, padx=20, pady=20)
+        self.main_frame.grid(row=0, column=1)
 
         self.lethal_install_border = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color="#191919")
         self.lethal_install_border.grid_columnconfigure(0, weight=1)
         self.lethal_install_border.grid(row=1, column=0)
 
-        self.lci_label = customtkinter.CTkLabel(self.lethal_install_border,text="Lethal Company Install Location:",font=('Minecraft Five',15))
+        self.lci_label = customtkinter.CTkLabel(self.lethal_install_border,text="Lethal Company Install Location:",font=('IBM 3270',25))
         self.lci_label.grid(row=0, column=0,padx=15,pady=10)
         
-        self.lethal_install_path = customtkinter.CTkLabel(self.lethal_install_border,text=LC_Path)
+        self.lethal_install_path = customtkinter.CTkLabel(self.lethal_install_border,text=LC_Path,font=('Segoe UI',12))
         self.lethal_install_path.grid(row=1, column=0,padx=15,pady=10)
 
-        self.actions_border = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color="#191919")
+        self.actions_border = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color="#191919",bg_color="transparent",corner_radius=5)
         self.actions_border.grid_columnconfigure(0, weight=1)
         self.actions_border.grid(row=2, column=0)
 
-        self.update_button_main = customtkinter.CTkButton(self.actions_border, text="Check For Updates",command=self.check_for_updates_main)
-        self.update_button_main.grid(row=0, column=0, padx=20, pady=20)
+        self.update_button_main = customtkinter.CTkButton(self.actions_border, text="Check for Updates",font=('IBM 3270',15),fg_color=self.button_color,hover_color=self.button_hover_color,command=self.check_for_updates_main)
+        self.update_button_main.grid(row=0, column=0, padx=10, pady=20)
 
-        self.update_button_main_2 = customtkinter.CTkButton(self.actions_border, text="Check For Updates (BETA)",command=self.check_for_updates_beta)
-        self.update_button_main_2.grid(row=0, column=1, padx=20, pady=20)
+        self.update_button_main_2 = customtkinter.CTkButton(self.actions_border, text="Check for Updates (BETA)",font=('IBM 3270',15),fg_color=self.button_color,hover_color=self.button_hover_color,command=self.check_for_updates_beta)
+        self.update_button_main_2.grid(row=0, column=1, padx=10, pady=20)
 
         newEmptyRow(self,2,30)
         newEmptyRow(self,3,20)
 
-        self.update_launcher = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color="#191919")
-        self.update_launcher.grid_columnconfigure(0, weight=1)
-        self.update_launcher.grid(row=4, column=0)
+        self.update_manager = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color="#191919")
+        self.update_manager.grid_columnconfigure(0, weight=1)
+        self.update_manager.grid(row=4, column=0)
 
-        self.update_self_button = customtkinter.CTkButton(self.update_launcher, text="Check for Launcher Updates",command=self.check_for_updates_launcher)
+        self.update_self_button = customtkinter.CTkButton(self.update_manager, text="Check for Manager Updates",font=('IBM 3270',15),fg_color=self.button_color,hover_color=self.button_hover_color,command=self.check_for_updates_manager)
         self.update_self_button.grid(row=0, column=0, padx=20, pady=20)
+
+        newEmptyRow(self,5,5)
+        self.update_manager = customtkinter.CTkLabel(self.main_frame,text=f"Manager Version: {PBLC_Update_Manager_Version}\n\nDeveloped by DarthLilo  |  Testing by ExoticBuilder",font=('IBM 3270',16))
+        self.update_manager.grid_columnconfigure(0, weight=1)
+        self.update_manager.grid(row=6, column=0)
 
 
     # click_methods
@@ -319,8 +326,8 @@ class PBLCApp(customtkinter.CTk):
     def check_for_updates_beta(self):
         checkForUpdates("beta")
     
-    def check_for_updates_launcher(self):
-        checkForUpdatesLauncher()
+    def check_for_updates_manager(self):
+        checkForUpdatesmanager()
 
 app = PBLCApp()
 app.mainloop()
