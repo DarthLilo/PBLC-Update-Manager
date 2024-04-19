@@ -11,12 +11,25 @@ import customtkinter
 import pyglet
 from PIL import Image
 from urllib import request
-pyglet.font.add_file('3270-Regular.ttf')
 
-PBLC_Update_Manager_Version = "0.0.4"
+print("Loading...")
+
+PBLC_Update_Manager_Version = "0.0.5"
 
 github_repo_versoin_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
+
+def resource_path(relative_path):
+    """ Get the absolute path to the resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+pyglet.font.add_file(resource_path('3270-Regular.ttf'))
 
 def read_reg(ep, p = r"", k = ''):
     try:
@@ -45,16 +58,6 @@ def clear_dir(dir = ""):
 def custom_message_box(message, title, style):
     return ctypes.windll.user32.MessageBoxW(0, message, title, style)
 
-def resource_path(relative_path):
-    """ Get the absolute path to the resource, works for dev and for PyInstaller """
-    try:
-        # PyInstaller creates a temp folder and stores path in _MEIPASS
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.abspath(".")
-
-    return os.path.join(base_path, relative_path)
-
 def newEmptyRow(self,row_number,spacing):
         self.empty_row = customtkinter.CTkLabel(self.main_frame, text="")
         self.empty_row.grid(row=row_number, column=0, padx=20, pady=spacing)
@@ -78,6 +81,7 @@ def download_from_google_drive(source,destination):
     gdown.download(id=source,output=destination)
 
 def migrate_update_files(source,destination):
+    print("Moving files...")
     files = os.listdir(source)
 
     for file in files:
@@ -93,15 +97,24 @@ doorstop_path = os.path.normpath(f"{LC_Path}/doorstop_config.ini")
 winhttp_path = os.path.normpath(f"{LC_Path}/winhttp.dll")
 current_file_loc = os.path.dirname(__file__)
 
+def get_current_version(int_only = False):
+    if os.path.exists(pblc_vers):
+        cur_vers_json = open_json(pblc_vers)
+        if int_only:
+            installed_version = int(str(cur_vers_json['version']).replace(".",""))
+            installed_beta_version = int(str(cur_vers_json['beta_version']).replace(".",""))
+        else:
+            installed_version = str(cur_vers_json['version'])
+            installed_beta_version = str(cur_vers_json['beta_version'])
+    else:
+        installed_version = 0
+        installed_beta_version = 0
+    
+    return installed_version,installed_beta_version, cur_vers_json
+    
 #checking for updates
 
-if os.path.exists(pblc_vers):
-    cur_vers_json = open_json(pblc_vers)
-    installed_version = int(str(cur_vers_json['version']).replace(".",""))
-    installed_beta_version = int(str(cur_vers_json['beta_version']).replace(".",""))
-else:
-    installed_version = 0
-    installed_beta_version = 0
+
 
 
 
@@ -143,16 +156,21 @@ def startUpdate(update_data,update_type):
         if update_type == "release":
             current_installed_versions["version"] = update_data['version']
             current_installed_versions["beta_version"] = "0.0.0"
+            current_installed_versions["beta_goal"] = "0.0.0"
         else:
             current_installed_versions["beta_version"] = update_data['beta_version']
             current_installed_versions["version"] = "0.0.0"
+            current_installed_versions["beta_goal"] = update_data['version']
             
         with open(pblc_vers, "w") as pblc_vers_upd:
             pblc_vers_upd.write(json.dumps(current_installed_versions))
 
         ctypes.windll.user32.MessageBoxW(0, "Succsessfully installed update!", "PBLC Update Manager")
+        print("Update installed, app will close shortly.")
+        app.after(1500,app.destroy)
     except:
         ctypes.windll.user32.MessageBoxW(0, "Error (ask lilo this message isn't supposed to show up LMFAO)", "PBLC Update Manager")
+        print("Contact Lilo on discord for troubleshooting.")
 
 def updateManager(github_api_manager):
     print("Beginning manager update download...")
@@ -188,15 +206,18 @@ def updateManager(github_api_manager):
     
     shutil.rmtree(temp_download_folder)
     
-    print("Installed, restart now to update!")
+    print("Installed, app will close automatically.")
+    app.after(1500,app.destroy)
 
 def checkForUpdates(update_type):
 
     print("Checking for updates...")
 
+    installed_version, installed_beta_version, json_data_internal = get_current_version(True)
+
     #fetching latest version
-    #github_repo_json = json.loads(request.urlopen(github_repo_versoin_db).read().decode())
-    github_repo_json = open_json("version_db.json")
+    github_repo_json = json.loads(request.urlopen(github_repo_versoin_db).read().decode())
+    #github_repo_json = open_json("version_db.json")
     latest_version = int(str(github_repo_json[update_type]['version']).replace(".","")) if update_type == "release" else int(str(github_repo_json[update_type]['beta_version']).replace(".",""))
 
 
@@ -222,6 +243,7 @@ def checkForUpdates(update_type):
         else:
             print("No updates found.")
             ctypes.windll.user32.MessageBoxW(0, "No updates available.", "PBLC Update Manager")
+    
     
 
     #BETA
@@ -257,6 +279,8 @@ def checkForUpdatesmanager():
         prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"A new manager version has been found, would you like to update?","PBLC Update Manager",4)
         if prompt_answer == 6:
             updateManager(github_api_manager)
+    else:
+        prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"No new updates found.","PBLC Update Manager",0)
 
 #UI MANAGEMENT
 class PBLCApp(customtkinter.CTk):
@@ -273,7 +297,7 @@ class PBLCApp(customtkinter.CTk):
         self.button_color = "#C44438"
         self.button_hover_color = "#89271E"
 
-        self.bg_image = customtkinter.CTkImage(Image.open(f"{current_file_loc}/lethal_art.png"),
+        self.bg_image = customtkinter.CTkImage(Image.open(resource_path("lethal_art.png")),
                                                size=(500, 500))
         self.bg_image_label = customtkinter.CTkLabel(self, image=self.bg_image,text="")
         self.bg_image_label.grid(row=0, column=0)
@@ -313,13 +337,27 @@ class PBLCApp(customtkinter.CTk):
         self.update_self_button = customtkinter.CTkButton(self.update_manager, text="Check for Manager Updates",font=('IBM 3270',15),fg_color=self.button_color,hover_color=self.button_hover_color,command=self.check_for_updates_manager)
         self.update_self_button.grid(row=0, column=0, padx=20, pady=20)
 
+        installed_version_disp, installed_beta_version_disp, json_data_internal_disp = get_current_version()
+        installed_version, installed_beta_version, json_data_internal = get_current_version(True)
+
+        if installed_version > 0:
+            display_text = f"PBLC Stable v{installed_version_disp}"
+        elif installed_beta_version > 0:
+            display_text = f"PBLC Beta v{installed_beta_version_disp} | v{json_data_internal['beta_goal']}"
+
         newEmptyRow(self,5,5)
         self.update_manager = customtkinter.CTkLabel(self.main_frame,text=f"Manager Version: {PBLC_Update_Manager_Version}\n\nDeveloped by DarthLilo  |  Testing by ExoticBuilder",font=('IBM 3270',16))
-        self.update_manager.grid_columnconfigure(0, weight=1)
         self.update_manager.grid(row=6, column=0)
+        self.update_manager = customtkinter.CTkLabel(self.main_frame,text=f"\n\nCurrently Running: {display_text}",font=('IBM 3270',14))
+        self.update_manager.grid(row=8, column=0)
 
 
     # click_methods
+    def redraw_ui(self):
+        print("REDRAWING UI")
+        self.destroy()
+        self.__init__()
+
     def check_for_updates_main(self):
         checkForUpdates("release")
     
@@ -331,3 +369,4 @@ class PBLCApp(customtkinter.CTk):
 
 app = PBLCApp()
 app.mainloop()
+
