@@ -202,7 +202,13 @@ def checkForUpdates(update_type):
     #RELEASE
     if update_type == "release":
 
-        if installed_version < latest_version:
+        if installed_beta_version:
+            print("Beta release detected, prompting switch...")
+            prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"It looks like you're using a beta version of our modpack, would you like to switch back to the last stable release?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
+            if prompt_answer == 6:
+                startUpdate(github_repo_json[update_type],update_type)
+
+        elif installed_version < latest_version:
             print("New Update Found.")
             prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"An update is available, would you like to install it?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer == 6:
@@ -219,7 +225,13 @@ def checkForUpdates(update_type):
 
     #BETA
     else:
-        if installed_beta_version < latest_version:
+        if installed_version:
+            print("Stable release found, prompting switch...")
+            prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"It looks like you're on the stable release of our modpack, would you like to switch to the latest beta?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
+            if prompt_answer == 6:
+                startUpdate(github_repo_json[update_type],update_type)
+
+        elif installed_beta_version < latest_version:
             print("New Beta Found.")
             prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"A new beta is available, would you like to install it?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer == 6:
