@@ -96,8 +96,9 @@ winhttp_path = os.path.normpath(f"{LC_Path}/winhttp.dll")
 #checking for updates
 
 if os.path.exists(pblc_vers):
-    installed_version = int(str(open_json(pblc_vers)['version']).replace(".",""))
-    installed_beta_version = int(str(open_json(pblc_vers)['beta_version']).replace(".",""))
+    cur_vers_json = open_json(pblc_vers)
+    installed_version = int(str(cur_vers_json['version']).replace(".",""))
+    installed_beta_version = int(str(cur_vers_json['beta_version']).replace(".",""))
 else:
     installed_version = 0
     installed_beta_version = 0
@@ -251,8 +252,11 @@ def checkForUpdatesLauncher():
     current_launcher = PBLC_Update_Manager_Version.replace(".","")
 
     if current_launcher < latest_launcher:
-        print("New Launcher Update!")
-        updateLauncher(github_api_launcher)
+        print("Launcher update found, prompting user.")
+        
+        prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"A new launcher version has been found, would you like to update?",4)
+        if prompt_answer == 6:
+            updateLauncher(github_api_launcher)
 
 #UI MANAGEMENT
 class PBLCApp(customtkinter.CTk):
