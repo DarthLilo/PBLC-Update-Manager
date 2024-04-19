@@ -13,7 +13,7 @@ from PIL import Image
 from urllib import request
 pyglet.font.add_file('3270-Regular.ttf')
 
-PBLC_Update_Manager_Version = "0.0.0"
+PBLC_Update_Manager_Version = "0.0.4"
 
 github_repo_versoin_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
