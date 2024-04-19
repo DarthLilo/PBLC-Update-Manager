@@ -46,5 +46,3 @@ try:
     shutil.rmtree(f"{final_install_path}\\_internal\\_internal")
 except FileNotFoundError:
     pass
-
-time.sleep(5)
