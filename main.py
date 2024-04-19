@@ -32,6 +32,11 @@ def resource_path(relative_path):
 
 pyglet.font.add_file(resource_path('3270-Regular.ttf'))
 
+if os.path.exists(resource_path('3270-Regular.ttf')):
+    print("FOUND FONT FILE")
+else:
+    print("MISSING FONT FILE")
+
 def read_reg(ep, p = r"", k = ''):
     try:
         key = winreg.OpenKeyEx(ep, p)
