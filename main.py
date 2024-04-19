@@ -183,8 +183,14 @@ def startUpdate(update_data,update_type):
             pblc_vers_upd.write(json.dumps(current_installed_versions))
 
         ctypes.windll.user32.MessageBoxW(0, "Succsessfully installed update!", "PBLC Update Manager")
-        print("Update installed, app will close shortly.")
-        app.after(1500,app.destroy)
+        print("Update installed, app will relaunch shortly.")
+        relaunch_location = os.path.normpath(os.path.join(os.path.dirname(os.path.dirname(__file__)),"PBLC Update Manager.exe"))
+        if os.path.exists(relaunch_location):
+            app.destroy()
+            subprocess.run(relaunch_location)
+        else:
+            print("Couldn't run EXE")
+            app.after(1500,app.destroy)
     except:
         ctypes.windll.user32.MessageBoxW(0, "Error (ask lilo this message isn't supposed to show up LMFAO)", "PBLC Update Manager")
         print("Contact Lilo on discord for troubleshooting.")

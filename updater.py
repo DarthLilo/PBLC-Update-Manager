@@ -23,9 +23,15 @@ def migrate_update_files(source,destination):
             for file_internal in os.listdir(file_path):
                 f_i_path = f"{source}\\_internal\\{file_internal}"
                 print(f_i_path,os.path.join(destination,"_internal",file_internal))
-                shutil.move(f_i_path,os.path.join(destination,"_internal",file_internal))
+                try:
+                    shutil.move(f_i_path,os.path.join(destination,"_internal",file_internal))
+                except PermissionError:
+                    pass
 
-        shutil.move(file_path,destination_path)
+        try:
+            shutil.move(file_path,destination_path)
+        except PermissionError:
+            pass
 
 #THIS WILL ACT AS IF ITS IN THE _INTERNAL FOLDER
 temp_download_folder = os.path.join(current_file_loc,"download_cache")
