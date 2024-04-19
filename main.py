@@ -15,7 +15,7 @@ from urllib import request
 
 print("Loading...")
 
-PBLC_Update_Manager_Version = "0.0.7"
+PBLC_Update_Manager_Version = "0.0.8"
 
 github_repo_versoin_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
@@ -107,10 +107,16 @@ def get_current_version(int_only = False):
         cur_vers_json = open_json(pblc_vers)
         if int_only:
             installed_version = int(str(cur_vers_json['version']).replace(".",""))
-            installed_beta_version = int(str(cur_vers_json['beta_version']).replace(".",""))
+            try:
+                installed_beta_version = int(str(cur_vers_json['beta_version']).replace(".",""))
+            except KeyError:
+                installed_beta_version = 0
         else:
             installed_version = str(cur_vers_json['version'])
-            installed_beta_version = str(cur_vers_json['beta_version'])
+            try:
+                installed_beta_version = str(cur_vers_json['beta_version'])
+            except KeyError:
+                installed_beta_version = "0"
     else:
         installed_version = 0
         installed_beta_version = 0
