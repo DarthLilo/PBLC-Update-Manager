@@ -18,7 +18,7 @@ print("Loading...")
 
 pbar = None
 
-PBLC_Update_Manager_Version = "0.1.4"
+PBLC_Update_Manager_Version = "0.1.5"
 
 github_repo_versoin_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
@@ -32,6 +32,15 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
 
     return os.path.join(base_path, relative_path)
+
+def getCurrentPathLoc():
+
+    if getattr(sys,'frozen',False):
+        cur_directory = os.path.dirname(sys.executable)
+    else:
+        cur_directory = os.path.dirname(__file__)
+    
+    return cur_directory
 
 pyglet.options['win32_gdi_font'] = True
 
@@ -118,7 +127,7 @@ pblc_vers = os.path.normpath(f"{LC_Path}/pblc_version")
 bepinex_path = os.path.normpath(f"{LC_Path}/BepInEx")
 doorstop_path = os.path.normpath(f"{LC_Path}/doorstop_config.ini")
 winhttp_path = os.path.normpath(f"{LC_Path}/winhttp.dll")
-current_file_loc = os.path.dirname(__file__)
+current_file_loc = getCurrentPathLoc()
 
 def get_current_version(int_only = False):
     if os.path.exists(pblc_vers):
@@ -200,7 +209,7 @@ def startUpdate(update_data,update_type):
 
         ctypes.windll.user32.MessageBoxW(0, "Succsessfully installed update!", "PBLC Update Manager")
         print("Update installed, app will relaunch shortly.")
-        relaunch_location = os.path.normpath(os.path.join(os.path.dirname(os.path.dirname(__file__)),"PBLC Update Manager.exe"))
+        relaunch_location = os.path.normpath(os.path.join(getCurrentPathLoc()),"PBLC Update Manager.exe")
         if os.path.exists(relaunch_location):
             app.destroy()
             subprocess.run(relaunch_location)
@@ -218,6 +227,7 @@ def updateManager(github_api_manager):
 
 
     temp_download_folder = os.path.normpath(f"{current_file_loc}/download_cache")
+    print(temp_download_folder)
     target_zip = f"{temp_download_folder}/latest_manager.zip"
 
     if os.path.exists(temp_download_folder):
@@ -315,7 +325,7 @@ class PBLCApp(customtkinter.CTk):
     def __init__(self):
         super().__init__()
         self.geometry("1000x500")
-        self.title("PBLC Update Manager")
+        self.title("PBLC Update Manager DEV BUILD")
         self.resizable(False,False)
         self.iconbitmap(resource_path("pill_bottle.ico"))
 
@@ -363,8 +373,9 @@ class PBLCApp(customtkinter.CTk):
         self.update_manager.grid_columnconfigure(0, weight=1)
         self.update_manager.grid(row=4, column=0)
 
-        self.update_self_button = customtkinter.CTkButton(self.update_manager, text="Check for Manager Updates",font=('IBM 3270',16),fg_color=self.button_color,hover_color=self.button_hover_color,command=self.check_for_updates_manager)
+        self.update_self_button = customtkinter.CTkButton(self.update_manager, text="Update Update Manager",font=('IBM 3270',16),fg_color=self.button_color,hover_color=self.button_hover_color,command=self.check_for_updates_manager)
         self.update_self_button.grid(row=0, column=0, padx=20, pady=20)
+        #self.update_self_button.configure(state="disabled")
 
         installed_version_disp, installed_beta_version_disp, json_data_internal_disp = get_current_version()
         installed_version, installed_beta_version, json_data_internal = get_current_version(True)
@@ -384,11 +395,6 @@ class PBLCApp(customtkinter.CTk):
 
 
     # click_methods
-    def redraw_ui(self):
-        print("REDRAWING UI")
-        self.destroy()
-        self.__init__()
-
     def check_for_updates_main(self):
         checkForUpdates("release")
     
