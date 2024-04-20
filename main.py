@@ -18,7 +18,7 @@ print("Loading...")
 
 pbar = None
 
-PBLC_Update_Manager_Version = "0.1.5"
+PBLC_Update_Manager_Version = "0.1.6"
 
 github_repo_versoin_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
