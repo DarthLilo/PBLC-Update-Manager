@@ -1,8 +1,8 @@
 {
     "release" : {
-        "name":"PBLC","description":"v50 patch update, fixes a ton of things and updates most of our mods to the latest versions. Adds some new content as well.","version": "8.0.0","release_date":"4-19-2024","source":"16IK_nklwGWzCN5dNzFCbZPDV_bGIle03"
+        "name":"PBLC","description":"v50 patch update, fixes a ton of things and updates most of our mods to the latest versions. Adds some new content as well.","version": "8.0.0","release_date":"4-19-2024","source":"1aH-3cmFDk1imDewIHLLbQUx48EETKSBR"
     },
     "beta" : {
-        "name":"PBLC BETA","description":"Beta testing version of our new v50 pack, adds tons of new content and fixes many issues!","version": "8.0.0","beta_version":"0.0.3","release_date":"4-19-2024","source":"1dsYVoG48U3gJ1CeUEo8A5f_cd3kuS81S"
+        "name":"PBLC BETA","description":"Beta testing version of our new v50 pack, adds tons of new content and fixes many issues!","version": "8.0.0","beta_version":"0.0.3","release_date":"4-19-2024","source":"1aH-3cmFDk1imDewIHLLbQUx48EETKSBR"
     }
 }
