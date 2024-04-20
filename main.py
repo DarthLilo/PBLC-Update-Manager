@@ -18,7 +18,7 @@ print("Loading...")
 
 pbar = None
 
-PBLC_Update_Manager_Version = "0.1.7"
+PBLC_Update_Manager_Version = "0.1.8"
 
 github_repo_versoin_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
@@ -175,56 +175,56 @@ def decompress_zip(latest_update_zip,destination):
     os.remove(latest_update_zip)
 
 def startUpdate(update_data,update_type):
+    #try:
+    print("Update Available, beginning download...")
+
+    if not os.path.exists(downloads_folder):
+        os.mkdir(downloads_folder)
+
+    latest_update_zip = download_update(update_data)
+
+    clear_files = [bepinex_path,doorstop_path,winhttp_path]
+    for i in range(0,3):
+        f = clear_files[i]
+        if os.path.exists(f):
+            if os.path.isdir(f):
+                shutil.rmtree(f)
+            elif os.path.isfile(f):
+                os.remove(f)
+
+    decompress_zip(latest_update_zip,LC_Path)
+    shutil.rmtree(downloads_folder)
+    print("Updating version cache...")
+
     try:
-        print("Update Available, beginning download...")
-
-        if not os.path.exists(downloads_folder):
-            os.mkdir(downloads_folder)
-
-        latest_update_zip = download_update(update_data)
-
-        clear_files = [bepinex_path,doorstop_path,winhttp_path]
-        for i in range(0,3):
-            f = clear_files[i]
-            if os.path.exists(f):
-                if os.path.isdir(f):
-                    shutil.rmtree(f)
-                elif os.path.isfile(f):
-                    os.remove(f)
-
-        decompress_zip(latest_update_zip,LC_Path)
-        shutil.rmtree(downloads_folder)
-        print("Updating version cache...")
-
-        try:
-            current_installed_versions = open_json(pblc_vers)
-        except:
-            current_installed_versions = default_pblc_vers
-
-        if update_type == "release":
-            current_installed_versions["version"] = update_data['version']
-            current_installed_versions["beta_version"] = "0.0.0"
-            current_installed_versions["beta_goal"] = "0.0.0"
-        else:
-            current_installed_versions["beta_version"] = update_data['beta_version']
-            current_installed_versions["version"] = "0.0.0"
-            current_installed_versions["beta_goal"] = update_data['version']
-
-        with open(pblc_vers, "w") as pblc_vers_upd:
-            pblc_vers_upd.write(json.dumps(current_installed_versions))
-
-        ctypes.windll.user32.MessageBoxW(0, "Succsessfully installed update!", "PBLC Update Manager")
-        print("Update installed, app will relaunch shortly.")
-        relaunch_location = os.path.normpath(os.path.join(getCurrentPathLoc()),"PBLC Update Manager.exe")
-        if os.path.exists(relaunch_location):
-            app.destroy()
-            subprocess.run(relaunch_location)
-        else:
-            print("Couldn't run EXE")
-            app.after(1500,app.destroy)
+        current_installed_versions = open_json(pblc_vers)
     except:
-        ctypes.windll.user32.MessageBoxW(0, "Error (ask lilo this message isn't supposed to show up LMFAO)", "PBLC Update Manager")
-        print("Contact Lilo on discord for troubleshooting.")
+        current_installed_versions = default_pblc_vers
+
+    if update_type == "release":
+        current_installed_versions["version"] = update_data['version']
+        current_installed_versions["beta_version"] = "0.0.0"
+        current_installed_versions["beta_goal"] = "0.0.0"
+    else:
+        current_installed_versions["beta_version"] = update_data['beta_version']
+        current_installed_versions["version"] = "0.0.0"
+        current_installed_versions["beta_goal"] = update_data['version']
+
+    with open(pblc_vers, "w") as pblc_vers_upd:
+        pblc_vers_upd.write(json.dumps(current_installed_versions))
+
+    ctypes.windll.user32.MessageBoxW(0, "Succsessfully installed update!", "PBLC Update Manager")
+    print("Update installed, app will relaunch shortly.")
+    relaunch_location = os.path.normpath(os.path.join(getCurrentPathLoc(),"PBLC Update Manager.exe"))
+    if os.path.exists(relaunch_location):
+        app.destroy()
+        subprocess.run(relaunch_location)
+    else:
+        print("Couldn't run EXE")
+        app.after(1500,app.destroy)
+    #except:
+    #    ctypes.windll.user32.MessageBoxW(0, "Error (ask lilo this message isn't supposed to show up LMFAO)", "PBLC Update Manager")
+    #    print("Contact Lilo on discord for troubleshooting.")
 
 def updateManager(github_api_manager):
     print("Beginning manager update download...")
