@@ -18,7 +18,7 @@ print("Loading...")
 
 pbar = None
 
-PBLC_Update_Manager_Version = "0.1.6"
+PBLC_Update_Manager_Version = "0.1.7"
 
 github_repo_versoin_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
@@ -128,6 +128,7 @@ bepinex_path = os.path.normpath(f"{LC_Path}/BepInEx")
 doorstop_path = os.path.normpath(f"{LC_Path}/doorstop_config.ini")
 winhttp_path = os.path.normpath(f"{LC_Path}/winhttp.dll")
 current_file_loc = getCurrentPathLoc()
+default_pblc_vers = {"version": "0.0.0", "beta_version": "0.0.0", "beta_goal": "0.0.0","performance_mode":"off"}
 
 def get_current_version(int_only = False):
     if os.path.exists(pblc_vers):
@@ -144,12 +145,17 @@ def get_current_version(int_only = False):
                 installed_beta_version = str(cur_vers_json['beta_version'])
             except KeyError:
                 installed_beta_version = "0"
+        try:
+            performance_mode = cur_vers_json['performance_mode']
+        except KeyError:
+            performance_mode = "off"
     else:
-        cur_vers_json = {"version": "0.0.0", "beta_version": "0.0.0", "beta_goal": "0.0.0"}
+        cur_vers_json = default_pblc_vers
         installed_version = 0
         installed_beta_version = 0
+        performance_mode = "off"
     
-    return installed_version,installed_beta_version, cur_vers_json
+    return installed_version,installed_beta_version, cur_vers_json, performance_mode
     
 #checking for updates
 
@@ -193,7 +199,7 @@ def startUpdate(update_data,update_type):
         try:
             current_installed_versions = open_json(pblc_vers)
         except:
-            current_installed_versions = {"version": "0.0.0", "beta_version": "0.0.0", "beta_goal": "0.0.0"}
+            current_installed_versions = default_pblc_vers
 
         if update_type == "release":
             current_installed_versions["version"] = update_data['version']
@@ -251,7 +257,7 @@ def checkForUpdates(update_type):
 
     print("Checking for updates...")
 
-    installed_version, installed_beta_version, json_data_internal = get_current_version(True)
+    installed_version, installed_beta_version, json_data_internal, performance_mode = get_current_version(True)
 
     #fetching latest version
     github_repo_json = json.loads(request.urlopen(github_repo_versoin_db).read().decode())
@@ -320,6 +326,24 @@ def checkForUpdatesmanager():
     else:
         prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"No new updates found.","PBLC Update Manager",0)
 
+def performanceModSwitchEvent(toggle):
+    plugins_folder = os.path.join(bepinex_path,"plugins")
+    hd_company = os.path.join(plugins_folder,"HDLethalCompany")
+
+    hd_company_en = os.path.normpath(f"{hd_company}.dll")
+    hd_company_dis = os.path.normpath(f"{hd_company_en}_disabled")
+    
+    if os.path.exists(hd_company_en) or os.path.exists(hd_company_dis):
+        try:
+            if toggle == "on":
+                os.rename(hd_company_dis,hd_company_en)
+            else:
+                os.rename(hd_company_en,hd_company_dis)
+        except FileNotFoundError:
+            pass
+    else:
+        print("NO HD LETHAL COMPANY DLL FOUND")
+
 #UI MANAGEMENT
 class PBLCApp(customtkinter.CTk):
     def __init__(self):
@@ -333,8 +357,8 @@ class PBLCApp(customtkinter.CTk):
         self.grid_columnconfigure(1, weight=1)
         print(f"Welcome to PBLC {PBLC_Update_Manager_Version}, the launcher is still currently in alpha and could be unstable, report any bugs to DarthLilo!")
 
-        installed_version_disp, installed_beta_version_disp, json_data_internal_disp = get_current_version()
-        installed_version, installed_beta_version, json_data_internal = get_current_version(True)
+        installed_version_disp, installed_beta_version_disp, json_data_internal_disp, performance_mode_disp = get_current_version()
+        installed_version, installed_beta_version, json_data_internal, performance_mode = get_current_version(True)
 
         if installed_version > 0:
             install_latest_stable_text = "Update Stable Mods"
@@ -346,8 +370,8 @@ class PBLCApp(customtkinter.CTk):
             install_latest_stable_text = "Install Stable Mods"
             install_latest_beta_text = "Install Beta Mods"
             
-
         self.button_color = "#C44438"
+        self.button_color_disabled = "#4C221E"
         self.button_hover_color = "#89271E"
 
         self.bg_image = customtkinter.CTkImage(Image.open(resource_path("lethal_art.png")),
@@ -372,7 +396,7 @@ class PBLCApp(customtkinter.CTk):
 
         self.actions_border = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color="#191919",bg_color="transparent",corner_radius=5)
         self.actions_border.grid_columnconfigure(0, weight=1)
-        self.actions_border.grid(row=2, column=0)
+        self.actions_border.grid(row=2, column=0,pady=10)
 
         self.update_button_main = customtkinter.CTkButton(self.actions_border, text=install_latest_stable_text,font=('IBM 3270',16),fg_color=self.button_color,hover_color=self.button_hover_color,command=self.check_for_updates_main)
         self.update_button_main.grid(row=0, column=0, padx=10, pady=20)
@@ -380,8 +404,20 @@ class PBLCApp(customtkinter.CTk):
         self.update_button_main_2 = customtkinter.CTkButton(self.actions_border, text=install_latest_beta_text,font=('IBM 3270',16),fg_color=self.button_color,hover_color=self.button_hover_color,command=self.check_for_updates_beta)
         self.update_button_main_2.grid(row=0, column=1, padx=10, pady=20)
 
-        newEmptyRow(self,2,30)
-        newEmptyRow(self,3,20)
+        self.performance_frame = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color="#191919",bg_color="transparent",corner_radius=5)
+        self.performance_frame.grid_columnconfigure(0, weight=1)
+        self.performance_frame.grid(row=3, column=0)
+
+        self.performance_mode_var = customtkinter.StringVar(value=performance_mode)
+        self.performance_switch = customtkinter.CTkSwitch(self.performance_frame, text="Low Quality Mode",variable=self.performance_mode_var, onvalue="on", offvalue="off",fg_color=self.button_color_disabled,progress_color=self.button_color, command=self.performance_switch_event)
+        self.performance_switch.grid(row=0, column=0, padx=10, pady=20)
+
+        if not installed_version > 0 and not installed_beta_version > 0:
+            self.performance_switch.configure(state="disabled")
+        
+
+        newEmptyRow(self,2,10)
+        newEmptyRow(self,3,30)
 
         self.update_manager = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color="#191919")
         self.update_manager.grid_columnconfigure(0, weight=1)
@@ -389,7 +425,6 @@ class PBLCApp(customtkinter.CTk):
 
         self.update_self_button = customtkinter.CTkButton(self.update_manager, text="Check for new builds",font=('IBM 3270',16),fg_color=self.button_color,hover_color=self.button_hover_color,command=self.check_for_updates_manager)
         self.update_self_button.grid(row=0, column=0, padx=20, pady=20)
-        #self.update_self_button.configure(state="disabled")
 
         
 
@@ -416,6 +451,21 @@ class PBLCApp(customtkinter.CTk):
     
     def check_for_updates_manager(self):
         checkForUpdatesmanager()
+
+    def performance_switch_event(self):
+        toggle = self.performance_mode_var.get()
+        try:
+            current_version = open_json(pblc_vers)
+        except:
+            current_version = default_pblc_vers
+        
+        current_version['performance_mode'] = toggle
+        
+        with open(pblc_vers, "w") as pblc_vers_upd:
+            pblc_vers_upd.write(json.dumps(current_version))
+
+        print("switch toggled, current value:",toggle)
+        performanceModSwitchEvent(toggle)
 
 app = PBLCApp()
 app.mainloop()
