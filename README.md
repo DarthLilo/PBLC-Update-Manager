@@ -1,5 +1,7 @@
 # PBLC Update Manager
 
+![GitHub all releases](https://img.shields.io/github/downloads/DarthLilo/PBLC-Update-Manager/total?color=blue)
+
 This is a personal project I started to help manage Lethal Company mods with friends, this is not *designed* for public use but I won't stop you from using it.
 
 ## IMPORTANT
