@@ -16,6 +16,15 @@ def getCurrentPathLoc():
     
     return cur_directory
 
+def clean_old_version():
+    current_location = getCurrentPathLoc()
+    delete_list = ["3270-Regular.ttf","lethal_art.png","PBLC Update Manager.exe","pill_bottle.ico","python3.dll","python310.dll"]
+    for item in delete_list:
+        os.remove(os.path.join(current_location,item))
+        print(f"Removed {item}")
+    shutil.rmtree(os.path.join(current_location,"lib"))
+    print("Cleaned library files")
+
 def migrate_update_files(source,destination):
     print("Moving files...")
     files = os.listdir(source)
@@ -25,6 +34,7 @@ def migrate_update_files(source,destination):
     for file in files:
         file_path = os.path.join(source,file)
         destination_path = os.path.join(destination,file)
+        print(file)
 
         #if os.path.basename(destination_path) == "_internal":
         #    for file_internal in os.listdir(file_path):
@@ -35,10 +45,10 @@ def migrate_update_files(source,destination):
         #        except PermissionError:
         #            pass
 
-        try:
-            shutil.move(file_path,destination_path)
-        except PermissionError:
-            pass
+        #try:
+        shutil.move(file_path,destination_path)
+        #except:
+        #    pass
 
 #THIS WILL ACT AS IF ITS IN THE _INTERNAL FOLDER
 temp_download_folder = os.path.join(getCurrentPathLoc(),"download_cache")
@@ -51,6 +61,7 @@ for file in os.listdir(temp_download_folder):
         break
 
 if target_directory:
+    clean_old_version()
     migrate_update_files(target_directory,getCurrentPathLoc())
 
 shutil.rmtree(temp_download_folder)
