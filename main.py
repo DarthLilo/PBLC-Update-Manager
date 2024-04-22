@@ -360,28 +360,43 @@ def determineModToggles(self,amd):
     
     return active_mods, deactive_mods
 
+def enableModFiles(mod_files):
+    for file in mod_files:
+        mod_file_path = os.path.normpath(f"{plugins_folder}/{file}")
+        if os.path.exists(mod_file_path+"_disabled"):
+            os.rename(mod_file_path+"_disabled",mod_file_path)
+        else:
+            print(f"Could not find {file}! Skipping...")
+
+def disableModFiles(mod_files):
+    for file in mod_files:
+        mod_file_path = os.path.normpath(f"{plugins_folder}/{file}")
+        if os.path.exists(mod_file_path):
+            os.rename(mod_file_path,mod_file_path+"_disabled")
+        else:
+            print(f"Could not find {file}! Skipping...")
+
 def updateModsEvent(self,amd,active_mods,deactive_mods):
     
     for mod in amd:
 
         mod_files = amd[mod]['files']
         is_active = amd[mod]['enabled']
+        is_restricted = amd[mod]['restricted']
 
         if mod in active_mods and not is_active:
-            for file in mod_files:
-                mod_file_path = os.path.normpath(f"{plugins_folder}/{file}")
-                if os.path.exists(mod_file_path+"_disabled"):
-                    os.rename(mod_file_path+"_disabled",mod_file_path)
-                else:
-                    print(f"Could not find {file}! Skipping...")
-            amd[mod]['enabled'] = True
+            if is_restricted:
+                print(f"User attempting to enable restricted mod: [{mod}]")
+                prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"WARNING: A mod you are trying to enable is restricted!\n[ {mod} ] may allow unfair advantages and or break the game! Are you sure you would like to enable it?","PBLC Update Manager",4)
+                if prompt_answer == 6:
+                    print(f"Warning bypassed, enabling [{mod}]")
+                    enableModFiles(mod_files)
+                    amd[mod]['enabled'] = True
+            else:
+                enableModFiles(mod_files)
+                amd[mod]['enabled'] = True
         elif mod in deactive_mods and is_active:
-            for file in mod_files:
-                mod_file_path = os.path.normpath(f"{plugins_folder}/{file}")
-                if os.path.exists(mod_file_path):
-                    os.rename(mod_file_path,mod_file_path+"_disabled")
-                else:
-                    print(f"Could not find {file}! Skipping...")
+            disableModFiles(mod_files)
             amd[mod]['enabled'] = False
     
     with open(active_mods_path, "w") as active_mod_updater:
