@@ -18,10 +18,11 @@ print("Loading...")
 
 pbar = None
 
-PBLC_Update_Manager_Version = "0.1.8"
+PBLC_Update_Manager_Version = "0.1.9"
 
 github_repo_versoin_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
+customtkinter.set_appearance_mode("dark")
 
 def resource_path(relative_path):
     """ Get the absolute path to the resource, works for dev and for PyInstaller """
@@ -125,10 +126,16 @@ LC_Path = locate_lethal_company()
 downloads_folder = os.path.normpath(f"{LC_Path}/downloads")
 pblc_vers = os.path.normpath(f"{LC_Path}/pblc_version")
 bepinex_path = os.path.normpath(f"{LC_Path}/BepInEx")
+plugins_folder = os.path.join(bepinex_path,"plugins")
 doorstop_path = os.path.normpath(f"{LC_Path}/doorstop_config.ini")
 winhttp_path = os.path.normpath(f"{LC_Path}/winhttp.dll")
 current_file_loc = getCurrentPathLoc()
 default_pblc_vers = {"version": "0.0.0", "beta_version": "0.0.0", "beta_goal": "0.0.0","performance_mode":"off"}
+active_mods_path = os.path.normpath(f"{LC_Path}/pblc_active_mods.json")
+active_mods_data = {}
+if os.path.exists(active_mods_path):
+    active_mods_data = open_json(active_mods_path)
+
 
 def get_current_version(int_only = False):
     if os.path.exists(pblc_vers):
@@ -158,10 +165,6 @@ def get_current_version(int_only = False):
     return installed_version,installed_beta_version, cur_vers_json, performance_mode
     
 #checking for updates
-
-
-
-
 
 def download_update(update_data):
     latest_update_zip = f"{downloads_folder}/{update_data['name']}.zip"
@@ -327,7 +330,6 @@ def checkForUpdatesmanager():
         prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"No new updates found.","PBLC Update Manager",0)
 
 def performanceModSwitchEvent(toggle):
-    plugins_folder = os.path.join(bepinex_path,"plugins")
     hd_company = os.path.join(plugins_folder,"HDLethalCompany")
 
     hd_company_en = os.path.normpath(f"{hd_company}.dll")
@@ -344,12 +346,80 @@ def performanceModSwitchEvent(toggle):
     else:
         print("NO HD LETHAL COMPANY DLL FOUND")
 
-#UI MANAGEMENT
+def determineModToggles(self,amd):
+    selected_mods = self.toggle_mods_list_scrollable.get()
+
+    active_mods = []
+    deactive_mods = []
+
+    for mod in amd:
+        if mod in selected_mods:
+            active_mods.append(mod)
+        else:
+            deactive_mods.append(mod)
+    
+    return active_mods, deactive_mods
+
+def updateModsEvent(self,amd,active_mods,deactive_mods):
+    
+    for mod in amd:
+
+        mod_files = amd[mod]['files']
+        is_active = amd[mod]['enabled']
+
+        if mod in active_mods and not is_active:
+            for file in mod_files:
+                mod_file_path = os.path.normpath(f"{plugins_folder}/{file}")
+                if os.path.exists(mod_file_path+"_disabled"):
+                    os.rename(mod_file_path+"_disabled",mod_file_path)
+                else:
+                    print(f"Could not find {file}! Skipping...")
+            amd[mod]['enabled'] = True
+        elif mod in deactive_mods and is_active:
+            for file in mod_files:
+                mod_file_path = os.path.normpath(f"{plugins_folder}/{file}")
+                if os.path.exists(mod_file_path):
+                    os.rename(mod_file_path,mod_file_path+"_disabled")
+                else:
+                    print(f"Could not find {file}! Skipping...")
+            amd[mod]['enabled'] = False
+    
+    with open(active_mods_path, "w") as active_mod_updater:
+        active_mod_updater.write(json.dumps(amd,indent=4))
+
+#ModsListClass
+class ModsListScrollFrame(customtkinter.CTkScrollableFrame):
+    def __init__(self,master,title,values,fg_color,bg_color,corner_radius,active_mods):
+        super().__init__(master,label_text=title)
+        self.grid_columnconfigure(0,weight=1)
+        self.values = values
+        self.checkboxes = []
+        self.configure(fg_color=fg_color,bg_color=bg_color,corner_radius=corner_radius,height=270,width=452)
+
+        for i, value in enumerate(self.values):
+            checkbox = customtkinter.CTkCheckBox(self,text=value)
+            checkbox.grid(row=i,column=0,padx=10,pady=(10,0),sticky="w")
+            try:
+                if active_mods[value]:
+                    checkbox.select()
+            except KeyError:
+                pass
+            self.checkboxes.append(checkbox)
+    
+    def get(self):
+        checked_checkboxes = []
+        for checkbox in self.checkboxes:
+            if checkbox.get() == 1:
+                checked_checkboxes.append(checkbox.cget("text"))
+        return checked_checkboxes
+
+#UI
 class PBLCApp(customtkinter.CTk):
     def __init__(self):
         super().__init__()
-        self.geometry("1000x500")
+        self.geometry("1000x580")
         self.title("PBLC Update Manager")
+        #self.minsize(1000,580)
         self.resizable(False,False)
         self.iconbitmap(resource_path("pill_bottle.ico"))
 
@@ -374,15 +444,35 @@ class PBLCApp(customtkinter.CTk):
         self.button_color_disabled = "#4C221E"
         self.button_hover_color = "#89271E"
 
-        self.bg_image = customtkinter.CTkImage(Image.open(resource_path("lethal_art.png")),
-                                               size=(500, 500))
-        self.bg_image_label = customtkinter.CTkLabel(self, image=self.bg_image,text="")
-        self.bg_image_label.grid(row=0, column=0)
+        
 
         #frame
-        self.main_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
+
+        self.tabview = customtkinter.CTkTabview(self)
+        self.tabview.grid(row=0, column=1)
+
+        tabs = ["Home","Mods"]
+        for tab in tabs:
+            self.tabview.add(tab)
+            self.tabview.tab(tab).grid_columnconfigure(0, weight=1)
+
+        # Home
+
+        self.bg_image = customtkinter.CTkImage(Image.open(resource_path("lethal_art.png")),
+                                               size=(500, 500))
+        self.bg_image_label = customtkinter.CTkLabel(self.tabview.tab("Home"), image=self.bg_image,text="")
+        self.bg_image_label.grid(row=0, column=0)
+
+        self.bg_image = customtkinter.CTkImage(Image.open(resource_path("lethal_art.png")),
+                                               size=(500, 500))
+        self.bg_image_label = customtkinter.CTkLabel(self.tabview.tab("Mods"), image=self.bg_image,text="")
+        self.bg_image_label.grid(row=0, column=0)
+
+        self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Home"), corner_radius=0, fg_color="transparent")
         self.main_frame.grid_columnconfigure(0, weight=1)
         self.main_frame.grid(row=0, column=1)
+
+        
 
         self.lethal_install_border = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color="#191919")
         self.lethal_install_border.grid_columnconfigure(0, weight=1)
@@ -411,6 +501,7 @@ class PBLCApp(customtkinter.CTk):
         self.performance_mode_var = customtkinter.StringVar(value=performance_mode)
         self.performance_switch = customtkinter.CTkSwitch(self.performance_frame, text="Low Quality Mode",variable=self.performance_mode_var, onvalue="on", offvalue="off",fg_color=self.button_color_disabled,progress_color=self.button_color, command=self.performance_switch_event)
         self.performance_switch.grid(row=0, column=0, padx=10, pady=20)
+        self.performance_switch.configure(state="disabled")
 
         if not installed_version > 0 and not installed_beta_version > 0:
             self.performance_switch.configure(state="disabled")
@@ -441,6 +532,45 @@ class PBLCApp(customtkinter.CTk):
         self.update_manager = customtkinter.CTkLabel(self.main_frame,text=f"\n\nCurrently Running: {display_text}",font=('IBM 3270',15))
         self.update_manager.grid(row=8, column=0)
 
+        #Mods
+
+        toggle_mods_list = []
+        active_mods_list = {}
+
+        for mod in active_mods_data:
+            toggle_mods_list.append(mod)
+            active_mods_list[mod]= active_mods_data[mod]['enabled']
+
+        self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Mods"), corner_radius=0, fg_color="transparent")
+        self.main_frame.grid_columnconfigure(0, weight=1)
+        self.main_frame.grid(row=0, column=1)
+
+        self.lethal_install_border = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color="#191919")
+        self.lethal_install_border.grid_columnconfigure(0, weight=1)
+        self.lethal_install_border.grid(row=1, column=0)
+
+        self.lci_label = customtkinter.CTkLabel(self.lethal_install_border,text="Lethal Company Install Location:",font=('IBM 3270',26))
+        self.lci_label.grid(row=0, column=0,padx=15,pady=10)
+
+        self.lethal_install_path = customtkinter.CTkLabel(self.lethal_install_border,text=LC_Path,font=('Segoe UI',13))
+        self.lethal_install_path.grid(row=1, column=0,padx=15,pady=10)
+
+        self.mods_list_frame = customtkinter.CTkFrame(self.main_frame,fg_color="#191919",bg_color="transparent",corner_radius=5)
+        self.mods_list_frame.grid_columnconfigure(0, weight=1)
+        self.mods_list_frame.grid(row=2, column=0)
+
+        self.toggle_mods_list_scrollable = ModsListScrollFrame(self.mods_list_frame,title="Active Bonus Mods",values=toggle_mods_list,fg_color="#191919",bg_color="transparent",corner_radius=5,active_mods=active_mods_list)
+        self.toggle_mods_list_scrollable.grid(row=0, column=0)
+
+        self.toggle_mods_update = customtkinter.CTkButton(self.mods_list_frame, text="Save", command=self.modSwitchUpdate)
+        self.toggle_mods_update.grid(row=1, column=0)
+
+        self.empty_row_ml = customtkinter.CTkLabel(self.mods_list_frame, text="")
+        self.empty_row_ml.grid(row=2, column=0, padx=20, pady=1)
+
+    def modSwitchUpdate(self):
+        active_mods, deactive_mods = determineModToggles(self,active_mods_data)
+        updateModsEvent(self,active_mods_data,active_mods,deactive_mods)
 
     # click_methods
     def check_for_updates_main(self):
