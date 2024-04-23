@@ -13,6 +13,7 @@ import subprocess
 import progressbar
 from PIL import Image
 from urllib import request
+from packaging import version
 
 print("Loading...")
 
@@ -124,7 +125,8 @@ def migrate_update_files(source,destination):
 
 LC_Path = locate_lethal_company()
 downloads_folder = os.path.normpath(f"{LC_Path}/downloads")
-pblc_vers = os.path.normpath(f"{LC_Path}/pblc_version")
+pblc_vers = os.path.normpath(f"{LC_Path}/PBLC Update Manager/pblc_version")
+mod_cache_path = os.path.normpath(f"{LC_Path}/PBLC Update Manager/pblc_mod_cache.json")
 bepinex_path = os.path.normpath(f"{LC_Path}/BepInEx")
 plugins_folder = os.path.join(bepinex_path,"plugins")
 doorstop_path = os.path.normpath(f"{LC_Path}/doorstop_config.ini")
@@ -402,6 +404,36 @@ def updateModsEvent(self,amd,active_mods,deactive_mods):
     with open(active_mods_path, "w") as active_mod_updater:
         active_mod_updater.write(json.dumps(amd,indent=4))
 
+class thunderstore():
+    def package_from_url():
+        package_url = input().replace("https://","").split("/")
+        package_namespace = package_url[4]
+        package_name = package_url[5]
+        return package_namespace, package_name
+    
+    def extract_package_json(namespace,name):
+        package_api_url = f"https://thunderstore.io/api/experimental/package/{namespace}/{name}"
+
+        package_headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0)"
+        }
+
+        pack_req = request.Request(package_api_url,headers=package_headers)
+        package_json = json.loads(request.urlopen(pack_req).read().decode())
+        
+        return package_json
+    
+    def compare_versions(thunderstore_version,local_version):
+        if version.Version(thunderstore_version) > version.Version(local_version):
+            print("Thunderstore version is newer")
+            return True
+        else:
+            print("Local version is up-to-date")
+            return False
+
+        
+
+
 #ModsListClass
 class ModsListScrollFrame(customtkinter.CTkScrollableFrame):
     def __init__(self,master,title,values,fg_color,bg_color,corner_radius,active_mods):
@@ -427,6 +459,11 @@ class ModsListScrollFrame(customtkinter.CTkScrollableFrame):
             if checkbox.get() == 1:
                 checked_checkboxes.append(checkbox.cget("text"))
         return checked_checkboxes
+
+class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
+    def __init__(self,master,title,fg_color,width):
+        super().__init__(master,label_text=title,fg_color=fg_color,width=width)
+        self.grid_columnconfigure(0,weight=1)
 
 #UI
 class PBLCApp(customtkinter.CTk):
@@ -603,11 +640,14 @@ class PBLCApp(customtkinter.CTk):
         self.lethal_install_path = customtkinter.CTkLabel(self.lethal_install_border,text=LC_Path,font=('Segoe UI',13))
         self.lethal_install_path.grid(row=1, column=0,padx=15,pady=10)
 
-        self.fetch_mods = customtkinter.CTkButton(self.main_frame, text="Fetch Mods", command=self.fetchModData)
-        self.fetch_mods.grid(row=2, column=0)
+        #self.fetch_mods = customtkinter.CTkButton(self.main_frame, text="Fetch Mods", command=self.fetchModData)
+        #self.fetch_mods.grid(row=2, column=0)
+
+        self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,"RAH",fg_color="#191919",width=452)
+        self.thunderstore_mod_frame.grid(row=2,column=0)
     
     def fetchModData(self):
-        print("RAH")
+        thunderstore.compare_versions("3.4.5","3.6")
 
     def modSwitchUpdate(self):
         active_mods, deactive_mods = determineModToggles(self,active_mods_data)
