@@ -466,7 +466,7 @@ class PBLCApp(customtkinter.CTk):
         self.tabview = customtkinter.CTkTabview(self)
         self.tabview.grid(row=0, column=1)
 
-        tabs = ["Home","Mods"]
+        tabs = ["Home","Mods","Development"]
         for tab in tabs:
             self.tabview.add(tab)
             self.tabview.tab(tab).grid_columnconfigure(0, weight=1)
@@ -486,6 +486,11 @@ class PBLCApp(customtkinter.CTk):
         self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Home"), corner_radius=0, fg_color="transparent")
         self.main_frame.grid_columnconfigure(0, weight=1)
         self.main_frame.grid(row=0, column=1)
+
+        self.bg_image = customtkinter.CTkImage(Image.open(resource_path("lethal_art.png")),
+                                               size=(500, 500))
+        self.bg_image_label = customtkinter.CTkLabel(self.tabview.tab("Development"), image=self.bg_image,text="")
+        self.bg_image_label.grid(row=0, column=0)
 
         
 
@@ -582,6 +587,27 @@ class PBLCApp(customtkinter.CTk):
 
         self.empty_row_ml = customtkinter.CTkLabel(self.mods_list_frame, text="")
         self.empty_row_ml.grid(row=2, column=0, padx=20, pady=1)
+
+        #Development
+        self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Development"), corner_radius=0, fg_color="transparent")
+        self.main_frame.grid_columnconfigure(0, weight=1)
+        self.main_frame.grid(row=0, column=1)
+
+        self.lethal_install_border = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color="#191919")
+        self.lethal_install_border.grid_columnconfigure(0, weight=1)
+        self.lethal_install_border.grid(row=1, column=0)
+
+        self.lci_label = customtkinter.CTkLabel(self.lethal_install_border,text="Lethal Company Install Location:",font=('IBM 3270',26))
+        self.lci_label.grid(row=0, column=0,padx=15,pady=10)
+
+        self.lethal_install_path = customtkinter.CTkLabel(self.lethal_install_border,text=LC_Path,font=('Segoe UI',13))
+        self.lethal_install_path.grid(row=1, column=0,padx=15,pady=10)
+
+        self.fetch_mods = customtkinter.CTkButton(self.main_frame, text="Fetch Mods", command=self.fetchModData)
+        self.fetch_mods.grid(row=2, column=0)
+    
+    def fetchModData(self):
+        print("RAH")
 
     def modSwitchUpdate(self):
         active_mods, deactive_mods = determineModToggles(self,active_mods_data)
