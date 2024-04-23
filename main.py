@@ -465,6 +465,8 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
         super().__init__(master,label_text=title,fg_color=fg_color,width=width)
         self.grid_columnconfigure(0,weight=1)
 
+        
+
 #UI
 class PBLCApp(customtkinter.CTk):
     def __init__(self):
