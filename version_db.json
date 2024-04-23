@@ -3,6 +3,6 @@
         "name":"PBLC","description":"Brand new update for v50, fixes a ton of problematic issues and improves performance.","version": "8.1.0","release_date":"4-20-2024","source":"1S-HYTlogfcTRlnd0GqLrjq0z9NE1vwWr"
     },
     "beta" : {
-        "name":"PBLC BETA","description":"Beta testing for a new patch on th v50 version of our modpack, fixes some problematic issues.","version": "8.1.0","beta_version":"0.0.4","release_date":"4-20-2024","source":"1S-HYTlogfcTRlnd0GqLrjq0z9NE1vwWr"
+        "name":"PBLC BETA","description":"Small updates for our v50 modpack, added support for new mod manager tab.","version": "8.2.0","beta_version":"0.0.5","release_date":"4-22-2024","source":"1crqL0YDWqDMc6cQLnBwTG5c-fQJSDRX2"
     }
 }
