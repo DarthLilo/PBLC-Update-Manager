@@ -131,7 +131,7 @@ doorstop_path = os.path.normpath(f"{LC_Path}/doorstop_config.ini")
 winhttp_path = os.path.normpath(f"{LC_Path}/winhttp.dll")
 current_file_loc = getCurrentPathLoc()
 default_pblc_vers = {"version": "0.0.0", "beta_version": "0.0.0", "beta_goal": "0.0.0","performance_mode":"off"}
-active_mods_path = os.path.normpath(f"{LC_Path}/pblc_active_mods.json")
+active_mods_path = os.path.normpath(f"{LC_Path}/pblc_mod_toggles.json")
 active_mods_data = {}
 if os.path.exists(active_mods_path):
     active_mods_data = open_json(active_mods_path)
