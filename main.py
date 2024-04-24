@@ -1,19 +1,8 @@
-import json
-import os
-import winreg
-import vdf
-import shutil
-import zipfile
-import ctypes
-import gdown
-import sys
-import customtkinter
-import pyglet
-import subprocess
-import progressbar
-from PIL import Image
+import json, os, winreg, vdf, shutil, zipfile, ctypes,gdown, sys, customtkinter, pyglet, subprocess, progressbar, webbrowser, requests
+from PIL import Image,ImageDraw
 from urllib import request
 from packaging import version
+from CTkMessagebox import CTkMessagebox
 
 print("Loading...")
 
@@ -47,6 +36,31 @@ def getCurrentPathLoc():
 pyglet.options['win32_gdi_font'] = True
 
 pyglet.font.add_file(resource_path('3270-Regular.ttf'))
+
+
+#STARTUP
+
+def startupFunc():
+    cur_folder = getCurrentPathLoc()
+
+    #data folder
+    if not os.path.exists(os.path.join(cur_folder,"data")):
+        print("New install, creating data folder...")
+        os.mkdir(os.path.join(cur_folder,"data"))
+    else:
+        print("Located data folder.")
+    
+    moddb_file = os.path.join(cur_folder,"data","mod_database.json")
+
+    if not os.path.exists(moddb_file):
+        print("No mod database found, creating one...")
+        with open(moddb_file, "w") as moddb_create:
+            moddb_create.write(json.dumps({"installed_mods":[]},indent=4))
+    else:
+        print("Mod database found.")
+
+startupFunc()
+
 
 def show_progress(block_num, block_size, total_size):
     global pbar
@@ -92,6 +106,19 @@ def newEmptyRow(self,row_number,spacing):
         self.empty_row = customtkinter.CTkLabel(self.main_frame, text="")
         self.empty_row.grid(row=row_number, column=0, padx=20, pady=spacing)
 
+def roundImageCorners(source_image, rad):
+    circle = Image.new('L', (rad * 2, rad * 2), 0)
+    draw = ImageDraw.Draw(circle)
+    draw.ellipse((0, 0, rad * 2 - 1, rad * 2 - 1), fill=255)
+    alpha = Image.new('L', source_image.size, 255)
+    w, h = source_image.size
+    alpha.paste(circle.crop((0, 0, rad, rad)), (0, 0))
+    alpha.paste(circle.crop((0, rad, rad, rad * 2)), (0, h - rad))
+    alpha.paste(circle.crop((rad, 0, rad * 2, rad)), (w - rad, 0))
+    alpha.paste(circle.crop((rad, rad, rad * 2, rad * 2)), (w - rad, h - rad))
+    source_image.putalpha(alpha)
+    return source_image
+
 steam_install_path = str(read_reg(ep = winreg.HKEY_LOCAL_MACHINE, p = r"SOFTWARE\\Wow6432Node\\Valve\\Steam", k = 'InstallPath'))
 steamapps = steam_install_path+"\steamapps"
 library_folders = steamapps+"\libraryfolders.vdf"
@@ -135,6 +162,7 @@ current_file_loc = getCurrentPathLoc()
 default_pblc_vers = {"version": "0.0.0", "beta_version": "0.0.0", "beta_goal": "0.0.0","performance_mode":"off"}
 active_mods_path = os.path.normpath(f"{LC_Path}/pblc_mod_toggles.json")
 active_mods_data = {}
+mod_database = open_json(os.path.join(current_file_loc,"data","mod_database.json"))
 if os.path.exists(active_mods_path):
     active_mods_data = open_json(active_mods_path)
 
@@ -173,11 +201,11 @@ def download_update(update_data):
     download_from_google_drive(update_data['source'],latest_update_zip)
     return latest_update_zip
 
-def decompress_zip(latest_update_zip,destination):
+def decompress_zip(zip_file,destination):
     print("Unzipping file...")
-    with zipfile.ZipFile(latest_update_zip, 'r') as zip_ref:
+    with zipfile.ZipFile(zip_file, 'r') as zip_ref:
         zip_ref.extractall(destination)
-    os.remove(latest_update_zip)
+    os.remove(zip_file)
 
 def startUpdate(update_data,update_type):
     #try:
@@ -404,9 +432,16 @@ def updateModsEvent(self,amd,active_mods,deactive_mods):
     with open(active_mods_path, "w") as active_mod_updater:
         active_mod_updater.write(json.dumps(amd,indent=4))
 
+def requestWebData(url):
+    headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0)"
+    }
+    req = request.Request(url,headers=headers)
+    return req
+
 class thunderstore():
-    def package_from_url():
-        package_url = input().replace("https://","").split("/")
+    def package_from_url(url):
+        package_url = url.replace("https://","").split("/")
         package_namespace = package_url[4]
         package_name = package_url[5]
         return package_namespace, package_name
@@ -414,24 +449,81 @@ class thunderstore():
     def extract_package_json(namespace,name):
         package_api_url = f"https://thunderstore.io/api/experimental/package/{namespace}/{name}"
 
-        package_headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0)"
-        }
-
-        pack_req = request.Request(package_api_url,headers=package_headers)
-        package_json = json.loads(request.urlopen(pack_req).read().decode())
+        package_json = json.loads(request.urlopen(requestWebData(package_api_url)).read().decode())
         
         return package_json
     
     def compare_versions(thunderstore_version,local_version):
         if version.Version(thunderstore_version) > version.Version(local_version):
-            print("Thunderstore version is newer")
             return True
         else:
-            print("Local version is up-to-date")
             return False
 
+class thunderstore_ops():
+    def check_for_updates(url,local_version):
+        namespace, name = thunderstore.package_from_url(url)
+        package_json = thunderstore.extract_package_json(namespace,name)
+        has_updates = thunderstore.compare_versions(package_json['latest']['version_number'],local_version)
+
+        if has_updates:
+
+            print(f"Updates for {name} found")
+
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Updates found for {name}, do you want to update?",option_2="Update",option_3="Specific Version",option_1="Cancel",icon="question",sound=True)
+
+            #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"oopsies there are updates 😊😊😊","PBLC Update Manager",4)
+            
+            if prompt_answer.get() == "Update": #Downloads latest version
+                thunderstore_ops.download_package(namespace,name,package_json['latest']['version_number'])
+
+    def download_package(namespace,name,version):
+        download_link = f"https://thunderstore.io/package/download/{namespace}/{name}/{version}/"
+        zip_name = f"{namespace}-{name}-{version}.zip"
+        download_loc = os.path.join(downloads_folder,zip_name)
+
+        if not os.path.exists(downloads_folder):
+            os.mkdir(downloads_folder)
+
         
+        pack_req = requests.get(download_link)
+        with open(download_loc,'wb') as dl_package:
+            dl_package.write(pack_req.content)
+        
+        decompress_zip(download_loc,downloads_folder)
+
+        thunderstore_ops.install_package()
+
+    def install_package():
+
+        files = os.listdir(downloads_folder)
+
+        delete_list = ["CHANGELOG.md","LICENSE","manifest.json","README.md"]
+        bepinex_list = ["plugins","config","core","patchers"]
+
+        for file in files:
+            
+            file_path = os.path.join(downloads_folder,file)
+            
+            if file in delete_list:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                    continue
+            
+            #Special Files
+            if file == "BepInEx":
+                print("bepinex")
+            elif file in bepinex_list:
+                print(f"{file} is bepinex special")
+            elif file == "icon.png":
+                print(f"{file} is icon")
+            else:
+                print(f"{file} goes in plugins folder")
+            
+            
+            
+
+
+    #def delete_package():
 
 
 #ModsListClass
@@ -460,10 +552,77 @@ class ModsListScrollFrame(customtkinter.CTkScrollableFrame):
                 checked_checkboxes.append(checkbox.cget("text"))
         return checked_checkboxes
 
+mod_database = {
+            "installed_mods": {
+                "2018-LC_API": {
+                    "name":"LC_API",
+                    "author":"2018",
+                    "version":"2.4.3",
+                    "package_url": "https://thunderstore.io/c/lethal-company/p/2018/LC_API/",
+                    "files": [
+                        "LC_API.dll"
+                    ]
+                }
+            }
+        }
+
 class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
-    def __init__(self,master,title,fg_color,width):
-        super().__init__(master,label_text=title,fg_color=fg_color,width=width)
+    def __init__(self,master,fg_color,width,height):
+        scroll_text = "           Mod Name                                      Version                               Actions"
+        super().__init__(master,label_text=scroll_text,label_anchor="w",label_font=('IBM 3270',16),fg_color=fg_color,width=width,height=height,corner_radius=5)
         self.grid_columnconfigure(0,weight=1)
+
+        self.button_color = "#3F3F3F"
+        self.button_hover = "#2D2D2D"
+
+        i = 0
+
+        for mod in mod_database["installed_mods"]:
+        
+            moddb = mod_database["installed_mods"][mod]
+    
+            self.mod_entry_frame = customtkinter.CTkFrame(self,fg_color="#0C0C0C",corner_radius=5)
+            self.mod_entry_frame.grid_columnconfigure(0, weight=0,minsize=105)
+            self.mod_entry_frame.grid_columnconfigure(1, weight=1,minsize=20)
+            self.mod_entry_frame.grid_columnconfigure(2, weight=0,minsize=345)
+            self.mod_entry_frame.grid_columnconfigure(3, weight=0,minsize=1)
+            self.mod_entry_frame.grid_columnconfigure(4, weight=0,minsize=1)
+            self.mod_entry_frame.grid(row=i,column=0,sticky="we",pady=3)
+    
+            self.mod_icon_img = customtkinter.CTkImage(Image.open(os.path.join(getCurrentPathLoc(),"data","pkg",mod,"icon.png")),size=(90,90))
+            self.mod_icon_lab = customtkinter.CTkLabel(self.mod_entry_frame,text="",image=self.mod_icon_img)
+            self.mod_icon_lab.grid(row=i,column=0,pady=2,padx=2,sticky="w")
+    
+            self.mod_name_author = customtkinter.CTkLabel(self.mod_entry_frame,text=f"{moddb['name']}\nby {moddb['author']}",justify='left',font=('IBM 3270',16))
+            self.mod_name_author.grid(row=i,column=1,pady=2,sticky="w")
+    
+            self.mod_version = customtkinter.CTkLabel(self.mod_entry_frame,text=moddb['version'],font=('IBM 3270',16))
+            self.mod_version.grid(row=i,column=2,pady=2,sticky="w")
+    
+            self.website_icon = customtkinter.CTkImage(Image.open('assets/website.png'),size=(30,30))
+            self.website_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.website_icon,fg_color=self.button_color,hover_color=self.button_hover,command= lambda link=moddb['package_url']: self.openThunderstorePage(link))
+            self.website_icon_lab.grid(row=i,column=2,pady=2,padx=2,sticky="e")
+    
+            self.refresh_icon = customtkinter.CTkImage(Image.open('assets/refresh.png'),size=(30,30))
+            self.refresh_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.refresh_icon,fg_color=self.button_color,hover_color=self.button_hover,command= lambda url=moddb['package_url'], local_version=moddb["version"]: self.refreshThunderstorePackage(url,local_version))
+            self.refresh_icon_lab.grid(row=i,column=3,pady=2,padx=2,sticky="e")
+    
+            self.delete_icon = customtkinter.CTkImage(Image.open('assets/trash_can.png'),size=(30,30))
+            self.delete_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.delete_icon,fg_color=self.button_color,hover_color=self.button_hover,command= lambda name=moddb['name']: self.testing(name))
+            self.delete_icon_lab.grid(row=i,column=4,pady=2,padx=2,sticky="e")
+            
+            i+=1
+    
+    def testing(self,name):
+        print(f"no way real {name}")
+    
+    def openThunderstorePage(self,link):
+        print(f"Opening Thunderstore page...")
+        webbrowser.open_new(link)
+    
+    def refreshThunderstorePackage(self,url,version):
+        thunderstore_ops.check_for_updates(url,version)
+            
 
         
 
@@ -474,7 +633,7 @@ class PBLCApp(customtkinter.CTk):
         self.geometry("1000x580")
         self.title("PBLC Update Manager")
         #self.minsize(1000,580)
-        self.resizable(False,False)
+        #self.resizable(False,False)
         self.iconbitmap(resource_path("pill_bottle.ico"))
 
         self.grid_rowconfigure(0, weight=1)
@@ -502,8 +661,8 @@ class PBLCApp(customtkinter.CTk):
 
         #frame
 
-        self.tabview = customtkinter.CTkTabview(self)
-        self.tabview.grid(row=0, column=1)
+        self.tabview = customtkinter.CTkTabview(self,segmented_button_selected_color=self.button_color,segmented_button_selected_hover_color=self.button_hover_color)
+        self.tabview.grid(row=0, column=1,sticky='nsew')
 
         tabs = ["Home","Mods","Development"]
         for tab in tabs:
@@ -525,11 +684,6 @@ class PBLCApp(customtkinter.CTk):
         self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Home"), corner_radius=0, fg_color="transparent")
         self.main_frame.grid_columnconfigure(0, weight=1)
         self.main_frame.grid(row=0, column=1)
-
-        self.bg_image = customtkinter.CTkImage(Image.open(resource_path("lethal_art.png")),
-                                               size=(500, 500))
-        self.bg_image_label = customtkinter.CTkLabel(self.tabview.tab("Development"), image=self.bg_image,text="")
-        self.bg_image_label.grid(row=0, column=0)
 
         
 
@@ -621,7 +775,7 @@ class PBLCApp(customtkinter.CTk):
         self.toggle_mods_list_scrollable = ModsListScrollFrame(self.mods_list_frame,title="Active Bonus Mods",values=toggle_mods_list,fg_color="#191919",bg_color="transparent",corner_radius=5,active_mods=active_mods_list)
         self.toggle_mods_list_scrollable.grid(row=0, column=0)
 
-        self.toggle_mods_update = customtkinter.CTkButton(self.mods_list_frame, text="Save", command=self.modSwitchUpdate)
+        self.toggle_mods_update = customtkinter.CTkButton(self.mods_list_frame, text="Save", fg_color=self.button_color,hover_color=self.button_hover_color, command=self.modSwitchUpdate)
         self.toggle_mods_update.grid(row=1, column=0)
 
         self.empty_row_ml = customtkinter.CTkLabel(self.mods_list_frame, text="")
@@ -632,24 +786,18 @@ class PBLCApp(customtkinter.CTk):
         self.main_frame.grid_columnconfigure(0, weight=1)
         self.main_frame.grid(row=0, column=1)
 
-        self.lethal_install_border = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color="#191919")
-        self.lethal_install_border.grid_columnconfigure(0, weight=1)
-        self.lethal_install_border.grid(row=1, column=0)
-
-        self.lci_label = customtkinter.CTkLabel(self.lethal_install_border,text="Lethal Company Install Location:",font=('IBM 3270',26))
-        self.lci_label.grid(row=0, column=0,padx=15,pady=10)
-
-        self.lethal_install_path = customtkinter.CTkLabel(self.lethal_install_border,text=LC_Path,font=('Segoe UI',13))
-        self.lethal_install_path.grid(row=1, column=0,padx=15,pady=10)
-
         #self.fetch_mods = customtkinter.CTkButton(self.main_frame, text="Fetch Mods", command=self.fetchModData)
-        #self.fetch_mods.grid(row=2, column=0)
+        #self.fetch_mods.grid(row=3, column=0)
 
-        self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,"RAH",fg_color="#191919",width=452)
+        self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,fg_color="#191919",width=960,height=448)
         self.thunderstore_mod_frame.grid(row=2,column=0)
     
     def fetchModData(self):
-        thunderstore.compare_versions("3.4.5","3.6")
+        print('rah')
+    #test_im = Image.open("lethal_art.png")
+    #test_im = test_im.resize((256,256))
+    #test_im = roundImageCorners(test_im,35)
+    #test_im.save("lethal_art_rounded.png")
 
     def modSwitchUpdate(self):
         active_mods, deactive_mods = determineModToggles(self,active_mods_data)
