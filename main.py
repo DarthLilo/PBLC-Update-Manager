@@ -1,7 +1,7 @@
 import json, os, winreg, vdf, shutil, zipfile, ctypes,gdown, sys, customtkinter, pyglet, subprocess, progressbar, webbrowser, requests
 from PIL import Image,ImageDraw
 from urllib import request
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from packaging import version
 from CTkMessagebox import CTkMessagebox
 
@@ -461,7 +461,11 @@ class thunderstore():
     def extract_package_json(namespace,name):
         package_api_url = f"https://thunderstore.io/api/experimental/package/{namespace}/{name}"
 
-        package_json = json.loads(request.urlopen(requestWebData(package_api_url)).read().decode())
+        try:
+            package_json = json.loads(request.urlopen(requestWebData(package_api_url)).read().decode())
+        except URLError:
+            print("Connection terminated.")
+            return None
         
         return package_json
     
@@ -481,6 +485,8 @@ class thunderstore():
             name = url_div[7]
 
             url_package_data = thunderstore.extract_package_json(namespace,name)
+            if url_package_data == None:
+                return None
 
             mod_database_local = open_json(moddb_file)
             mod_list = mod_database_local["installed_mods"]
@@ -493,16 +499,20 @@ class thunderstore():
                 "files" : []
             }
 
-            mod_names = []
-            for mod in mod_list:
-                mod_names.append(mod_list[mod]["name"])
+
+            mod_names = mod_list.keys()
             sorted_mod_list = sorted(mod_names, key=lambda x: x.lower())
 
-            print(sorted_mod_list)
+            sorted_mod_dict = {}
+            for key in sorted_mod_list:
+                sorted_mod_dict[key] = mod_list[key]
 
-            #print(sorted_mod_keys)
+
             
-            #mod_database_local["installed_mods"] = sorted_mod_list
+            mod_database_local["installed_mods"] = sorted_mod_dict
+
+            with open(moddb_file, "w") as mod_installer:
+                mod_installer.write(json.dumps(mod_database_local,indent=4))
 
 
         else:
