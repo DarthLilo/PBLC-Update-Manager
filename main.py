@@ -1,6 +1,7 @@
 import json, os, winreg, vdf, shutil, zipfile, ctypes,gdown, sys, customtkinter, pyglet, subprocess, progressbar, webbrowser, requests
 from PIL import Image,ImageDraw
 from urllib import request
+from urllib.error import HTTPError
 from packaging import version
 from CTkMessagebox import CTkMessagebox
 
@@ -40,6 +41,8 @@ pyglet.font.add_file(resource_path('3270-Regular.ttf'))
 
 #STARTUP
 
+moddb_file = os.path.join(getCurrentPathLoc(),"data","mod_database.json")
+
 def startupFunc():
     cur_folder = getCurrentPathLoc()
 
@@ -50,7 +53,8 @@ def startupFunc():
     else:
         print("Located data folder.")
     
-    moddb_file = os.path.join(cur_folder,"data","mod_database.json")
+    
+    mod_pkg = os.path.join(cur_folder,"data","pkg")
 
     if not os.path.exists(moddb_file):
         print("No mod database found, creating one...")
@@ -58,6 +62,9 @@ def startupFunc():
             moddb_create.write(json.dumps({"installed_mods":[]},indent=4))
     else:
         print("Mod database found.")
+    
+    if not os.path.exists(mod_pkg):
+        os.mkdir(mod_pkg)
 
 startupFunc()
 
@@ -150,6 +157,11 @@ def migrate_update_files(source,destination):
 
         shutil.move(file_path,destination_path)
 
+def move_file(source,dest):
+    if os.path.exists(dest):
+        os.remove(dest)
+    shutil.move(source,dest)
+    
 LC_Path = locate_lethal_company()
 downloads_folder = os.path.normpath(f"{LC_Path}/downloads")
 pblc_vers = os.path.normpath(f"{LC_Path}/PBLC Update Manager/pblc_version")
@@ -475,8 +487,29 @@ class thunderstore_ops():
             
             if prompt_answer.get() == "Update": #Downloads latest version
                 thunderstore_ops.download_package(namespace,name,package_json['latest']['version_number'])
+            if prompt_answer.get() == "Specific Version":
+                dialog = customtkinter.CTkInputDialog(text="Enter Version:", title="PBLC Update Manager").get_input()
+                print(f"Selected version = {dialog}")
+                thunderstore_ops.download_package(namespace,name,dialog)
+        else:
+            print(f"Running latest version of {name}")
+
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"No new updates for {name}, would you like to reinstall it?",option_2="Yes",option_1="No",icon="question",sound=True)
+
+            if prompt_answer.get() == "Yes":
+                thunderstore_ops.download_package(namespace,name,package_json['latest']['version_number'])
 
     def download_package(namespace,name,version):
+
+        try:
+            version_test = f"https://thunderstore.io/api/experimental/package/{namespace}/{name}/{version}/"
+            vers_response = json.loads(request.urlopen(requestWebData(version_test)).read().decode())
+        except HTTPError:
+            print("Invalid version number, did you enter it correctly?")
+            return
+
+
+
         download_link = f"https://thunderstore.io/package/download/{namespace}/{name}/{version}/"
         zip_name = f"{namespace}-{name}-{version}.zip"
         download_loc = os.path.join(downloads_folder,zip_name)
@@ -491,14 +524,56 @@ class thunderstore_ops():
         
         decompress_zip(download_loc,downloads_folder)
 
-        thunderstore_ops.install_package()
+        thunderstore_ops.install_package(namespace,name,version)
+    
 
-    def install_package():
+    def copy_icon(cur_path,full_name):
+        
+        install_path = os.path.join(getCurrentPathLoc(),"data","pkg",full_name)
+        fin_path = os.path.join(install_path,"icon.png")
+
+        if os.path.exists(install_path):
+            shutil.rmtree(install_path)
+            os.mkdir(install_path)
+        
+        icon_png = Image.open(cur_path)
+        icon_png = icon_png.resize((256,256))
+        icon_png = roundImageCorners(icon_png,35)
+        icon_png.save(fin_path)
+    
+    def log_sub_files(rel_start,folder,pre_folder=None):
+
+        pkg_files = []
+
+        special_folders = ["plugins","core","patchers","MoreCompanyCosmetics","Bundles"]
+
+        for file in os.listdir(folder):
+            if file in special_folders:
+                sub_folders = thunderstore_ops.log_sub_files(rel_start,f"{folder}\\{file}")
+                for x in sub_folders:
+                    pkg_files.append(x)
+            else:
+                if not pre_folder:
+                    pkg_files.append(os.path.relpath(f"{folder}\\{file}",rel_start))
+                else:
+                    pkg_files.append(os.path.join(pre_folder,os.path.relpath(f"{folder}\\{file}",rel_start)))
+        return pkg_files
+
+
+    def install_package(namespace,name,version):
+
+        print(f"Installing {namespace}-{name}")
 
         files = os.listdir(downloads_folder)
 
         delete_list = ["CHANGELOG.md","LICENSE","manifest.json","README.md"]
         bepinex_list = ["plugins","config","core","patchers"]
+        full_name = f"{namespace}-{name}"
+        pkg_folder = f"{getCurrentPathLoc()}/data/pkg/{namespace}-{name}"
+        pkg_files = []
+        
+        if not os.path.exists(pkg_folder):
+            os.mkdir(pkg_folder)
 
         for file in files:
             
@@ -509,15 +584,40 @@ class thunderstore_ops():
                     os.remove(file_path)
                     continue
             
+            print(file)
+            
             #Special Files
             if file == "BepInEx":
-                print("bepinex")
+                for x in thunderstore_ops.log_sub_files(file_path,file_path):
+                    pkg_files.append(x)
+                shutil.copytree(file_path,bepinex_path,dirs_exist_ok=True)
             elif file in bepinex_list:
-                print(f"{file} is bepinex special")
+                for x in thunderstore_ops.log_sub_files(downloads_folder,file_path):
+                    pkg_files.append(x)
+                shutil.copytree(file_path,f"{bepinex_path}/{file}",dirs_exist_ok=True)
             elif file == "icon.png":
-                print(f"{file} is icon")
+                thunderstore_ops.copy_icon(file_path,full_name)
             else:
-                print(f"{file} goes in plugins folder")
+                if os.path.isfile(file_path):
+                    move_file(file_path,f"{bepinex_path}/plugins/{file}")
+                elif os.path.isdir(file_path):
+                    for x in thunderstore_ops.log_sub_files(downloads_folder,file_path,"plugins"):
+                        pkg_files.append(x)
+                    shutil.copytree(file_path,f"{bepinex_path}/plugins/{file}",dirs_exist_ok=True)
+        
+        shutil.rmtree(downloads_folder)
+
+        #Updating Mod Database
+
+        package_db = mod_database['installed_mods'][f"{namespace}-{name}"]
+        package_db['version'] = version
+        package_db['files'] = pkg_files
+
+        with open(moddb_file, "w") as package_updater:
+            package_updater.write(json.dumps(mod_database,indent=4))
+
+
+        print(f"Finished installing {namespace}-{name}.")
             
             
             
@@ -552,19 +652,52 @@ class ModsListScrollFrame(customtkinter.CTkScrollableFrame):
                 checked_checkboxes.append(checkbox.cget("text"))
         return checked_checkboxes
 
-mod_database = {
-            "installed_mods": {
-                "2018-LC_API": {
-                    "name":"LC_API",
-                    "author":"2018",
-                    "version":"2.4.3",
-                    "package_url": "https://thunderstore.io/c/lethal-company/p/2018/LC_API/",
-                    "files": [
-                        "LC_API.dll"
-                    ]
-                }
-            }
-        }
+#mod_database = {
+#            "installed_mods": {
+#                "2018-LC_API": {
+#                    "name":"LC_API",
+#                    "author":"2018",
+#                    "version":"2.4.3",
+#                    "package_url": "https://thunderstore.io/c/lethal-company/p/2018/LC_API/",
+#                    "files": [
+#                        "LC_API.dll"
+#                    ]
+#                },
+#                "Evaisa-LethalLib": {
+#                    "name":"LethalLib",
+#                    "author":"Evaisa",
+#                    "version":"0.15.0",
+#                    "package_url": "https://thunderstore.io/c/lethal-company/p/Evaisa/LethalLib/",
+#                    "files": [
+#                    ]
+#                },
+#                "SweetOnion-LethalSnap": {
+#                    "name":"LethalSnap",
+#                    "author":"SweetOnion",
+#                    "version":"1.5.6",
+#                    "package_url": "https://thunderstore.io/c/lethal-company/p/SweetOnion/LethalSnap/",
+#                    "files": [
+#                    ]
+#                }
+#            }
+#        }
+
+class thunderstoreModVersionLabel(customtkinter.CTkLabel):
+    def __init__(self,master,json_path,mod):
+        customtkinter.CTkLabel.__init__(self,master)
+        self.json_path = json_path
+        self.mod = mod
+        self.load_text()
+
+    def load_text(self):
+        json_db = open_json(self.json_path)
+        mod_db = json_db["installed_mods"][self.mod]
+        self.configure(text=mod_db['version'])
+        print(mod_db['name'])
+    
+    def refresh_version(self):
+        self.load_text()
+
 
 class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
     def __init__(self,master,fg_color,width,height):
@@ -588,15 +721,20 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
             self.mod_entry_frame.grid_columnconfigure(3, weight=0,minsize=1)
             self.mod_entry_frame.grid_columnconfigure(4, weight=0,minsize=1)
             self.mod_entry_frame.grid(row=i,column=0,sticky="we",pady=3)
+
+            self.mod_icon_path = os.path.join(getCurrentPathLoc(),"data","pkg",mod,"icon.png")
+            if not os.path.exists(self.mod_icon_path):
+                self.mod_icon_path = f"{getCurrentPathLoc()}/assets/missing_icon.png"
     
-            self.mod_icon_img = customtkinter.CTkImage(Image.open(os.path.join(getCurrentPathLoc(),"data","pkg",mod,"icon.png")),size=(90,90))
+            self.mod_icon_img = customtkinter.CTkImage(Image.open(self.mod_icon_path),size=(90,90))
             self.mod_icon_lab = customtkinter.CTkLabel(self.mod_entry_frame,text="",image=self.mod_icon_img)
             self.mod_icon_lab.grid(row=i,column=0,pady=2,padx=2,sticky="w")
     
             self.mod_name_author = customtkinter.CTkLabel(self.mod_entry_frame,text=f"{moddb['name']}\nby {moddb['author']}",justify='left',font=('IBM 3270',16))
             self.mod_name_author.grid(row=i,column=1,pady=2,sticky="w")
-    
-            self.mod_version = customtkinter.CTkLabel(self.mod_entry_frame,text=moddb['version'],font=('IBM 3270',16))
+
+            self.mod_version = thunderstoreModVersionLabel(self.mod_entry_frame,moddb_file,mod)
+            #self.mod_version = customtkinter.CTkLabel(self.mod_entry_frame,text=moddb['version'],font=('IBM 3270',16))
             self.mod_version.grid(row=i,column=2,pady=2,sticky="w")
     
             self.website_icon = customtkinter.CTkImage(Image.open('assets/website.png'),size=(30,30))
@@ -615,6 +753,7 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
     
     def testing(self,name):
         print(f"no way real {name}")
+        self.mod_version.refresh_version()
     
     def openThunderstorePage(self,link):
         print(f"Opening Thunderstore page...")
