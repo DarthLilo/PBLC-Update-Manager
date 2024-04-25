@@ -470,6 +470,43 @@ class thunderstore():
             return True
         else:
             return False
+    
+    def import_from_url(url, custom_version = None):
+        
+        url_div = url.split("/")
+        valid_threshold = ["thunderstore.io","c","lethal-company"]
+        
+        if all(entry in url_div for entry in valid_threshold):
+            namespace = url_div[6]
+            name = url_div[7]
+
+            url_package_data = thunderstore.extract_package_json(namespace,name)
+
+            mod_database_local = open_json(moddb_file)
+            mod_list = mod_database_local["installed_mods"]
+            
+            mod_list[f"{namespace}-{name}"] = {
+                "name": name,
+                "author": namespace,
+                "version": url_package_data["latest"]["version_number"],
+                "package_url": url,
+                "files" : []
+            }
+
+            mod_names = []
+            for mod in mod_list:
+                mod_names.append(mod_list[mod]["name"])
+            sorted_mod_list = sorted(mod_names, key=lambda x: x.lower())
+
+            print(sorted_mod_list)
+
+            #print(sorted_mod_keys)
+            
+            #mod_database_local["installed_mods"] = sorted_mod_list
+
+
+        else:
+            print(f"{url} is not a valid Thunderstore package link!")
 
 class thunderstore_ops():
     def check_for_updates(url,local_version):
@@ -684,19 +721,35 @@ class ModsListScrollFrame(customtkinter.CTkScrollableFrame):
 
 class thunderstoreModVersionLabel(customtkinter.CTkLabel):
     def __init__(self,master,json_path,mod):
-        customtkinter.CTkLabel.__init__(self,master)
+        customtkinter.CTkLabel.__init__(self,master,font=('IBM 3270',16))
         self.json_path = json_path
         self.mod = mod
-        self.load_text()
+        self.load_text(self.mod)
 
-    def load_text(self):
+    def load_text(self,mod):
         json_db = open_json(self.json_path)
-        mod_db = json_db["installed_mods"][self.mod]
+        mod_db = json_db["installed_mods"][mod]
         self.configure(text=mod_db['version'])
-        print(mod_db['name'])
     
-    def refresh_version(self):
-        self.load_text()
+    def refresh_version(self,mod):
+        self.load_text(mod)
+
+class thunderstoreModIcon(customtkinter.CTkLabel):
+    def __init__(self,master,mod):
+        customtkinter.CTkLabel.__init__(self,master,text="")
+        self.mod = mod
+        self.load_image()
+    
+    def load_image(self):
+
+        mod_icon_path = os.path.join(getCurrentPathLoc(),"data","pkg",self.mod,"icon.png")
+        if not os.path.exists(mod_icon_path):
+            mod_icon_path = f"{getCurrentPathLoc()}/assets/missing_icon.png"
+        icon_png = customtkinter.CTkImage(Image.open(mod_icon_path),size=(90,90))
+        self.configure(image=icon_png)
+    
+    def refresh_icon(self):
+        self.load_image()
 
 
 class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
@@ -707,12 +760,17 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
 
         self.button_color = "#3F3F3F"
         self.button_hover = "#2D2D2D"
+        self.draw_mods_list()
+    
+    def draw_mods_list(self):
 
         i = 0
 
-        for mod in mod_database["installed_mods"]:
+        mod_database_local = open_json(moddb_file)
+
+        for mod in mod_database_local["installed_mods"]:
         
-            moddb = mod_database["installed_mods"][mod]
+            moddb = mod_database_local["installed_mods"][mod]
     
             self.mod_entry_frame = customtkinter.CTkFrame(self,fg_color="#0C0C0C",corner_radius=5)
             self.mod_entry_frame.grid_columnconfigure(0, weight=0,minsize=105)
@@ -721,13 +779,10 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
             self.mod_entry_frame.grid_columnconfigure(3, weight=0,minsize=1)
             self.mod_entry_frame.grid_columnconfigure(4, weight=0,minsize=1)
             self.mod_entry_frame.grid(row=i,column=0,sticky="we",pady=3)
-
-            self.mod_icon_path = os.path.join(getCurrentPathLoc(),"data","pkg",mod,"icon.png")
-            if not os.path.exists(self.mod_icon_path):
-                self.mod_icon_path = f"{getCurrentPathLoc()}/assets/missing_icon.png"
     
-            self.mod_icon_img = customtkinter.CTkImage(Image.open(self.mod_icon_path),size=(90,90))
-            self.mod_icon_lab = customtkinter.CTkLabel(self.mod_entry_frame,text="",image=self.mod_icon_img)
+            #self.mod_icon_img = customtkinter.CTkImage(Image.open(self.mod_icon_path),size=(90,90))
+            #self.mod_icon_lab = customtkinter.CTkLabel(self.mod_entry_frame,text="",image=self.mod_icon_img)
+            self.mod_icon_lab = thunderstoreModIcon(self.mod_entry_frame,mod)
             self.mod_icon_lab.grid(row=i,column=0,pady=2,padx=2,sticky="w")
     
             self.mod_name_author = customtkinter.CTkLabel(self.mod_entry_frame,text=f"{moddb['name']}\nby {moddb['author']}",justify='left',font=('IBM 3270',16))
@@ -742,28 +797,28 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
             self.website_icon_lab.grid(row=i,column=2,pady=2,padx=2,sticky="e")
     
             self.refresh_icon = customtkinter.CTkImage(Image.open('assets/refresh.png'),size=(30,30))
-            self.refresh_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.refresh_icon,fg_color=self.button_color,hover_color=self.button_hover,command= lambda url=moddb['package_url'], local_version=moddb["version"]: self.refreshThunderstorePackage(url,local_version))
+            self.refresh_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.refresh_icon,fg_color=self.button_color,hover_color=self.button_hover,command= lambda url=moddb['package_url'], local_version=moddb["version"], mod_in = mod, version_grid=self.mod_version, icon_grid=self.mod_icon_lab: self.refreshThunderstorePackage(url,local_version,mod_in,version_grid,icon_grid))
             self.refresh_icon_lab.grid(row=i,column=3,pady=2,padx=2,sticky="e")
     
             self.delete_icon = customtkinter.CTkImage(Image.open('assets/trash_can.png'),size=(30,30))
-            self.delete_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.delete_icon,fg_color=self.button_color,hover_color=self.button_hover,command= lambda name=moddb['name']: self.testing(name))
+            self.delete_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.delete_icon,fg_color=self.button_color,hover_color=self.button_hover,command= lambda mod_in=mod, test_thing=self.mod_version,test_thing2=self.mod_icon_lab: self.testing(mod_in,test_thing,test_thing2))
             self.delete_icon_lab.grid(row=i,column=4,pady=2,padx=2,sticky="e")
             
             i+=1
     
-    def testing(self,name):
-        print(f"no way real {name}")
-        self.mod_version.refresh_version()
+    def testing(self,mod,grid,grid2):
+        print(f"no way real {mod}")
+        grid.refresh_version(mod)
+        grid2.refresh_icon()
     
     def openThunderstorePage(self,link):
         print(f"Opening Thunderstore page...")
         webbrowser.open_new(link)
     
-    def refreshThunderstorePackage(self,url,version):
+    def refreshThunderstorePackage(self,url,version,mod,version_grid,icon_grid):
         thunderstore_ops.check_for_updates(url,version)
-            
-
-        
+        version_grid.refresh_version(mod)
+        icon_grid.refresh_icon()
 
 #UI
 class PBLCApp(customtkinter.CTk):
@@ -922,15 +977,38 @@ class PBLCApp(customtkinter.CTk):
 
         #Development
         self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Development"), corner_radius=0, fg_color="transparent")
-        self.main_frame.grid_columnconfigure(0, weight=1)
+        self.main_frame.grid_columnconfigure(0, weight=0)
+        self.main_frame.grid_columnconfigure(1, weight=0)
         self.main_frame.grid(row=0, column=1)
 
         #self.fetch_mods = customtkinter.CTkButton(self.main_frame, text="Fetch Mods", command=self.fetchModData)
         #self.fetch_mods.grid(row=3, column=0)
 
-        self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,fg_color="#191919",width=960,height=448)
+        self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,fg_color="#191919",width=960,height=425)
         self.thunderstore_mod_frame.grid(row=2,column=0)
+
+        self.url_import_frame = customtkinter.CTkFrame(self.main_frame)
+        self.url_import_frame.grid(row=3,column=0)
+
+        self.import_url_box = customtkinter.CTkEntry(self.url_import_frame,width=830,placeholder_text="Thunderstore Package URL")
+        self.import_url_box.grid(row=3,column=0)
+        self.import_url_box.bind("<Return>",lambda mod_frame=self.thunderstore_mod_frame: self.import_thunderstore_url(mod_frame))
+
+        self.update_button_temp = customtkinter.CTkButton(self.url_import_frame,text="refresh",command=lambda mod_frame = self.thunderstore_mod_frame: self.import_thunderstore_url(mod_frame))
+        self.update_button_temp.grid(row=3,column=1,pady=6)
     
+    def import_thunderstore_url(self,mod_frame):
+        thunderstore.import_from_url(self.import_url_box.get())
+        self.import_url_box.delete(0,len(self.import_url_box.get()))
+        #self.redrawScrollFrame()
+    
+    def redrawScrollFrame(self):
+    
+        self.thunderstore_mod_frame.destroy()
+
+        self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,fg_color="#191919",width=960,height=425)
+        self.thunderstore_mod_frame.grid(row=2,column=0)
+
     def fetchModData(self):
         print('rah')
     #test_im = Image.open("lethal_art.png")
