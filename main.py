@@ -36,7 +36,7 @@ def getCurrentPathLoc():
 
 pyglet.options['win32_gdi_font'] = True
 
-pyglet.font.add_file(resource_path('3270-Regular.ttf'))
+pyglet.font.add_file(resource_path('assets/3270-Regular.ttf'))
 
 
 #STARTUP
@@ -903,8 +903,8 @@ class PBLCApp(customtkinter.CTk):
         self.geometry("1000x580")
         self.title("PBLC Update Manager")
         #self.minsize(1000,580)
-        #self.resizable(False,False)
-        self.iconbitmap(resource_path("pill_bottle.ico"))
+        self.resizable(False,False)
+        self.iconbitmap(resource_path("assets/pill_bottle.ico"))
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -941,12 +941,12 @@ class PBLCApp(customtkinter.CTk):
 
         # Home
 
-        self.bg_image = customtkinter.CTkImage(Image.open(resource_path("lethal_art.png")),
+        self.bg_image = customtkinter.CTkImage(Image.open(resource_path("assets/lethal_art.png")),
                                                size=(500, 500))
         self.bg_image_label = customtkinter.CTkLabel(self.tabview.tab("Home"), image=self.bg_image,text="")
         self.bg_image_label.grid(row=0, column=0)
 
-        self.bg_image = customtkinter.CTkImage(Image.open(resource_path("lethal_art.png")),
+        self.bg_image = customtkinter.CTkImage(Image.open(resource_path("assets/lethal_art.png")),
                                                size=(500, 500))
         self.bg_image_label = customtkinter.CTkLabel(self.tabview.tab("Mods"), image=self.bg_image,text="")
         self.bg_image_label.grid(row=0, column=0)
