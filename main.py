@@ -59,7 +59,7 @@ def startupFunc():
     if not os.path.exists(moddb_file):
         print("No mod database found, creating one...")
         with open(moddb_file, "w") as moddb_create:
-            moddb_create.write(json.dumps({"installed_mods":[]},indent=4))
+            moddb_create.write(json.dumps({"installed_mods":{}},indent=4))
     else:
         print("Mod database found.")
     
@@ -174,10 +174,12 @@ current_file_loc = getCurrentPathLoc()
 default_pblc_vers = {"version": "0.0.0", "beta_version": "0.0.0", "beta_goal": "0.0.0","performance_mode":"off"}
 active_mods_path = os.path.normpath(f"{LC_Path}/pblc_mod_toggles.json")
 active_mods_data = {}
-mod_database = open_json(os.path.join(current_file_loc,"data","mod_database.json"))
 if os.path.exists(active_mods_path):
     active_mods_data = open_json(active_mods_path)
 
+
+def get_mod_database():
+    return open_json(os.path.join(current_file_loc,"data","mod_database.json"))
 
 def get_current_version(int_only = False):
     if os.path.exists(pblc_vers):
@@ -484,9 +486,18 @@ class thunderstore():
             namespace = url_div[6]
             name = url_div[7]
 
+            
+
             url_package_data = thunderstore.extract_package_json(namespace,name)
             if url_package_data == None:
                 return None
+            
+            if not custom_version.strip():
+                target_version = url_package_data['latest']['version_number']
+            else:
+                target_version = custom_version
+            
+            print(f"Using version {target_version}...")
 
             mod_database_local = open_json(moddb_file)
             mod_list = mod_database_local["installed_mods"]
@@ -494,8 +505,9 @@ class thunderstore():
             mod_list[f"{namespace}-{name}"] = {
                 "name": name,
                 "author": namespace,
-                "version": url_package_data["latest"]["version_number"],
+                "version": target_version,
                 "package_url": url,
+                "has_updates": "",
                 "files" : []
             }
 
@@ -513,10 +525,38 @@ class thunderstore():
 
             with open(moddb_file, "w") as mod_installer:
                 mod_installer.write(json.dumps(mod_database_local,indent=4))
+            
+
+            #DOWNLOADING MOD   
+
+            print(f"Downloading {namespace}-{name}-{target_version}...")
+
+            thunderstore_ops.download_package(namespace,name,target_version)
 
 
         else:
             print(f"{url} is not a valid Thunderstore package link!")
+
+    def check_for_updates_all(self):
+        mod_database_local = get_mod_database()
+
+        for mod in mod_database_local["installed_mods"]:
+            mod_inf = mod_database_local["installed_mods"][mod]
+
+            print(f"Checking for updates on {mod}")
+
+            current_version = mod_inf['version']
+
+            thunderstore_data_req = thunderstore.extract_package_json(mod_inf['author'],mod_inf['name'])
+            latest_version = thunderstore_data_req['latest']['version_number']
+
+            if thunderstore.compare_versions(latest_version,current_version):
+                mod_database_local["installed_mods"][mod]['has_updates'] = latest_version
+        
+        with open(moddb_file, "w") as update_checker_all:
+            update_checker_all.write(json.dumps(mod_database_local,indent=4))
+    
+
 
 class thunderstore_ops():
     def check_for_updates(url,local_version):
@@ -541,10 +581,14 @@ class thunderstore_ops():
         else:
             print(f"Running latest version of {name}")
 
-            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"No new updates for {name}, would you like to reinstall it?",option_2="Yes",option_1="No",icon="question",sound=True)
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"No new updates for {name}, would you like to reinstall it or downgrade?",option_3="Downgrade",option_2="Yes",option_1="No",icon="question",sound=True)
 
             if prompt_answer.get() == "Yes":
                 thunderstore_ops.download_package(namespace,name,package_json['latest']['version_number'])
+            elif prompt_answer.get() == "Downgrade":
+                dialog = customtkinter.CTkInputDialog(text="Enter Version:", title="PBLC Update Manager").get_input()
+                print(f"Selected version = {dialog}")
+                thunderstore_ops.download_package(namespace,name,dialog)
 
     def download_package(namespace,name,version):
 
@@ -566,8 +610,22 @@ class thunderstore_ops():
 
         
         pack_req = requests.get(download_link)
+        
+        total_size_in_bytes = int(pack_req.headers.get('content-length', 0))
+        widgets = [progressbar.Percentage(), ' ', progressbar.Bar()]
+        progress_bar = progressbar.ProgressBar(maxval=total_size_in_bytes, widgets=widgets).start()
+
         with open(download_loc,'wb') as dl_package:
-            dl_package.write(pack_req.content)
+            #dl_package.write(pack_req.content)
+            def progress_bar_update(chunk):
+                dl_package.write(chunk)
+                progress_bar.update(dl_package.tell())
+                
+            for chunk in pack_req.iter_content(chunk_size=1024):
+                if chunk:
+                    progress_bar_update(chunk)
+        
+        print("")
         
         decompress_zip(download_loc,downloads_folder)
 
@@ -646,6 +704,7 @@ class thunderstore_ops():
                 thunderstore_ops.copy_icon(file_path,full_name)
             else:
                 if os.path.isfile(file_path):
+                    pkg_files.append(f"plugins\\{file}")
                     move_file(file_path,f"{bepinex_path}/plugins/{file}")
                 elif os.path.isdir(file_path):
                     for x in thunderstore_ops.log_sub_files(downloads_folder,file_path,"plugins"):
@@ -656,18 +715,44 @@ class thunderstore_ops():
 
         #Updating Mod Database
 
-        package_db = mod_database['installed_mods'][f"{namespace}-{name}"]
+        mod_database_local = get_mod_database()
+
+        package_db = mod_database_local['installed_mods'][f"{namespace}-{name}"]
         package_db['version'] = version
         package_db['files'] = pkg_files
+        package_db['has_updates'] = ""
 
         with open(moddb_file, "w") as package_updater:
-            package_updater.write(json.dumps(mod_database,indent=4))
+            package_updater.write(json.dumps(mod_database_local,indent=4))
 
 
         print(f"Finished installing {namespace}-{name}.")
             
+    def uninstall_package(package):
+        print(f"Uninstalling {package}")
+        mod_database_local = get_mod_database()
+
+        files_remove = mod_database_local['installed_mods'][package]['files']
+        data_folder = os.path.join(getCurrentPathLoc(),"data","pkg",package)
+
+        for file in files_remove:
+            file_path = os.path.normpath(f"{bepinex_path}\\{file}")
             
-            
+            if os.path.exists(file_path):
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
+                else:
+                    shutil.rmtree(file_path)
+        
+        if os.path.exists(data_folder):
+            shutil.rmtree(data_folder)
+        
+        del mod_database_local['installed_mods'][package]
+
+        with open(moddb_file, "w") as mod_deleter:
+            mod_deleter.write(json.dumps(mod_database_local,indent=4))
+
+        print(f"{package} uninstalled.")
 
 
     #def delete_package():
@@ -699,36 +784,6 @@ class ModsListScrollFrame(customtkinter.CTkScrollableFrame):
                 checked_checkboxes.append(checkbox.cget("text"))
         return checked_checkboxes
 
-#mod_database = {
-#            "installed_mods": {
-#                "2018-LC_API": {
-#                    "name":"LC_API",
-#                    "author":"2018",
-#                    "version":"2.4.3",
-#                    "package_url": "https://thunderstore.io/c/lethal-company/p/2018/LC_API/",
-#                    "files": [
-#                        "LC_API.dll"
-#                    ]
-#                },
-#                "Evaisa-LethalLib": {
-#                    "name":"LethalLib",
-#                    "author":"Evaisa",
-#                    "version":"0.15.0",
-#                    "package_url": "https://thunderstore.io/c/lethal-company/p/Evaisa/LethalLib/",
-#                    "files": [
-#                    ]
-#                },
-#                "SweetOnion-LethalSnap": {
-#                    "name":"LethalSnap",
-#                    "author":"SweetOnion",
-#                    "version":"1.5.6",
-#                    "package_url": "https://thunderstore.io/c/lethal-company/p/SweetOnion/LethalSnap/",
-#                    "files": [
-#                    ]
-#                }
-#            }
-#        }
-
 class thunderstoreModVersionLabel(customtkinter.CTkLabel):
     def __init__(self,master,json_path,mod):
         customtkinter.CTkLabel.__init__(self,master,font=('IBM 3270',16))
@@ -739,7 +794,10 @@ class thunderstoreModVersionLabel(customtkinter.CTkLabel):
     def load_text(self,mod):
         json_db = open_json(self.json_path)
         mod_db = json_db["installed_mods"][mod]
-        self.configure(text=mod_db['version'])
+        if not mod_db['has_updates']:
+            self.configure(text=mod_db['version'])
+        else:
+            self.configure(text=f"{mod_db['version']}   <   {mod_db['has_updates']}")
     
     def refresh_version(self,mod):
         self.load_text(mod)
@@ -763,11 +821,11 @@ class thunderstoreModIcon(customtkinter.CTkLabel):
 
 
 class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
-    def __init__(self,master,fg_color,width,height):
+    def __init__(self,master,fg_color,width,height,parent):
         scroll_text = "           Mod Name                                      Version                               Actions"
         super().__init__(master,label_text=scroll_text,label_anchor="w",label_font=('IBM 3270',16),fg_color=fg_color,width=width,height=height,corner_radius=5)
         self.grid_columnconfigure(0,weight=1)
-
+        self.parent = parent
         self.button_color = "#3F3F3F"
         self.button_hover = "#2D2D2D"
         self.draw_mods_list()
@@ -781,6 +839,10 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
         for mod in mod_database_local["installed_mods"]:
         
             moddb = mod_database_local["installed_mods"][mod]
+
+            #self.mod_list_db.append(mod)
+
+            #0C0C0C
     
             self.mod_entry_frame = customtkinter.CTkFrame(self,fg_color="#0C0C0C",corner_radius=5)
             self.mod_entry_frame.grid_columnconfigure(0, weight=0,minsize=105)
@@ -811,7 +873,7 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
             self.refresh_icon_lab.grid(row=i,column=3,pady=2,padx=2,sticky="e")
     
             self.delete_icon = customtkinter.CTkImage(Image.open('assets/trash_can.png'),size=(30,30))
-            self.delete_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.delete_icon,fg_color=self.button_color,hover_color=self.button_hover,command= lambda mod_in=mod, test_thing=self.mod_version,test_thing2=self.mod_icon_lab: self.testing(mod_in,test_thing,test_thing2))
+            self.delete_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.delete_icon,fg_color=self.button_color,hover_color=self.button_hover,command= lambda mod_in=mod, parent=self.parent: self.uninstallThunderstorePackage(mod_in,parent))
             self.delete_icon_lab.grid(row=i,column=4,pady=2,padx=2,sticky="e")
             
             i+=1
@@ -820,6 +882,10 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
         print(f"no way real {mod}")
         grid.refresh_version(mod)
         grid2.refresh_icon()
+    
+    def uninstallThunderstorePackage(self,mod,parent):
+        thunderstore_ops.uninstall_package(mod)
+        parent.redrawScrollFrame()
     
     def openThunderstorePage(self,link):
         print(f"Opening Thunderstore page...")
@@ -868,7 +934,7 @@ class PBLCApp(customtkinter.CTk):
         self.tabview = customtkinter.CTkTabview(self,segmented_button_selected_color=self.button_color,segmented_button_selected_hover_color=self.button_hover_color)
         self.tabview.grid(row=0, column=1,sticky='nsew')
 
-        tabs = ["Home","Mods","Development"]
+        tabs = ["Home","Mods","Pack Manager"]
         for tab in tabs:
             self.tabview.add(tab)
             self.tabview.tab(tab).grid_columnconfigure(0, weight=1)
@@ -986,7 +1052,7 @@ class PBLCApp(customtkinter.CTk):
         self.empty_row_ml.grid(row=2, column=0, padx=20, pady=1)
 
         #Development
-        self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Development"), corner_radius=0, fg_color="transparent")
+        self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Pack Manager"), corner_radius=0, fg_color="transparent")
         self.main_frame.grid_columnconfigure(0, weight=0)
         self.main_frame.grid_columnconfigure(1, weight=0)
         self.main_frame.grid(row=0, column=1)
@@ -994,37 +1060,49 @@ class PBLCApp(customtkinter.CTk):
         #self.fetch_mods = customtkinter.CTkButton(self.main_frame, text="Fetch Mods", command=self.fetchModData)
         #self.fetch_mods.grid(row=3, column=0)
 
-        self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,fg_color="#191919",width=960,height=425)
+        self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,fg_color="#191919",width=960,height=450,parent=self)
         self.thunderstore_mod_frame.grid(row=2,column=0)
 
         self.url_import_frame = customtkinter.CTkFrame(self.main_frame)
         self.url_import_frame.grid(row=3,column=0)
 
-        self.import_url_box = customtkinter.CTkEntry(self.url_import_frame,width=830,placeholder_text="Thunderstore Package URL")
-        self.import_url_box.grid(row=3,column=0)
+        self.import_url_box = customtkinter.CTkEntry(self.url_import_frame,width=550,placeholder_text="Thunderstore Package URL")
+        self.import_url_box.grid(row=1,column=0,padx=3)
         self.import_url_box.bind("<Return>",lambda mod_frame=self.thunderstore_mod_frame: self.import_thunderstore_url(mod_frame))
 
-        self.update_button_temp = customtkinter.CTkButton(self.url_import_frame,text="refresh",command=lambda mod_frame = self.thunderstore_mod_frame: self.import_thunderstore_url(mod_frame))
-        self.update_button_temp.grid(row=3,column=1,pady=6)
+        self.import_url_vers_box = customtkinter.CTkEntry(self.url_import_frame,width=130,placeholder_text="Version (Optional)")
+        self.import_url_vers_box.grid(row=1,column=1,padx=3)
+        self.import_url_vers_box.bind("<Return>",lambda mod_frame=self.thunderstore_mod_frame: self.import_thunderstore_url(mod_frame))
+
+        self.import_from_url = customtkinter.CTkButton(self.url_import_frame,text="Import",command=lambda mod_frame = self.thunderstore_mod_frame: self.import_thunderstore_url(mod_frame))
+        self.import_from_url.grid(row=1,column=2,pady=6,padx=3)
+
+        self.check_for_updates_all = customtkinter.CTkButton(self.url_import_frame,text="Scan for Updates",command=self.check_for_updates_all)
+        self.check_for_updates_all.grid(row=1,column=3,pady=6,padx=3)
     
     def import_thunderstore_url(self,mod_frame):
-        thunderstore.import_from_url(self.import_url_box.get())
+        thunderstore.import_from_url(self.import_url_box.get(),self.import_url_vers_box.get())
         self.import_url_box.delete(0,len(self.import_url_box.get()))
-        #self.redrawScrollFrame()
+        self.import_url_vers_box.delete(0,len(self.import_url_vers_box.get()))
+        self.redrawScrollFrame()
+    
+    def check_for_updates_all(self):
+        thunderstore.check_for_updates_all(self)
+
+        for child in self.thunderstore_mod_frame.winfo_children():
+            for subchild in child.winfo_children():
+                if isinstance(subchild,thunderstoreModVersionLabel):
+                    subchild.refresh_version(subchild.mod)
     
     def redrawScrollFrame(self):
     
         self.thunderstore_mod_frame.destroy()
 
-        self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,fg_color="#191919",width=960,height=425)
+        self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,fg_color="#191919",width=960,height=450,parent=self)
         self.thunderstore_mod_frame.grid(row=2,column=0)
 
     def fetchModData(self):
         print('rah')
-    #test_im = Image.open("lethal_art.png")
-    #test_im = test_im.resize((256,256))
-    #test_im = roundImageCorners(test_im,35)
-    #test_im.save("lethal_art_rounded.png")
 
     def modSwitchUpdate(self):
         active_mods, deactive_mods = determineModToggles(self,active_mods_data)
