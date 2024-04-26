@@ -511,13 +511,18 @@ class thunderstore():
                 "files" : []
             }
 
+            sort_thing = {}
+            
+            for mod in mod_list:
+                sort_thing[mod_list[mod]['name']] = mod
+            
+            mod_names = list(sort_thing.keys())
 
-            mod_names = mod_list.keys()
             sorted_mod_list = sorted(mod_names, key=lambda x: x.lower())
 
             sorted_mod_dict = {}
             for key in sorted_mod_list:
-                sorted_mod_dict[key] = mod_list[key]
+                sorted_mod_dict[sort_thing[key]] = mod_list[sort_thing[key]]
 
 
             
@@ -644,6 +649,7 @@ class thunderstore_ops():
         icon_png = Image.open(cur_path)
         icon_png = icon_png.resize((256,256))
         icon_png = roundImageCorners(icon_png,35)
+        icon_png = icon_png.convert("RGBA")
         icon_png.save(fin_path)
     
     def log_sub_files(rel_start,folder,pre_folder=None):
