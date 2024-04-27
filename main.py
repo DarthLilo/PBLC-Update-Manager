@@ -147,6 +147,11 @@ winhttp_path = os.path.normpath(f"{LC_Path}/winhttp.dll")
 current_file_loc = getCurrentPathLoc()
 default_pblc_vers = {"version": "0.0.0", "beta_version": "0.0.0", "beta_goal": "0.0.0","performance_mode":"off"}
 package_data_path = os.path.normpath(f"{current_file_loc}/data/pkg")
+patch_instructions = os.path.normpath(f"{current_file_loc}/patch_instructions.json")
+
+# download_bepinex | GDCODE
+# url_add_mod | NAMESPACE | NAME | VERSION
+# delete_mod | NAMESPACE | NAME
 
 dev_mode = f"{current_file_loc}/data/pooworms"
 if not os.path.exists(dev_mode):
@@ -171,7 +176,7 @@ def startupFunc():
     if not os.path.exists(moddb_file):
         print("No mod database found, creating one...")
         with open(moddb_file, "w") as moddb_create:
-            moddb_create.write(json.dumps({"installed_mods":{}},indent=4))
+            moddb_create.write(json.dumps({"installed_mods":{},"patch_version":"0.0.0"},indent=4))
     else:
         print("Mod database found.")
     
@@ -213,6 +218,28 @@ def get_current_version(int_only = False):
     return installed_version,installed_beta_version, cur_vers_json, performance_mode
     
 #checking for updates
+
+class version_man():
+
+    def install_version(vers):
+        if os.path.exists(pblc_vers):
+            cur_vers_json = open_json(pblc_vers)
+            if vers == "release":
+                install_version = cur_vers_json['version']
+            elif vers == "beta":
+                install_version = cur_vers_json['beta_version']
+        else:
+            install_version = "0.0.0"
+        return install_version
+
+    def get_patch():
+        mod_db = get_mod_database()
+        try:
+            patch_version = mod_db['patch_version']
+        except KeyError:
+            patch_version = "0.0.0"
+
+        return patch_version
 
 def download_update(update_data):
     latest_update_zip = f"{downloads_folder}/{update_data['name']}.zip"
@@ -334,11 +361,76 @@ def updateManager(github_api_manager):
     subprocess.Popen(["python",resource_path("updater.py")])
     sys.exit()
 
-def checkForUpdates(update_type):
+def downloadGDPatch(gdlink):
+
+    if not os.path.exists(downloads_folder):
+        os.mkdir(downloads_folder)
+
+    zip_down_loc = f"{downloads_folder}/pblc_patch.zip"
+    download_from_google_drive(gdlink,zip_down_loc)
+    decompress_zip(zip_down_loc,LC_Path)
+    shutil.rmtree(downloads_folder)
+    
+
+def decodePatchCommand(input_command):
+    split_commnad = str(input_command).split("|")
+
+    command=split_commnad[0]
+    if command == "download_bepinex":
+        gdlink = split_commnad[1]
+        print("Downloading custom patch files...")
+        downloadGDPatch(gdlink)
+    elif command == "url_add_mod":
+        namespace = split_commnad[1]
+        name = split_commnad[2]
+        target_vers = split_commnad[3]
+        print(f"Importing {namespace}-{name} from Thunderstore...")
+        thunderstore.import_from_url(f"https://thunderstore.io/c/lethal-company/p/{namespace}/{name}/",target_vers)
+    elif command == "delete_mod":
+        namespace = split_commnad[1]
+        name = split_commnad[2]
+        thunderstore_ops.uninstall_package(f"{namespace}-{name}")
+
+def applyNewPatches(update_type,cur_version):
+    patch_db = open_json(patch_instructions)
+    cur_patch_ver = version_man.get_patch()
+
+    for patch in patch_db[cur_version][update_type]:
+        if version.Version(patch) > version.Version(cur_patch_ver):
+            for command in patch_db[cur_version][update_type][patch]:
+                decodePatchCommand(command)
+            cur_patch_ver = patch
+    
+    mod_database_local = get_mod_database()
+    mod_database_local['patch_version'] = patch
+    
+    with open(moddb_file, "w") as patch_installer:
+        patch_installer.write(json.dumps(mod_database_local,indent=4))
+
+def checkForPatches(update_type,cur_version):
+    patch_db = open_json(patch_instructions)
+    cur_patch_ver = version_man.get_patch()
+
+    if cur_version in patch_db:
+        for patch in patch_db[cur_version][update_type]:
+            if version.Version(patch) > version.Version(cur_patch_ver):
+                user_response = CTkMessagebox(title="PBLC Update Manager",message=f"New patches found for PBLC v{cur_version}, would you like to apply them?",option_1="No",option_2="Yes")
+
+                if user_response.get() == "Yes":
+                    applyNewPatches(update_type,cur_version)
+                    break
+                else:
+                    break
+        return "no_patches"
+    else:
+        return "no_patches"
+
+def checkForUpdates(self,update_type):
 
     print("Checking for updates...")
 
     installed_version, installed_beta_version, json_data_internal, performance_mode = get_current_version(True)
+    install_version = version_man.install_version(update_type)
 
     #fetching latest version
     github_repo_json = json.loads(request.urlopen(github_repo_versoin_db).read().decode())
@@ -366,8 +458,16 @@ def checkForUpdates(update_type):
             if prompt_answer == 6:
                 startUpdate(github_repo_json[update_type],update_type)
         else:
-            print("No updates found.")
-            ctypes.windll.user32.MessageBoxW(0, "No updates available.", "PBLC Update Manager")
+
+            #Checking for patches
+            print("No updates found, checking for patches...")
+            patches = checkForPatches(update_type,install_version)
+            if patches == "no_patches":
+                CTkMessagebox(title="PBLC Update Manager",message="No new patches found, you are up to date!")
+            self.redrawScrollFrame()
+
+            #print("No updates found.")
+            #ctypes.windll.user32.MessageBoxW(0, "No updates available.", "PBLC Update Manager")
     
     
 
@@ -753,7 +853,6 @@ class thunderstore_ops():
             #Special Files
             if file == "BepInEx":
                 for x in thunderstore_ops.log_sub_files(file_path,file_path):
-                    print(f"{x} RHARHAHRAHRAHAH")
                     pkg_files.append(x)
                 shutil.copytree(file_path,bepinex_path,dirs_exist_ok=True)
             elif file in bepinex_list:
@@ -802,8 +901,10 @@ class thunderstore_ops():
     def uninstall_package(package):
         print(f"Uninstalling {package}")
         mod_database_local = get_mod_database()
-
-        files_remove = mod_database_local['installed_mods'][package]['files']
+        try:
+            files_remove = mod_database_local['installed_mods'][package]['files']
+        except KeyError:
+            return
         data_folder = os.path.join(getCurrentPathLoc(),"data","pkg",package)
 
         for file in files_remove:
@@ -1020,7 +1121,7 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
                 self.refresh_icon_lab.configure(state="disabled",fg_color=self.button_disabled)
     
             self.delete_icon = customtkinter.CTkImage(Image.open('assets/trash_can.png'),size=(30,30))
-            self.delete_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.delete_icon,fg_color=self.button_color,hover_color=self.button_hover,command= lambda mod_in=mod, parent=self.parent: self.uninstallThunderstorePackage(mod_in,parent))
+            self.delete_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.delete_icon,fg_color=self.button_color,hover_color=self.button_hover,command= lambda mod_in=mod, frame = self.mod_entry_frame: self.uninstallThunderstorePackage(mod_in,frame))
             self.delete_icon_lab.grid(row=i,column=6,pady=2,padx=2,sticky="e")
             if not dev_mode and moddb['version'] == "devmode":
                 self.delete_icon_lab.configure(state="disabled",fg_color=self.button_disabled)
@@ -1030,9 +1131,10 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
     def testing(self,mod):
         print(f"no way real {mod}")
     
-    def uninstallThunderstorePackage(self,mod,parent):
+    def uninstallThunderstorePackage(self,mod,frame):
         thunderstore_ops.uninstall_package(mod)
-        parent.redrawScrollFrame()
+        frame.destroy()
+        #parent.redrawScrollFrame()
     
     def openThunderstorePage(self,link):
         print(f"Opening Thunderstore page...")
@@ -1241,18 +1343,22 @@ class PBLCApp(customtkinter.CTk):
     
         self.thunderstore_mod_frame.destroy()
 
+        scroll_bar_pos = self.thunderstore_mod_frame._scrollbar.get()
+
         self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,fg_color="#191919",width=960,height=450,parent=self)
         self.thunderstore_mod_frame.grid(row=2,column=0)
+
+        self.thunderstore_mod_frame._scrollbar._command("moveto",1.0)
 
     def fetchModData(self):
         print('rah')
 
     # click_methods
     def check_for_updates_main(self):
-        checkForUpdates("release")
+        checkForUpdates(self,"release")
     
     def check_for_updates_beta(self):
-        checkForUpdates("beta")
+        checkForUpdates(self,"beta")
     
     def check_for_updates_manager(self):
         checkForUpdatesmanager()
