@@ -10,7 +10,7 @@ print("Loading...")
 
 pbar = None
 
-PBLC_Update_Manager_Version = "0.2.3"
+PBLC_Update_Manager_Version = "0.2.4"
 
 github_repo_version_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
 github_repo_patch_instructions = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/patch_instructions.json"
@@ -563,8 +563,11 @@ class thunderstore():
         package_name = package_url[5]
         return package_namespace, package_name
     
-    def extract_package_json(namespace,name):
-        package_api_url = f"https://thunderstore.io/api/experimental/package/{namespace}/{name}"
+    def extract_package_json(namespace,name,version=None):
+        if version:
+            package_api_url = f"https://thunderstore.io/api/experimental/package/{namespace}/{name}/{version}"
+        else:
+            package_api_url = f"https://thunderstore.io/api/experimental/package/{namespace}/{name}"
 
         try:
             package_json = json.loads(request.urlopen(requestWebData(package_api_url)).read().decode())
@@ -606,6 +609,7 @@ class thunderstore():
                 return None
             
             dependencies = url_package_data['latest']['dependencies']
+            date_updated = url_package_data['latest']['date_created'].split("T")[0]
             
             if not custom_version.strip():
                 target_version = url_package_data['latest']['version_number']
@@ -623,11 +627,14 @@ class thunderstore():
 
             mod_database_local = get_mod_database()
             mod_list = mod_database_local["installed_mods"]
+
+            print()
             
             mod_list[f"{namespace}-{name}"] = {
                 "name": name,
                 "author": namespace,
                 "version": target_version,
+                "update_date": date_updated,
                 "package_url": url,
                 "has_updates": "",
                 "dependencies": dependencies,
@@ -697,10 +704,14 @@ class thunderstore():
                 current_version = mod_inf['version']
 
                 thunderstore_data_req = thunderstore.extract_package_json(mod_inf['author'],mod_inf['name'])
-                latest_version = thunderstore_data_req['latest']['version_number']
 
-                #DO NOT UNCOMMENT UNLESS YOU KNOW WHAT YOU'RE DOING!
+                #TEMP CODE
+                #cur_vers_data = thunderstore.extract_package_json(mod_inf['author'],mod_inf['name'],mod_inf['version'])
+                #update_date = cur_vers_data['date_created'].split("T")[0]
+
+                latest_version = thunderstore_data_req['latest']['version_number']
                 dependencies = thunderstore_data_req['latest']['dependencies']
+                
 
                 dep_count = 0
                 for entry in dependencies:
@@ -710,6 +721,8 @@ class thunderstore():
 
                 mod_database_local["installed_mods"][mod]['dependencies'] = dependencies
                 mod_database_local["installed_mods"][mod]['enabled'] = "true"
+
+                #mod_database_local["installed_mods"][mod]['update_date'] = update_date
 
                 if thunderstore.compare_versions(latest_version,current_version):
                     mod_database_local["installed_mods"][mod]['has_updates'] = latest_version
@@ -1026,6 +1039,11 @@ class thunderstoreModVersionLabel(customtkinter.CTkLabel):
             self.configure(text=mod_db['version'])
         else:
             self.configure(text=f"{mod_db['version']}   <   {mod_db['has_updates']}")
+        try:
+            update_date = mod_db['update_date']
+        except KeyError:
+            update_date = "0000-00-00"
+        tooltip_thing = CTkToolTip(self,message=update_date,delay=0)
     
     def refresh_version(self,mod):
         self.load_text(mod)
