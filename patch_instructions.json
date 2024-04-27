@@ -1,10 +1,6 @@
 {
     "9.0.0": {
-        "release" : {
-            "0.0.1":[
-                "download_bepinex|1BIacxwEbOeHrZlOwpn9m_4UDW2jQwCvn"
-            ]
-        },
+        "release" : {},
         "beta" : {}
     }
 }

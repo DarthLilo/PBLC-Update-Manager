@@ -12,7 +12,8 @@ pbar = None
 
 PBLC_Update_Manager_Version = "0.1.9"
 
-github_repo_versoin_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
+github_repo_version_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
+github_repo_patch_instructions = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/patch_instructions.json"
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
 customtkinter.set_appearance_mode("dark")
 
@@ -147,7 +148,6 @@ winhttp_path = os.path.normpath(f"{LC_Path}/winhttp.dll")
 current_file_loc = getCurrentPathLoc()
 default_pblc_vers = {"version": "0.0.0", "beta_version": "0.0.0", "beta_goal": "0.0.0","performance_mode":"off"}
 package_data_path = os.path.normpath(f"{current_file_loc}/data/pkg")
-patch_instructions = os.path.normpath(f"{current_file_loc}/patch_instructions.json")
 
 # download_bepinex | GDCODE
 # url_add_mod | NAMESPACE | NAME | VERSION
@@ -391,8 +391,7 @@ def decodePatchCommand(input_command):
         name = split_commnad[2]
         thunderstore_ops.uninstall_package(f"{namespace}-{name}")
 
-def applyNewPatches(update_type,cur_version):
-    patch_db = open_json(patch_instructions)
+def applyNewPatches(patch_db,update_type,cur_version):
     cur_patch_ver = version_man.get_patch()
 
     for patch in patch_db[cur_version][update_type]:
@@ -408,7 +407,7 @@ def applyNewPatches(update_type,cur_version):
         patch_installer.write(json.dumps(mod_database_local,indent=4))
 
 def checkForPatches(update_type,cur_version):
-    patch_db = open_json(patch_instructions)
+    patch_db = json.loads(request.urlopen(github_repo_patch_instructions).read().decode())
     cur_patch_ver = version_man.get_patch()
 
     if cur_version in patch_db:
@@ -417,7 +416,7 @@ def checkForPatches(update_type,cur_version):
                 user_response = CTkMessagebox(title="PBLC Update Manager",message=f"New patches found for PBLC v{cur_version}, would you like to apply them?",option_1="No",option_2="Yes")
 
                 if user_response.get() == "Yes":
-                    applyNewPatches(update_type,cur_version)
+                    applyNewPatches(patch_db,update_type,cur_version)
                     break
                 else:
                     break
@@ -433,7 +432,7 @@ def checkForUpdates(self,update_type):
     install_version = version_man.install_version(update_type)
 
     #fetching latest version
-    github_repo_json = json.loads(request.urlopen(github_repo_versoin_db).read().decode())
+    github_repo_json = json.loads(request.urlopen(github_repo_version_db).read().decode())
     #github_repo_json = open_json("version_db.json")
     latest_version = int(str(github_repo_json[update_type]['version']).replace(".","")) if update_type == "release" else int(str(github_repo_json[update_type]['beta_version']).replace(".",""))
 
