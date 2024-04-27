@@ -82,9 +82,6 @@ def clear_dir(dir = ""):
         filepath = os.path.normpath(filepath)
         shutil.rmtree(filepath)
 
-def custom_message_box(message, title, style):
-    return ctypes.windll.user32.MessageBoxW(0, message, title, style)
-
 def newEmptyRow(self,row_number,spacing):
         self.empty_row = customtkinter.CTkLabel(self.main_frame, text="")
         self.empty_row.grid(row=row_number, column=0, padx=20, pady=spacing)
@@ -328,8 +325,9 @@ def startUpdate(update_data,update_type):
         for patch in patch_db[update_data['version']][update_type]:
             if version.Version(patch) > version.Version(cur_patch_ver):
                     applyNewPatches(patch_db,update_type,update_data['version'])
+    
 
-    ctypes.windll.user32.MessageBoxW(0, "Succsessfully installed update!", "PBLC Update Manager")
+    update_finished = CTkMessagebox(title="PBLC Update Manager",message="Succsessfully installed update!",sound=True)
     print("Update installed, app will relaunch shortly.")
     relaunch_location = os.path.normpath(os.path.join(getCurrentPathLoc(),"PBLC Update Manager.exe"))
     if os.path.exists(relaunch_location):
@@ -450,19 +448,22 @@ def checkForUpdates(self,update_type):
 
         if installed_beta_version > 0:
             print("Beta release detected, prompting switch...")
-            prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"It looks like you're using a beta version of our modpack, would you like to switch back to the last stable release?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
-            if prompt_answer == 6:
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"It looks like you're using a beta version of our modpack, would you like to switch back to the last stable release?",option_2="Yes",option_1="No",icon="")
+            #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"It looks like you're using a beta version of our modpack, would you like to switch back to the last stable release?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
+            if prompt_answer.get() == "Yes":
                 startUpdate(github_repo_json[update_type],update_type)
 
         elif installed_version < latest_version:
             print("New Update Found.")
-            prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"An update is available, would you like to install it?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
-            if prompt_answer == 6:
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"An update is available, would you like to install it?",option_2="Yes",option_1="No",icon="")
+            #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"An update is available, would you like to install it?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
+            if prompt_answer.get() == "Yes":
                 startUpdate(github_repo_json[update_type],update_type)
         elif not os.path.exists(bepinex_path) or not os.path.exists(doorstop_path) or not os.path.exists(winhttp_path):
             print("Vanilla or broken version found.")
-            prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"Vanilla or broken version detected, would you like to install the latest mods?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
-            if prompt_answer == 6:
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Vanilla or broken version detected, would you like to install the latest mods?",option_2="Yes",option_1="No",icon="")
+            #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"Vanilla or broken version detected, would you like to install the latest mods?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
+            if prompt_answer.get() == "Yes":
                 startUpdate(github_repo_json[update_type],update_type)
         else:
 
@@ -470,7 +471,9 @@ def checkForUpdates(self,update_type):
             print("No updates found, checking for patches...")
             patches = checkForPatches(update_type,install_version)
             if patches == "no_patches":
-                CTkMessagebox(title="PBLC Update Manager",message="No new patches found, you are up to date!")
+                response = CTkMessagebox(title="PBLC Update Manager",message="No new patches found, you are up to date! Would you like to reinstall?",option_2="Reinstall",option_1="No")
+                if response.get() == "Reinstall":
+                    startUpdate(github_repo_json[update_type],update_type)
             self.redrawScrollFrame()
 
             #print("No updates found.")
@@ -482,23 +485,36 @@ def checkForUpdates(self,update_type):
     else:
         if installed_version > 0:
             print("Stable release found, prompting switch...")
-            prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"It looks like you're on the stable release of our modpack, would you like to switch to the latest beta?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
-            if prompt_answer == 6:
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"It looks like you're on the stable release of our modpack, would you like to switch to the latest beta?",option_2="Yes",option_1="No",icon="")
+            #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"It looks like you're on the stable release of our modpack, would you like to switch to the latest beta?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
+            if prompt_answer.get() == "Yes":
                 startUpdate(github_repo_json[update_type],update_type)
 
         elif installed_beta_version < latest_version:
             print("New Beta Found.")
-            prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"A new beta is available, would you like to install it?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
-            if prompt_answer == 6:
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"A new beta is available, would you like to install it?",option_2="Yes",option_1="No",icon="")
+            #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"A new beta is available, would you like to install it?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
+            if prompt_answer.get() == "Yes":
                 startUpdate(github_repo_json[update_type],update_type)
         elif not os.path.exists(bepinex_path) or not os.path.exists(doorstop_path) or not os.path.exists(winhttp_path):
             print("Vanilla or broken version found.")
-            prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"Vanilla or broken version detected, would you like to install the latest beta mods?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
-            if prompt_answer == 6:
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Vanilla or broken version detected, would you like to install the latest beta mods?",option_2="Yes",option_1="No",icon="")
+            #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"Vanilla or broken version detected, would you like to install the latest beta mods?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
+            if prompt_answer.get() == "Yes":
                 startUpdate(github_repo_json[update_type],update_type)
         else:
-            print("No updates found.")
-            ctypes.windll.user32.MessageBoxW(0, "No updates available.", "PBLC Update Manager")
+
+            #Checking for patches
+            print("No updates found, checking for patches...")
+            patches = checkForPatches(update_type,install_version)
+            if patches == "no_patches":
+                response = CTkMessagebox(title="PBLC Update Manager",message="No new patches found, you are up to date! Would you like to reinstall?",option_2="Reinstall",option_1="No")
+                if response.get() == "Reinstall":
+                    startUpdate(github_repo_json[update_type],update_type)
+            self.redrawScrollFrame()
+
+            #print("No updates found.")
+            #ctypes.windll.user32.MessageBoxW(0, "No updates available.", "PBLC Update Manager")
 
 def checkForUpdatesmanager():
     github_api_manager = json.loads(request.urlopen(github_repo_latest_release).read().decode())
@@ -508,11 +524,13 @@ def checkForUpdatesmanager():
     if current_manager < latest_manager:
         print("Manager update found, prompting user.")
         
-        prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"A new manager version has been found, would you like to update?","PBLC Update Manager",4)
-        if prompt_answer == 6:
+        #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"A new manager version has been found, would you like to update?","PBLC Update Manager",4)
+        prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"A new manager version has been found, would you like to update?",option_2="Yes",option_1="No",icon="")
+        if prompt_answer.get() == "Yes":
             updateManager(github_api_manager)
     else:
-        prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"No new updates found.","PBLC Update Manager",0)
+        prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"No new updates found",icon="")
+        #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"No new updates found.","PBLC Update Manager",0)
 
 def performanceModSwitchEvent(toggle):
     hd_company = os.path.join(plugins_folder,"HDLethalCompany")
