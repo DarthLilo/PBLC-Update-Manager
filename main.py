@@ -10,7 +10,7 @@ print("Loading...")
 
 pbar = None
 
-PBLC_Update_Manager_Version = "0.2.2"
+PBLC_Update_Manager_Version = "0.2.3"
 
 github_repo_version_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
 github_repo_patch_instructions = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/patch_instructions.json"
@@ -1289,7 +1289,8 @@ class PBLCApp(customtkinter.CTk):
         self.update_manager = customtkinter.CTkLabel(self.main_frame,text=f"\n\nCurrently Running: {display_text}",font=('IBM 3270',15))
         self.update_manager.grid(row=8, column=0)
 
-        #Mods
+
+        #Extras
 
         self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Extras"), corner_radius=0, fg_color="transparent")
         self.main_frame.grid_columnconfigure(0, weight=1)
@@ -1304,6 +1305,12 @@ class PBLCApp(customtkinter.CTk):
 
         self.pblc_pack_trigger = customtkinter.CTkButton(self.mods_list_frame,text="Export Modpack",command=self.export_modpack)
         self.pblc_pack_trigger.grid(row=0,column=1,pady=20,padx=10)
+
+        self.create_patch_save = customtkinter.CTkButton(self.mods_list_frame,text="Create Patch Save",command=self.create_patch_point)
+        self.create_patch_save.grid(row=1,column=0,pady=20,padx=10)
+
+        self.generate_patch_changes = customtkinter.CTkButton(self.mods_list_frame,text="Generate Changes",command=self.gen_patch_change)
+        self.generate_patch_changes.grid(row=1,column=1,pady=20,padx=10)
 
         #Development
         self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Mods"), corner_radius=0, fg_color="transparent")
@@ -1333,6 +1340,50 @@ class PBLCApp(customtkinter.CTk):
 
         self.check_for_updates_all = customtkinter.CTkButton(self.url_import_frame,text="Scan for Updates",command=self.check_for_updates_all)
         self.check_for_updates_all.grid(row=1,column=3,pady=6,padx=3)
+    
+    # download_bepinex | GDCODE
+    # url_add_mod | NAMESPACE | NAME | VERSION
+    # delete_mod | NAMESPACE | NAME
+
+    def gen_patch_change(self):
+        patch_save = f"{current_file_loc}/data/patch_point.json"
+        patch_changes = f"{current_file_loc}/data/patch_changes.json"
+        if not os.path.exists(patch_save):
+            print("ERROR: No patch save found!")
+            return
+        
+        print("Generating changes...")
+        
+        patch_save_data = open_json(patch_save)["installed_mods"]
+        mod_database_local = get_mod_database()["installed_mods"]
+
+        new_changes = {
+            "new":[]
+        }
+
+        for mod in mod_database_local:
+            if mod in patch_save_data:
+                if mod_database_local[mod]['version'] != patch_save_data[mod]['version']:
+                    new_changes['new'].append(f"url_add_mod|{mod_database_local[mod]['author']}|{mod_database_local[mod]['name']}|{mod_database_local[mod]['version']}")
+            else:
+                new_changes['new'].append(f"url_add_mod|{mod_database_local[mod]['author']}|{mod_database_local[mod]['name']}|{mod_database_local[mod]['version']}")
+        
+        for mod in patch_save_data:
+            if mod not in mod_database_local:
+                new_changes['new'].append(f"delete_mod|{patch_save_data[mod]['author']}|{patch_save_data[mod]['name']}")
+        
+        with open(patch_changes, "w") as patch_change:
+            patch_change.write(json.dumps(new_changes,indent=4))
+        
+        print(f"Finished generating changes, find them at {patch_changes}")
+
+
+    def create_patch_point(self):
+        prompt_answer = CTkMessagebox(title="PBLC Update Manager",message="Are you sure you would like to create a save point? This may override existing data!",option_2="Yes",option_1="No")
+        if prompt_answer.get() == "Yes":
+            print("Updating patch save")
+            patch_save = f"{current_file_loc}/data/patch_point.json"
+            shutil.copy(moddb_file,patch_save)
     
     def export_modpack(self):
         export_folder = os.path.normpath(f"{getCurrentPathLoc()}/exports")
@@ -1368,12 +1419,8 @@ class PBLCApp(customtkinter.CTk):
     
         self.thunderstore_mod_frame.destroy()
 
-        scroll_bar_pos = self.thunderstore_mod_frame._scrollbar.get()
-
         self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,fg_color="#191919",width=960,height=450,parent=self)
         self.thunderstore_mod_frame.grid(row=2,column=0)
-
-        self.thunderstore_mod_frame._scrollbar._command("moveto",1.0)
 
     def fetchModData(self):
         print('rah')
