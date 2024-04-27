@@ -320,6 +320,14 @@ def startUpdate(update_data,update_type):
 
     with open(pblc_vers, "w") as pblc_vers_upd:
         pblc_vers_upd.write(json.dumps(current_installed_versions))
+    
+    patch_db = json.loads(request.urlopen(github_repo_patch_instructions).read().decode())
+    cur_patch_ver = version_man.get_patch()
+
+    if update_data['version'] in patch_db:
+        for patch in patch_db[update_data['version']][update_type]:
+            if version.Version(patch) > version.Version(cur_patch_ver):
+                    applyNewPatches(patch_db,update_type,update_data['version'])
 
     ctypes.windll.user32.MessageBoxW(0, "Succsessfully installed update!", "PBLC Update Manager")
     print("Update installed, app will relaunch shortly.")
@@ -419,7 +427,7 @@ def checkForPatches(update_type,cur_version):
                     applyNewPatches(patch_db,update_type,cur_version)
                     break
                 else:
-                    break
+                    return
         return "no_patches"
     else:
         return "no_patches"
