@@ -1,4 +1,4 @@
-import json, os, winreg, vdf, shutil, zipfile, ctypes,gdown, sys, customtkinter, pyglet, subprocess, progressbar, webbrowser, requests
+import json, os, winreg, vdf, shutil, zipfile,gdown, sys, customtkinter, pyglet, subprocess, progressbar, webbrowser, requests
 from PIL import Image,ImageDraw
 from urllib import request
 from urllib.error import HTTPError, URLError
@@ -10,7 +10,7 @@ print("Loading...")
 
 pbar = None
 
-PBLC_Update_Manager_Version = "0.2.5"
+PBLC_Update_Manager_Version = "0.2.6"
 
 github_repo_version_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
 github_repo_patch_instructions = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/patch_instructions.json"
@@ -149,6 +149,7 @@ package_data_path = os.path.normpath(f"{current_file_loc}/data/pkg")
 # download_bepinex | GDCODE
 # url_add_mod | NAMESPACE | NAME | VERSION
 # delete_mod | NAMESPACE | NAME
+# update_vers | VERSION | BETA_VERSION
 
 dev_mode = f"{current_file_loc}/data/pooworms"
 if not os.path.exists(dev_mode):
@@ -376,7 +377,6 @@ def downloadGDPatch(gdlink):
     download_from_google_drive(gdlink,zip_down_loc)
     decompress_zip(zip_down_loc,LC_Path)
     shutil.rmtree(downloads_folder)
-    
 
 def decodePatchCommand(input_command):
     split_commnad = str(input_command).split("|")
@@ -396,6 +396,36 @@ def decodePatchCommand(input_command):
         namespace = split_commnad[1]
         name = split_commnad[2]
         thunderstore_ops.uninstall_package(f"{namespace}-{name}")
+    elif command == "update_vers":
+
+        install_version = open_json(pblc_vers)
+        mod_database_local = get_mod_database()
+
+        if len(split_commnad) == 2:
+            new_version = split_commnad[1]
+
+            install_version["version"] = new_version
+            install_version["beta_version"] = "0.0.0"
+            install_version["beta_goal"] = "0.0.0"
+
+            with open(pblc_vers, "w") as patch_updater:
+                patch_updater.write(json.dumps(install_version))
+            
+        elif len(split_commnad) == 3:
+            new_version = split_commnad[1]
+            new_beta_version = split_commnad[2]
+
+            install_version["version"] = "0.0.0"
+            install_version["beta_version"] = new_beta_version
+            install_version["beta_goal"] = new_version
+
+            with open(pblc_vers, "w") as patch_updater:
+                patch_updater.write(json.dumps(install_version))
+        
+        mod_database_local["patch_version"] = "0.0.0"
+
+        with open(moddb_file, "w") as patch_db_updater:
+                patch_db_updater.write(json.dumps(mod_database_local,indent=4))
 
 def applyNewPatches(patch_db,update_type,cur_version):
     cur_patch_ver = version_man.get_patch()
@@ -423,7 +453,7 @@ def checkForPatches(update_type,cur_version):
 
                 if user_response.get() == "Yes":
                     applyNewPatches(patch_db,update_type,cur_version)
-                    break
+                    return "finished_installing"
                 else:
                     return
         return "no_patches"
@@ -474,7 +504,9 @@ def checkForUpdates(self,update_type):
                 response = CTkMessagebox(title="PBLC Update Manager",message="No new patches found, you are up to date! Would you like to reinstall?",option_2="Reinstall",option_1="No")
                 if response.get() == "Reinstall":
                     startUpdate(github_repo_json[update_type],update_type)
-            self.redrawScrollFrame()
+            elif patches == "finished_installing":
+                self.redrawScrollFrame()
+                response = CTkMessagebox(title="PBLC Update Manager",message="Patches finished installing, you can start the game now.",sound=True)
 
             #print("No updates found.")
             #ctypes.windll.user32.MessageBoxW(0, "No updates available.", "PBLC Update Manager")
@@ -511,7 +543,9 @@ def checkForUpdates(self,update_type):
                 response = CTkMessagebox(title="PBLC Update Manager",message="No new patches found, you are up to date! Would you like to reinstall?",option_2="Reinstall",option_1="No")
                 if response.get() == "Reinstall":
                     startUpdate(github_repo_json[update_type],update_type)
-            self.redrawScrollFrame()
+            elif patches == "finished_installing":
+                self.redrawScrollFrame()
+                response = CTkMessagebox(title="PBLC Update Manager",message="Patches finished installing, you can start the game now.",sound=True)
 
             #print("No updates found.")
             #ctypes.windll.user32.MessageBoxW(0, "No updates available.", "PBLC Update Manager")
@@ -1434,6 +1468,8 @@ class PBLCApp(customtkinter.CTk):
                     subchild.refresh_version(subchild.mod)
     
     def redrawScrollFrame(self):
+
+        print("Redrawing Scroll UI")
     
         self.thunderstore_mod_frame.destroy()
 
