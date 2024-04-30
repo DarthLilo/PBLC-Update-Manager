@@ -10,7 +10,7 @@ print("Loading...")
 
 pbar = None
 
-PBLC_Update_Manager_Version = "0.2.6"
+PBLC_Update_Manager_Version = "0.2.7"
 
 github_repo_version_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
 github_repo_patch_instructions = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/patch_instructions.json"
@@ -1154,6 +1154,8 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
         
             moddb = mod_database_local["installed_mods"][mod]
 
+            print(f"Loading {mod}...")
+
             #self.mod_list_db.append(mod)
 
             #0C0C0C
@@ -1234,7 +1236,6 @@ class PBLCApp(customtkinter.CTk):
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
-        print(f"Welcome to PBLC {PBLC_Update_Manager_Version}, the launcher is still currently in alpha and could be unstable, report any bugs to DarthLilo!")
 
         installed_version_disp, installed_beta_version_disp, json_data_internal_disp, performance_mode_disp = get_current_version()
         installed_version, installed_beta_version, json_data_internal, performance_mode = get_current_version(True)
@@ -1266,6 +1267,8 @@ class PBLCApp(customtkinter.CTk):
             self.tabview.tab(tab).grid_columnconfigure(0, weight=1)
 
         # Home
+
+        print("Loading homepage...")
 
         self.bg_image = customtkinter.CTkImage(Image.open(resource_path("assets/lethal_art.png")),
                                                size=(500, 500))
@@ -1344,6 +1347,8 @@ class PBLCApp(customtkinter.CTk):
 
         #Extras
 
+        print("Loading extras menu...")
+
         self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Extras"), corner_radius=0, fg_color="transparent")
         self.main_frame.grid_columnconfigure(0, weight=1)
         self.main_frame.grid(row=0, column=1)
@@ -1364,7 +1369,10 @@ class PBLCApp(customtkinter.CTk):
         self.generate_patch_changes = customtkinter.CTkButton(self.mods_list_frame,text="Generate Changes",command=self.gen_patch_change)
         self.generate_patch_changes.grid(row=1,column=1,pady=20,padx=10)
 
-        #Development
+        #Mods
+
+        print("Loading mods tab...")
+
         self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Mods"), corner_radius=0, fg_color="transparent")
         self.main_frame.grid_columnconfigure(0, weight=0)
         self.main_frame.grid_columnconfigure(1, weight=0)
@@ -1392,6 +1400,8 @@ class PBLCApp(customtkinter.CTk):
 
         self.check_for_updates_all = customtkinter.CTkButton(self.url_import_frame,text="Scan for Updates",command=self.check_for_updates_all)
         self.check_for_updates_all.grid(row=1,column=3,pady=6,padx=3)
+
+        print(f"Welcome to PBLC {PBLC_Update_Manager_Version}, the launcher is still currently in alpha and could be unstable, report any bugs to DarthLilo!")
     
     # download_bepinex | GDCODE
     # url_add_mod | NAMESPACE | NAME | VERSION
