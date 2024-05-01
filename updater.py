@@ -35,23 +35,21 @@ def migrate_update_files(source,destination):
     print(source,destination)
 
     for file in files:
-        file_path = os.path.join(source,file)
-        destination_path = os.path.join(destination,file)
-        print(file)
+        if os.path.isdir(file):
+            file_path = os.path.join(source,file)
+            for sub_file in os.listdir(file_path):
+                print(f"{file}/{sub_file}")
+                sub_file_path = os.path.join(source,file,sub_file)
+                sub_destination_path = os.path.join(destination,file,sub_file)
+                #print(f"{sub_file_path}\n{sub_destination_path}")
+                shutil.move(sub_file_path,sub_destination_path)
+        else:
+            file_path = os.path.join(source,file)
+            destination_path = os.path.join(destination,file)
+            print(file)
 
-        #if os.path.basename(destination_path) == "_internal":
-        #    for file_internal in os.listdir(file_path):
-        #        f_i_path = f"{source}\\_internal\\{file_internal}"
-        #        print(f_i_path,os.path.join(destination,"_internal",file_internal))
-        #        try:
-        #            shutil.move(f_i_path,os.path.join(destination,"_internal",file_internal))
-        #        except PermissionError:
-        #            pass
-
-        #try:
-        shutil.move(file_path,destination_path)
-        #except:
-        #    pass
+            #print(f"{file_path}\n{destination_path}")
+            shutil.move(file_path,destination_path)
 
 #THIS WILL ACT AS IF ITS IN THE _INTERNAL FOLDER
 temp_download_folder = os.path.join(getCurrentPathLoc(),"download_cache")
