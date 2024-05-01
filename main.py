@@ -43,6 +43,10 @@ pyglet.font.add_file(resource_path('assets/3270-Regular.ttf'))
 
 #STARTUP
 
+if sys.platform.startswith('win'):
+    import ctypes
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(u'DarthLilo.PBLC_Update_Manager') # Arbitrary string
+
 moddb_file = os.path.join(getCurrentPathLoc(),"data","mod_database.json")
 
 def show_progress(block_num, block_size, total_size):
@@ -328,7 +332,7 @@ def startUpdate(update_data,update_type):
                     applyNewPatches(patch_db,update_type,update_data['version'])
     
 
-    update_finished = CTkMessagebox(title="PBLC Update Manager",message="Succsessfully installed update!",sound=True)
+    update_finished = CTkMessagebox(title="PBLC Update Manager",message="Succsessfully installed update!",sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
     print("Update installed, app will relaunch shortly.")
     relaunch_location = os.path.normpath(os.path.join(getCurrentPathLoc(),"PBLC Update Manager.exe"))
     if os.path.exists(relaunch_location):
@@ -449,7 +453,7 @@ def checkForPatches(update_type,cur_version):
     if cur_version in patch_db:
         for patch in patch_db[cur_version][update_type]:
             if version.Version(patch) > version.Version(cur_patch_ver):
-                user_response = CTkMessagebox(title="PBLC Update Manager",message=f"New patches found for PBLC v{cur_version}, would you like to apply them?",option_1="No",option_2="Yes")
+                user_response = CTkMessagebox(title="PBLC Update Manager",message=f"New patches found for PBLC v{cur_version}, would you like to apply them?",option_1="No",option_2="Yes",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
 
                 if user_response.get() == "Yes":
                     applyNewPatches(patch_db,update_type,cur_version)
@@ -478,20 +482,20 @@ def checkForUpdates(self,update_type):
 
         if installed_beta_version > 0:
             print("Beta release detected, prompting switch...")
-            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"It looks like you're using a beta version of our modpack, would you like to switch back to the last stable release?",option_2="Yes",option_1="No",icon="")
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"It looks like you're using a beta version of our modpack, would you like to switch back to the last stable release?",option_2="Yes",option_1="No",icon="",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"It looks like you're using a beta version of our modpack, would you like to switch back to the last stable release?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
                 startUpdate(github_repo_json[update_type],update_type)
 
         elif installed_version < latest_version:
             print("New Update Found.")
-            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"An update is available, would you like to install it?",option_2="Yes",option_1="No",icon="")
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"An update is available, would you like to install it?",option_2="Yes",option_1="No",icon="",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"An update is available, would you like to install it?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
                 startUpdate(github_repo_json[update_type],update_type)
         elif not os.path.exists(bepinex_path) or not os.path.exists(doorstop_path) or not os.path.exists(winhttp_path):
             print("Vanilla or broken version found.")
-            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Vanilla or broken version detected, would you like to install the latest mods?",option_2="Yes",option_1="No",icon="")
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Vanilla or broken version detected, would you like to install the latest mods?",option_2="Yes",option_1="No",icon="",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"Vanilla or broken version detected, would you like to install the latest mods?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
                 startUpdate(github_repo_json[update_type],update_type)
@@ -501,12 +505,12 @@ def checkForUpdates(self,update_type):
             print("No updates found, checking for patches...")
             patches = checkForPatches(update_type,install_version)
             if patches == "no_patches":
-                response = CTkMessagebox(title="PBLC Update Manager",message="No new patches found, you are up to date! Would you like to reinstall?",option_2="Reinstall",option_1="No")
+                response = CTkMessagebox(title="PBLC Update Manager",message="No new patches found, you are up to date! Would you like to reinstall?",option_2="Reinstall",option_1="No",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
                 if response.get() == "Reinstall":
                     startUpdate(github_repo_json[update_type],update_type)
             elif patches == "finished_installing":
                 self.redrawScrollFrame()
-                response = CTkMessagebox(title="PBLC Update Manager",message="Patches finished installing, you can start the game now.",sound=True)
+                response = CTkMessagebox(title="PBLC Update Manager",message="Patches finished installing, you can start the game now.",sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
 
             #print("No updates found.")
             #ctypes.windll.user32.MessageBoxW(0, "No updates available.", "PBLC Update Manager")
@@ -517,20 +521,20 @@ def checkForUpdates(self,update_type):
     else:
         if installed_version > 0:
             print("Stable release found, prompting switch...")
-            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"It looks like you're on the stable release of our modpack, would you like to switch to the latest beta?",option_2="Yes",option_1="No",icon="")
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"It looks like you're on the stable release of our modpack, would you like to switch to the latest beta?",option_2="Yes",option_1="No",icon="",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"It looks like you're on the stable release of our modpack, would you like to switch to the latest beta?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
                 startUpdate(github_repo_json[update_type],update_type)
 
         elif installed_beta_version < latest_version:
             print("New Beta Found.")
-            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"A new beta is available, would you like to install it?",option_2="Yes",option_1="No",icon="")
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"A new beta is available, would you like to install it?",option_2="Yes",option_1="No",icon="",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"A new beta is available, would you like to install it?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
                 startUpdate(github_repo_json[update_type],update_type)
         elif not os.path.exists(bepinex_path) or not os.path.exists(doorstop_path) or not os.path.exists(winhttp_path):
             print("Vanilla or broken version found.")
-            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Vanilla or broken version detected, would you like to install the latest beta mods?",option_2="Yes",option_1="No",icon="")
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Vanilla or broken version detected, would you like to install the latest beta mods?",option_2="Yes",option_1="No",icon="",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"Vanilla or broken version detected, would you like to install the latest beta mods?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
                 startUpdate(github_repo_json[update_type],update_type)
@@ -540,12 +544,12 @@ def checkForUpdates(self,update_type):
             print("No updates found, checking for patches...")
             patches = checkForPatches(update_type,install_version)
             if patches == "no_patches":
-                response = CTkMessagebox(title="PBLC Update Manager",message="No new patches found, you are up to date! Would you like to reinstall?",option_2="Reinstall",option_1="No")
+                response = CTkMessagebox(title="PBLC Update Manager",message="No new patches found, you are up to date! Would you like to reinstall?",option_2="Reinstall",option_1="No",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
                 if response.get() == "Reinstall":
                     startUpdate(github_repo_json[update_type],update_type)
             elif patches == "finished_installing":
                 self.redrawScrollFrame()
-                response = CTkMessagebox(title="PBLC Update Manager",message="Patches finished installing, you can start the game now.",sound=True)
+                response = CTkMessagebox(title="PBLC Update Manager",message="Patches finished installing, you can start the game now.",sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
 
             #print("No updates found.")
             #ctypes.windll.user32.MessageBoxW(0, "No updates available.", "PBLC Update Manager")
@@ -559,11 +563,11 @@ def checkForUpdatesmanager():
         print("Manager update found, prompting user.")
         
         #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"A new manager version has been found, would you like to update?","PBLC Update Manager",4)
-        prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"A new manager version has been found, would you like to update?",option_2="Yes",option_1="No",icon="")
+        prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"A new manager version has been found, would you like to update?",option_2="Yes",option_1="No",icon="",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
         if prompt_answer.get() == "Yes":
             updateManager(github_api_manager)
     else:
-        prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"No new updates found",icon="")
+        prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"No new updates found",icon="",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
         #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"No new updates found.","PBLC Update Manager",0)
 
 def performanceModSwitchEvent(toggle):
@@ -786,7 +790,7 @@ class thunderstore():
         with open(moddb_file, "w") as update_checker_all:
             update_checker_all.write(json.dumps(mod_database_local,indent=4))
         
-        finish_message = CTkMessagebox(title="PBLC Update Manager",message=f"Finished checking for updates, {mods_updating} mod(s) have updates available!",option_1="Ok",sound=True)
+        finish_message = CTkMessagebox(title="PBLC Update Manager",message=f"Finished checking for updates, {mods_updating} mod(s) have updates available!",option_1="Ok",sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
         print(f"\n\nFinished checking for updates, {mods_updating} mod(s) have updates available!")
 
 
@@ -806,7 +810,7 @@ class thunderstore_ops():
 
             print(f"Updates for {name} found")
 
-            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Updates found for {name}, do you want to update?",option_2="Update",option_3="Specific Version",option_1="Cancel",icon="question",sound=True)
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Updates found for {name}, do you want to update?",option_2="Update",option_3="Specific Version",option_1="Cancel",icon="question",sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
 
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"oopsies there are updates 😊😊😊","PBLC Update Manager",4)
             
@@ -819,7 +823,7 @@ class thunderstore_ops():
         else:
             print(f"Running latest version of {name}")
 
-            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"No new updates for {name}, would you like to reinstall it or downgrade?",option_3="Downgrade",option_2="Yes",option_1="No",icon="question",sound=True)
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"No new updates for {name}, would you like to reinstall it or downgrade?",option_3="Downgrade",option_2="Yes",option_1="No",icon="question",sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
 
             if prompt_answer.get() == "Yes":
                 thunderstore_ops.download_package(namespace,name,package_json['latest']['version_number'],dependencies)
@@ -1047,33 +1051,6 @@ class thunderstore_ops():
 
     #def delete_package():
 
-
-#ModsListClass
-class ModsListScrollFrame(customtkinter.CTkScrollableFrame):
-    def __init__(self,master,title,values,fg_color,bg_color,corner_radius,active_mods):
-        super().__init__(master,label_text=title)
-        self.grid_columnconfigure(0,weight=1)
-        self.values = values
-        self.checkboxes = []
-        self.configure(fg_color=fg_color,bg_color=bg_color,corner_radius=corner_radius,height=270,width=452)
-
-        for i, value in enumerate(self.values):
-            checkbox = customtkinter.CTkCheckBox(self,text=value)
-            checkbox.grid(row=i,column=0,padx=10,pady=(10,0),sticky="w")
-            try:
-                if active_mods[value]:
-                    checkbox.select()
-            except KeyError:
-                pass
-            self.checkboxes.append(checkbox)
-    
-    def get(self):
-        checked_checkboxes = []
-        for checkbox in self.checkboxes:
-            if checkbox.get() == 1:
-                checked_checkboxes.append(checkbox.cget("text"))
-        return checked_checkboxes
-
 class thunderstoreModVersionLabel(customtkinter.CTkLabel):
     def __init__(self,master,mod):
         customtkinter.CTkLabel.__init__(self,master,font=('IBM 3270',16))
@@ -1127,8 +1104,8 @@ class thunderstoreModIcon(customtkinter.CTkLabel):
         self.load_image()
 
 class thunderstoreModToggle(customtkinter.CTkSwitch):
-    def __init__(self,master,mod,fg_color):
-        customtkinter.CTkSwitch.__init__(self,master,fg_color=fg_color,switch_width=60,switch_height=30,onvalue="true",offvalue="false",text="",command=lambda mod_in=mod: self.toggle_mod(mod_in))
+    def __init__(self,master,mod,fg_color,progress_color):
+        customtkinter.CTkSwitch.__init__(self,master,fg_color=fg_color,progress_color=progress_color,switch_width=60,switch_height=30,onvalue="true",offvalue="false",text="",command=lambda mod_in=mod: self.toggle_mod(mod_in))
         self.mod = mod
         self.load_toggle()
     
@@ -1153,9 +1130,6 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
         super().__init__(master,label_text=scroll_text,label_anchor="w",label_font=('IBM 3270',16),fg_color=fg_color,width=width,height=height,corner_radius=5)
         self.grid_columnconfigure(0,weight=1)
         self.parent = parent
-        self.button_color = "#3F3F3F"
-        self.button_hover = "#2D2D2D"
-        self.button_disabled = "#1f1f1f"
         self.draw_mods_list()
     
     def draw_mods_list(self):
@@ -1169,12 +1143,8 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
             moddb = mod_database_local["installed_mods"][mod]
 
             print(f"Loading {mod}...")
-
-            #self.mod_list_db.append(mod)
-
-            #0C0C0C
     
-            self.mod_entry_frame = customtkinter.CTkFrame(self,fg_color="#0C0C0C",corner_radius=5)
+            self.mod_entry_frame = customtkinter.CTkFrame(self,fg_color=PBLC_Colors.frame("darker"),corner_radius=5)
             self.mod_entry_frame.grid_columnconfigure(0, weight=0,minsize=105)
             self.mod_entry_frame.grid_columnconfigure(1, weight=1,minsize=20)
             self.mod_entry_frame.grid_columnconfigure(2, weight=0,minsize=185)
@@ -1196,28 +1166,32 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
             #self.mod_version = customtkinter.CTkLabel(self.mod_entry_frame,text=moddb['version'],font=('IBM 3270',16))
             self.mod_version.grid(row=i,column=2,pady=2,sticky="w")
 
-            self.mod_toggle_switch = thunderstoreModToggle(self.mod_entry_frame,mod,self.button_color)
+            self.mod_toggle_switch = thunderstoreModToggle(self.mod_entry_frame,mod,PBLC_Colors.button("disabled"),PBLC_Colors.button("main"))
             self.mod_toggle_switch.grid(row=i,column=3,pady=2,padx=2,sticky="e")
             if not dev_mode and moddb['version'] == "devmode":
-                self.mod_toggle_switch.configure(state="disabled",fg_color=self.button_disabled)
+                self.mod_toggle_switch.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"))
+            self.mod_toggle_tooltip = CTkToolTip(self.mod_toggle_switch,message=f"Toggle the current mod.",delay=0.3)
     
             self.website_icon = customtkinter.CTkImage(Image.open('assets/website.png'),size=(30,30))
-            self.website_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.website_icon,fg_color=self.button_color,hover_color=self.button_hover,command= lambda link=moddb['package_url']: self.openThunderstorePage(link))
+            self.website_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.website_icon,fg_color=PBLC_Colors.button("main_dark"),hover_color=PBLC_Colors.button("hover_dark"),command= lambda link=moddb['package_url']: self.openThunderstorePage(link))
             self.website_icon_lab.grid(row=i,column=4,pady=2,padx=2,sticky="e")
-            if not dev_mode and moddb['version'] == "devmode":
-                self.website_icon_lab.configure(state="disabled",fg_color=self.button_disabled)
+            if moddb['version'] == "devmode":
+                self.website_icon_lab.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"))
+            self.mod_website_tooltip = CTkToolTip(self.website_icon_lab,message=f"Open this mod's thunderstore page.",delay=0.3)
     
             self.refresh_icon = customtkinter.CTkImage(Image.open('assets/refresh.png'),size=(30,30))
-            self.refresh_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.refresh_icon,fg_color=self.button_color,hover_color=self.button_hover,command= lambda url=moddb['package_url'], mod_in = mod, version_grid=self.mod_version, icon_grid=self.mod_icon_lab: self.refreshThunderstorePackage(url,mod_in,version_grid,icon_grid))
+            self.refresh_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.refresh_icon,fg_color=PBLC_Colors.button("main_dark"),hover_color=PBLC_Colors.button("hover_dark"),command= lambda url=moddb['package_url'], mod_in = mod, version_grid=self.mod_version, icon_grid=self.mod_icon_lab: self.refreshThunderstorePackage(url,mod_in,version_grid,icon_grid))
             self.refresh_icon_lab.grid(row=i,column=5,pady=2,padx=2,sticky="e")
-            if not dev_mode and moddb['version'] == "devmode":
-                self.refresh_icon_lab.configure(state="disabled",fg_color=self.button_disabled)
+            if moddb['version'] == "devmode":
+                self.refresh_icon_lab.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"))
+            self.mod_refresh_tooltip = CTkToolTip(self.refresh_icon_lab,message=f"Check this mod for updates.",delay=0.3)
     
             self.delete_icon = customtkinter.CTkImage(Image.open('assets/trash_can.png'),size=(30,30))
-            self.delete_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.delete_icon,fg_color=self.button_color,hover_color=self.button_hover,command= lambda mod_in=mod, frame = self.mod_entry_frame: self.uninstallThunderstorePackage(mod_in,frame))
+            self.delete_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.delete_icon,fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command= lambda mod_in=mod, frame = self.mod_entry_frame: self.uninstallThunderstorePackage(mod_in,frame))
             self.delete_icon_lab.grid(row=i,column=6,pady=2,padx=2,sticky="e")
-            if not dev_mode and moddb['version'] == "devmode":
-                self.delete_icon_lab.configure(state="disabled",fg_color=self.button_disabled)
+            if moddb['version'] == "devmode":
+                self.delete_icon_lab.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"))
+            self.mod_delete_tooltip = CTkToolTip(self.delete_icon_lab,message=f"Uninstall this mod.",delay=0.3)
             
             i+=1
     
@@ -1237,6 +1211,37 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
         thunderstore_ops.check_for_updates(url,mod)
         version_grid.refresh_version(mod)
         icon_grid.refresh_icon()
+
+class PBLC_Colors():
+    def button(selection):
+        options = {
+            "main" : "#C44438",
+            "disabled" : "#4C221E",
+            "hover" : "#89271E",
+            "main_dark" : "#3F3F3F",
+            "hover_dark" : "#2D2D2D",
+            "disabled_dark" : "#1f1f1f",
+            "warning" : "#fb4130"
+        }
+
+        if not selection in options:
+            return PBLC_Colors.invalid()
+
+        return options[selection]
+    
+    def frame(selection):
+        options = {
+            "main" : "#191919",
+            "darker": "#0C0C0C"
+        }
+
+        if not selection in options:
+            return PBLC_Colors.invalid()
+
+        return options[selection]
+
+    def invalid():
+        return "#ff00ea"
 
 #UI
 class PBLCApp(customtkinter.CTk):
@@ -1263,16 +1268,12 @@ class PBLCApp(customtkinter.CTk):
         else:
             install_latest_stable_text = "Install Stable Mods"
             install_latest_beta_text = "Install Beta Mods"
-            
-        self.button_color = "#C44438"
-        self.button_color_disabled = "#4C221E"
-        self.button_hover_color = "#89271E"
 
         
 
         #frame
 
-        self.tabview = customtkinter.CTkTabview(self,segmented_button_selected_color=self.button_color,segmented_button_selected_hover_color=self.button_hover_color)
+        self.tabview = customtkinter.CTkTabview(self,segmented_button_selected_color=PBLC_Colors.button("main"),segmented_button_selected_hover_color=PBLC_Colors.button("hover"))
         self.tabview.grid(row=0, column=1,sticky='nsew')
 
         tabs = ["Home","Mods","Extras"]
@@ -1300,8 +1301,9 @@ class PBLCApp(customtkinter.CTk):
 
         
 
-        self.lethal_install_border = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color="#191919")
+        self.lethal_install_border = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color=PBLC_Colors.frame("main"))
         self.lethal_install_border.grid_columnconfigure(0, weight=1)
+        self.lethal_install_border.grid_columnconfigure(1, weight=1)
         self.lethal_install_border.grid(row=1, column=0)
 
         self.lci_label = customtkinter.CTkLabel(self.lethal_install_border,text="Lethal Company Install Location:",font=('IBM 3270',26))
@@ -1310,22 +1312,23 @@ class PBLCApp(customtkinter.CTk):
         self.lethal_install_path = customtkinter.CTkLabel(self.lethal_install_border,text=LC_Path,font=('Segoe UI',13))
         self.lethal_install_path.grid(row=1, column=0,padx=15,pady=10)
 
-        self.actions_border = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color="#191919",bg_color="transparent",corner_radius=5)
+        self.actions_border = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color=PBLC_Colors.frame("main"),bg_color="transparent",corner_radius=5)
         self.actions_border.grid_columnconfigure(0, weight=1)
         self.actions_border.grid(row=2, column=0,pady=10)
 
-        self.update_button_main = customtkinter.CTkButton(self.actions_border, text=install_latest_stable_text,font=('IBM 3270',16),fg_color=self.button_color,hover_color=self.button_hover_color,command=self.check_for_updates_main)
+        self.download_button = customtkinter.CTkImage(Image.open('assets/download.png'),size=(15,15))
+        self.update_button_main = customtkinter.CTkButton(self.actions_border,image=self.download_button, text=install_latest_stable_text,font=('IBM 3270',16),fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.check_for_updates_main)
         self.update_button_main.grid(row=0, column=0, padx=10, pady=20)
 
-        self.update_button_main_2 = customtkinter.CTkButton(self.actions_border, text=install_latest_beta_text,font=('IBM 3270',16),fg_color=self.button_color,hover_color=self.button_hover_color,command=self.check_for_updates_beta)
+        self.update_button_main_2 = customtkinter.CTkButton(self.actions_border,image=self.download_button, text=install_latest_beta_text,font=('IBM 3270',16),fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.check_for_updates_beta)
         self.update_button_main_2.grid(row=0, column=1, padx=10, pady=20)
 
-        self.performance_frame = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color="#191919",bg_color="transparent",corner_radius=5)
+        self.performance_frame = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color=PBLC_Colors.frame("main"),bg_color="transparent",corner_radius=5)
         self.performance_frame.grid_columnconfigure(0, weight=1)
         self.performance_frame.grid(row=3, column=0)
 
         self.performance_mode_var = customtkinter.StringVar(value=performance_mode)
-        self.performance_switch = customtkinter.CTkSwitch(self.performance_frame, text="Low Quality Mode",variable=self.performance_mode_var, onvalue="on", offvalue="off",fg_color=self.button_color_disabled,progress_color=self.button_color, command=self.performance_switch_event)
+        self.performance_switch = customtkinter.CTkSwitch(self.performance_frame, text="Low Quality Mode",variable=self.performance_mode_var, onvalue="on", offvalue="off",fg_color=PBLC_Colors.button("disabled"),progress_color=PBLC_Colors.button("main"), command=self.performance_switch_event)
         self.performance_switch.grid(row=0, column=0, padx=10, pady=20)
         #self.performance_switch.configure(state="disabled")
 
@@ -1336,11 +1339,12 @@ class PBLCApp(customtkinter.CTk):
         newEmptyRow(self,2,10)
         newEmptyRow(self,3,30)
 
-        self.update_manager = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color="#191919")
+        self.update_manager = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color=PBLC_Colors.frame("main"))
         self.update_manager.grid_columnconfigure(0, weight=1)
         self.update_manager.grid(row=4, column=0)
 
-        self.update_self_button = customtkinter.CTkButton(self.update_manager, text="Check for new builds",font=('IBM 3270',16),fg_color=self.button_color,hover_color=self.button_hover_color,command=self.check_for_updates_manager)
+        self.new_builds_img = customtkinter.CTkImage(Image.open('assets/arrow_right_up.png'),size=(15,15))
+        self.update_self_button = customtkinter.CTkButton(self.update_manager,image=self.new_builds_img, text="Check for new builds",font=('IBM 3270',16),fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.check_for_updates_manager)
         self.update_self_button.grid(row=0, column=0, padx=20, pady=20)
 
         
@@ -1367,23 +1371,28 @@ class PBLCApp(customtkinter.CTk):
         self.main_frame.grid_columnconfigure(0, weight=1)
         self.main_frame.grid(row=0, column=1)
 
-        self.mods_list_frame = customtkinter.CTkFrame(self.main_frame,fg_color="#191919",bg_color="transparent",corner_radius=5)
+        self.mods_list_frame = customtkinter.CTkFrame(self.main_frame,fg_color=PBLC_Colors.frame("main"),bg_color="transparent",corner_radius=5)
         self.mods_list_frame.grid_columnconfigure(0, weight=1)
         self.mods_list_frame.grid(row=2, column=0)
 
         self.pblc_pack_name = customtkinter.CTkEntry(self.mods_list_frame,placeholder_text="PBLC Pack Name",width=298)
         self.pblc_pack_name.grid(row=0,column=0,padx=10)
 
-        self.pblc_pack_trigger = customtkinter.CTkButton(self.mods_list_frame,text="Export Modpack",command=self.export_modpack)
+
+        self.archive_img = customtkinter.CTkImage(Image.open('assets/archive.png'),size=(15,15))
+        self.pblc_pack_trigger = customtkinter.CTkButton(self.mods_list_frame,image=self.archive_img,text="Export Modpack",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.export_modpack)
         self.pblc_pack_trigger.grid(row=0,column=1,pady=20,padx=10)
 
-        self.create_patch_save = customtkinter.CTkButton(self.mods_list_frame,text="Create Patch Save",command=self.create_patch_point)
+        self.patch_save_img = customtkinter.CTkImage(Image.open('assets/save.png'),size=(15,15))
+        self.create_patch_save = customtkinter.CTkButton(self.mods_list_frame,image=self.patch_save_img,text="Create Patch Save",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.create_patch_point)
         self.create_patch_save.grid(row=1,column=0,pady=20,padx=10)
 
-        self.generate_patch_changes = customtkinter.CTkButton(self.mods_list_frame,text="Generate Changes",command=self.gen_patch_change)
+        self.checklist_img = customtkinter.CTkImage(Image.open('assets/checklist.png'),size=(15,15))
+        self.generate_patch_changes = customtkinter.CTkButton(self.mods_list_frame,image=self.checklist_img,text="Generate Changes",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.gen_patch_change)
         self.generate_patch_changes.grid(row=1,column=1,pady=20,padx=10)
 
-        self.uninstall_mods = customtkinter.CTkButton(self.mods_list_frame,text="Uninstall Mods",command=self.uninstall_everything)
+        self.uninstall_img = customtkinter.CTkImage(Image.open('assets/uninstall.png'),size=(15,15))
+        self.uninstall_mods = customtkinter.CTkButton(self.mods_list_frame,image=self.uninstall_img,text="Uninstall Mods",fg_color=PBLC_Colors.button("warning"),hover_color=PBLC_Colors.button("hover"),command=self.uninstall_everything)
         self.uninstall_mods.grid(row=2,column=0,columnspan=2,pady=20,padx=20)
 
         #Mods
@@ -1398,7 +1407,7 @@ class PBLCApp(customtkinter.CTk):
         #self.fetch_mods = customtkinter.CTkButton(self.main_frame, text="Fetch Mods", command=self.fetchModData)
         #self.fetch_mods.grid(row=3, column=0)
 
-        self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,fg_color="#191919",width=960,height=450,parent=self)
+        self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,fg_color=PBLC_Colors.frame("main"),width=960,height=450,parent=self)
         self.thunderstore_mod_frame.grid(row=2,column=0,sticky="nsew")
 
         self.url_import_frame = customtkinter.CTkFrame(self.main_frame)
@@ -1412,10 +1421,10 @@ class PBLCApp(customtkinter.CTk):
         self.import_url_vers_box.grid(row=1,column=1,padx=3)
         self.import_url_vers_box.bind("<Return>",lambda mod_frame=self.thunderstore_mod_frame: self.import_thunderstore_url(mod_frame))
 
-        self.import_from_url = customtkinter.CTkButton(self.url_import_frame,text="Import",command=lambda mod_frame = self.thunderstore_mod_frame: self.import_thunderstore_url(mod_frame))
+        self.import_from_url = customtkinter.CTkButton(self.url_import_frame,text="Import",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=lambda mod_frame = self.thunderstore_mod_frame: self.import_thunderstore_url(mod_frame))
         self.import_from_url.grid(row=1,column=2,pady=6,padx=3)
 
-        self.check_for_updates_all = customtkinter.CTkButton(self.url_import_frame,text="Scan for Updates",command=self.check_for_updates_all)
+        self.check_for_updates_all = customtkinter.CTkButton(self.url_import_frame,text="Scan for Updates",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.check_for_updates_all)
         self.check_for_updates_all.grid(row=1,column=3,pady=6,padx=3)
 
         print(f"Welcome to PBLC {PBLC_Update_Manager_Version}, the launcher is still currently in alpha and could be unstable, report any bugs to DarthLilo!")
@@ -1463,7 +1472,7 @@ class PBLCApp(customtkinter.CTk):
 
 
     def create_patch_point(self):
-        prompt_answer = CTkMessagebox(title="PBLC Update Manager",message="Are you sure you would like to create a save point? This may override existing data!",option_2="Yes",option_1="No")
+        prompt_answer = CTkMessagebox(title="PBLC Update Manager",message="Are you sure you would like to create a save point? This may override existing data!",option_2="Yes",option_1="No",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
         if prompt_answer.get() == "Yes":
             print("Updating patch save")
             patch_save = f"{current_file_loc}/data/patch_point.json"
@@ -1505,7 +1514,7 @@ class PBLCApp(customtkinter.CTk):
     
         self.thunderstore_mod_frame.destroy()
 
-        self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,fg_color="#191919",width=960,height=450,parent=self)
+        self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,fg_color=PBLC_Colors.frame("main"),width=960,height=450,parent=self)
         self.thunderstore_mod_frame.grid(row=2,column=0)
 
     def fetchModData(self):
