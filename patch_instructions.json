@@ -4,6 +4,27 @@
             "0.0.1": [
                 "delete_mod|mattymatty|LobbyControl",
                 "url_add_mod|anormaltwig|LateCompany|1.0.13"
+            ],
+            "0.0.2": [
+                "url_add_mod|sfDesat|Celestial_Tint|1.4.2",
+                "url_add_mod|Sigurd|CSync|5.0.0",
+                "url_add_mod|fumiko|CullFactory|1.1.1",
+                "url_add_mod|ShaosilGaming|GeneralImprovements|1.2.4",
+                "url_add_mod|mrov|MrovLib|0.0.6",
+                "url_add_mod|RosiePies|Sector0_Interior|1.1.4",
+                "url_add_mod|veri|ShipWindows|2.0.6",
+                "url_add_mod|ButteryStancakes|SnowyHolidayDropship|1.0.2",
+                "url_add_mod|SylviBlossom|TerminalConflictFix|1.2.2",
+                "url_add_mod|mrov|TerminalFormatter|0.2.6",
+                "url_add_mod|XuXiaolan|TheGiantSpecimens|2.1.1",
+                "url_add_mod|FlipMods|TooManyEmotes|2.1.14",
+                "url_add_mod|sunnobunno|YippeeMod|1.2.4",
+                "delete_mod|La_chips|AutoCompanyBuilding",
+                "delete_mod|taffyko|BetterSprayPaint",
+                "delete_mod|Chdata|NecoArcHoarderBugMod",
+                "delete_mod|Tolian|Tolian_Moons",
+                "download_bepinex|1fhcgcPc1qdpSFZgBLt3QuweJx0UZQPjD",
+                "update_vers|9.1.0"
             ]
         },
         "beta" : {}
