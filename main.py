@@ -10,7 +10,7 @@ print("Loading...")
 
 pbar = None
 
-PBLC_Update_Manager_Version = "0.2.7"
+PBLC_Update_Manager_Version = "0.2.8"
 
 github_repo_version_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
 github_repo_patch_instructions = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/patch_instructions.json"
@@ -589,6 +589,20 @@ def requestWebData(url):
     }
     req = request.Request(url,headers=headers)
     return req
+
+def uninstallMods():
+    if os.path.exists(bepinex_path):
+        shutil.rmtree(bepinex_path)
+    if os.path.exists(winhttp_path):
+        os.remove(winhttp_path)
+    if os.path.exists(doorstop_path):
+        os.remove(doorstop_path)
+
+    with open(moddb_file, "w") as moddb_reset:
+        moddb_reset.write(json.dumps({"installed_mods":{},"patch_version":"0.0.0"},indent=4))
+    
+    with open(pblc_vers, "w") as pblc_reset:
+        pblc_reset.write(json.dumps({"version": "0.0.0", "beta_version": "0.0.0", "beta_goal": "0.0.0", "performance_mode": "off"}))
 
 class thunderstore():
     def package_from_url(url):
@@ -1230,8 +1244,8 @@ class PBLCApp(customtkinter.CTk):
         super().__init__()
         self.geometry("1000x580")
         self.title("PBLC Update Manager")
-        #self.minsize(1000,580)
-        self.resizable(False,False)
+        self.minsize(1000,580)
+        #self.resizable(False,False)
         self.iconbitmap(resource_path("assets/pill_bottle.ico"))
 
         self.grid_rowconfigure(0, weight=1)
@@ -1273,12 +1287,12 @@ class PBLCApp(customtkinter.CTk):
         self.bg_image = customtkinter.CTkImage(Image.open(resource_path("assets/lethal_art.png")),
                                                size=(500, 500))
         self.bg_image_label = customtkinter.CTkLabel(self.tabview.tab("Home"), image=self.bg_image,text="")
-        self.bg_image_label.grid(row=0, column=0)
+        self.bg_image_label.grid(row=0, column=0,sticky="w",padx=(5,0))
 
         self.bg_image = customtkinter.CTkImage(Image.open(resource_path("assets/lethal_art.png")),
                                                size=(500, 500))
         self.bg_image_label = customtkinter.CTkLabel(self.tabview.tab("Extras"), image=self.bg_image,text="")
-        self.bg_image_label.grid(row=0, column=0)
+        self.bg_image_label.grid(row=0, column=0,sticky="w",padx=(5,0))
 
         self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Home"), corner_radius=0, fg_color="transparent")
         self.main_frame.grid_columnconfigure(0, weight=1)
@@ -1339,10 +1353,10 @@ class PBLCApp(customtkinter.CTk):
             display_text = f"Vanilla Lethal Company"
 
         newEmptyRow(self,5,5)
-        self.update_manager = customtkinter.CTkLabel(self.main_frame,text=f"Version: {PBLC_Update_Manager_Version}\n\nDeveloped by DarthLilo  |  Testing by ExoticBuilder",font=('IBM 3270',16))
-        self.update_manager.grid(row=6, column=0)
-        self.update_manager = customtkinter.CTkLabel(self.main_frame,text=f"\n\nCurrently Running: {display_text}",font=('IBM 3270',15))
-        self.update_manager.grid(row=8, column=0)
+        self.update_manager_credits = customtkinter.CTkLabel(self.main_frame,text=f"Version: {PBLC_Update_Manager_Version}\n\nDeveloped by DarthLilo  |  Testing by ExoticBuilder",font=('IBM 3270',16))
+        self.update_manager_credits.grid(row=6, column=0)
+        self.update_manager_version = customtkinter.CTkLabel(self.main_frame,text=f"\n\nCurrently Running: {display_text}",font=('IBM 3270',15))
+        self.update_manager_version.grid(row=8, column=0)
 
 
         #Extras
@@ -1369,6 +1383,9 @@ class PBLCApp(customtkinter.CTk):
         self.generate_patch_changes = customtkinter.CTkButton(self.mods_list_frame,text="Generate Changes",command=self.gen_patch_change)
         self.generate_patch_changes.grid(row=1,column=1,pady=20,padx=10)
 
+        self.uninstall_mods = customtkinter.CTkButton(self.mods_list_frame,text="Uninstall Mods",command=self.uninstall_everything)
+        self.uninstall_mods.grid(row=2,column=0,columnspan=2,pady=20,padx=20)
+
         #Mods
 
         print("Loading mods tab...")
@@ -1376,13 +1393,13 @@ class PBLCApp(customtkinter.CTk):
         self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Mods"), corner_radius=0, fg_color="transparent")
         self.main_frame.grid_columnconfigure(0, weight=0)
         self.main_frame.grid_columnconfigure(1, weight=0)
-        self.main_frame.grid(row=0, column=1)
+        self.main_frame.grid(row=0, column=0)
 
         #self.fetch_mods = customtkinter.CTkButton(self.main_frame, text="Fetch Mods", command=self.fetchModData)
         #self.fetch_mods.grid(row=3, column=0)
 
         self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,fg_color="#191919",width=960,height=450,parent=self)
-        self.thunderstore_mod_frame.grid(row=2,column=0)
+        self.thunderstore_mod_frame.grid(row=2,column=0,sticky="nsew")
 
         self.url_import_frame = customtkinter.CTkFrame(self.main_frame)
         self.url_import_frame.grid(row=3,column=0)
@@ -1406,6 +1423,11 @@ class PBLCApp(customtkinter.CTk):
     # download_bepinex | GDCODE
     # url_add_mod | NAMESPACE | NAME | VERSION
     # delete_mod | NAMESPACE | NAME
+
+    def uninstall_everything(self):
+        uninstallMods()
+        self.redrawScrollFrame()
+        self.update_manager_version.configure(text=f"\n\nCurrently Running: Vanilla Lethal Company")
 
     def gen_patch_change(self):
         patch_save = f"{current_file_loc}/data/patch_point.json"
