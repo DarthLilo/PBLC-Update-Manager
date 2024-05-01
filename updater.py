@@ -18,13 +18,19 @@ def getCurrentPathLoc():
 
 def clean_old_version():
     current_location = getCurrentPathLoc()
-    delete_list = ["assets/3270-Regular.ttf","assets/lethal_art.png","PBLC Update Manager.exe","assets/pill_bottle.ico","assets/missing_icon.png","assets/refresh.png","assets/trash_can.png","assets/website.png","python3.dll","python310.dll"]
+    delete_list = ["assets","PBLC Update Manager.exe","python3.dll","python310.dll"]
     for item in delete_list:
-        try:
-            os.remove(os.path.join(current_location,item))
-            print(f"Removed {item}")
-        except:
-            pass
+        if os.path.isdir(os.path.join(current_location,item)):
+            try:
+                shutil.rmtree(os.path.join(current_location,item))
+            except:
+                pass
+        else:
+            try:
+                os.remove(os.path.join(current_location,item))
+                print(f"Removed {item}")
+            except:
+                pass
     shutil.rmtree(os.path.join(current_location,"lib"))
     print("Cleaned library files")
 
