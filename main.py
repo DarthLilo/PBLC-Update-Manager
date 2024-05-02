@@ -153,7 +153,7 @@ package_data_path = os.path.normpath(f"{current_file_loc}/data/pkg")
 # download_bepinex | GDCODE
 # url_add_mod | NAMESPACE | NAME | VERSION
 # delete_mod | NAMESPACE | NAME
-# update_vers | VERSION | BETA_VERSION
+# update_vers | PATCH_VERSION | VERSION
 
 dev_mode = f"{current_file_loc}/data/pooworms"
 if not os.path.exists(dev_mode):
@@ -220,6 +220,63 @@ def get_current_version(int_only = False):
     return installed_version,installed_beta_version, cur_vers_json, performance_mode
     
 #checking for updates
+
+class PBLC_Icons():
+    def download(pathOnly=False):
+        if pathOnly:
+            return 'assets/download.png'
+        return Image.open('assets/download.png')
+    
+    def arrow_up_right(pathOnly=False):
+        if pathOnly:
+            return 'assets/arrow_right_up.png'
+        return Image.open('assets/arrow_right_up.png')
+    
+    def archive(pathOnly=False):
+        if pathOnly:
+            return 'assets/archive.png'
+        return Image.open('assets/archive.png')
+    
+    def checklist(pathOnly=False):
+        if pathOnly:
+            return 'assets/checklist.png'
+        return Image.open('assets/checklist.png')
+    
+    def refresh(pathOnly=False):
+        if pathOnly:
+            return 'assets/refresh.png'
+        return Image.open('assets/refresh.png')
+    
+    def save(pathOnly=False):
+        if pathOnly:
+            return 'assets/save.png'
+        return Image.open('assets/save.png')
+    
+    def trash_can(pathOnly=False):
+        if pathOnly:
+            return 'assets/trash_can.png'
+        return Image.open('assets/trash_can.png')
+    
+    def uninstall(pathOnly=False):
+        if pathOnly:
+            return 'assets/uninstall.png'
+        return Image.open('assets/uninstall.png')
+    
+    def website(pathOnly=False):
+        if pathOnly:
+            return 'assets/website.png'
+        return Image.open('assets/website.png')
+    
+    def checkmark(pathOnly=False):
+        if pathOnly:
+            return 'assets/checkmark.png'
+        return Image.open('assets/checkmark.png')
+    
+    def info(pathOnly=False):
+        if pathOnly:
+            return 'assets/info.png'
+        return Image.open('assets/info.png')
+    
 
 class version_man():
 
@@ -323,7 +380,7 @@ def startUpdate(update_data,update_type):
     with open(pblc_vers, "w") as pblc_vers_upd:
         pblc_vers_upd.write(json.dumps(current_installed_versions))
     
-    patch_db = json.loads(request.urlopen(github_repo_patch_instructions).read().decode())
+    patch_db = open_json("patch_instructions.json")#json.loads(request.urlopen(github_repo_patch_instructions).read().decode())
     cur_patch_ver = version_man.get_patch()
 
     if update_data['version'] in patch_db:
@@ -404,29 +461,26 @@ def decodePatchCommand(input_command):
 
         install_version = open_json(pblc_vers)
         mod_database_local = get_mod_database()
+        new_patch_head = split_commnad[1]
 
         if len(split_commnad) == 2:
-            new_version = split_commnad[1]
+            print("Updating patch version")
+            
+            mod_database_local["patch_version"] = new_patch_head
+
+        elif len(split_commnad) == 3:
+            print("Updating patch and main version")
+
+            
+            new_version = split_commnad[2]
 
             install_version["version"] = new_version
             install_version["beta_version"] = "0.0.0"
             install_version["beta_goal"] = "0.0.0"
+            mod_database_local["patch_version"] = new_patch_head
 
             with open(pblc_vers, "w") as patch_updater:
                 patch_updater.write(json.dumps(install_version))
-            
-        elif len(split_commnad) == 3:
-            new_version = split_commnad[1]
-            new_beta_version = split_commnad[2]
-
-            install_version["version"] = "0.0.0"
-            install_version["beta_version"] = new_beta_version
-            install_version["beta_goal"] = new_version
-
-            with open(pblc_vers, "w") as patch_updater:
-                patch_updater.write(json.dumps(install_version))
-        
-        mod_database_local["patch_version"] = "0.0.0"
 
         with open(moddb_file, "w") as patch_db_updater:
                 patch_db_updater.write(json.dumps(mod_database_local,indent=4))
@@ -439,78 +493,121 @@ def applyNewPatches(patch_db,update_type,cur_version):
             for command in patch_db[cur_version][update_type][patch]:
                 decodePatchCommand(command)
             cur_patch_ver = patch
+
     
-    mod_database_local = get_mod_database()
-    mod_database_local['patch_version'] = patch
     
-    with open(moddb_file, "w") as patch_installer:
-        patch_installer.write(json.dumps(mod_database_local,indent=4))
+    new_version = version_man.install_version(update_type)
+    cur_patch = version_man.get_patch()
+
+    patch_list = [x for x in patch_db[new_version][update_type]]
+    final_patch = patch_list[len(patch_list)-1]
+
+    if cur_patch == final_patch:
+        pass
+    else:
+        applyNewPatches(patch_db,update_type,new_version)
+    
+    
+
+    #mod_database_local = get_mod_database()
+    #mod_database_local['patch_version'] = patch
+    #
+    #with open(moddb_file, "w") as patch_installer:
+    #    patch_installer.write(json.dumps(mod_database_local,indent=4))
 
 def checkForPatches(update_type,cur_version):
-    patch_db = json.loads(request.urlopen(github_repo_patch_instructions).read().decode())
+    cur_version = str(cur_version)
+    patch_db = open_json("patch_instructions.json")#json.loads(request.urlopen(github_repo_patch_instructions).read().decode())
     cur_patch_ver = version_man.get_patch()
 
     if cur_version in patch_db:
-        for patch in patch_db[cur_version][update_type]:
-            if version.Version(patch) > version.Version(cur_patch_ver):
-                user_response = CTkMessagebox(title="PBLC Update Manager",message=f"New patches found for PBLC v{cur_version}, would you like to apply them?",option_1="No",option_2="Yes",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+        try:
+            for patch in patch_db[cur_version][update_type]:
+                if version.Version(patch) > version.Version(cur_patch_ver):
+                    user_response = CTkMessagebox(title="PBLC Update Manager",message=f"New patches found for PBLC v{cur_version}, would you like to apply them?",option_1="No",option_2="Yes",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
 
-                if user_response.get() == "Yes":
-                    applyNewPatches(patch_db,update_type,cur_version)
-                    return "finished_installing"
-                else:
-                    return
+                    if user_response.get() == "Yes":
+                        print("Starting initial patch download")
+                        applyNewPatches(patch_db,update_type,cur_version)
+                        return "finished_installing"
+                    else:
+                        return "user_declined"
+        except KeyError:
+            pass
+        
         return "no_patches"
     else:
         return "no_patches"
+
+def patchesPrompt(self,update_type,install_version,github_repo_json,auto=False):
+    #Checking for patches
+    print("Checking for patches...")
+    patches = checkForPatches(update_type,install_version)
+    if patches == "no_patches":
+        if not auto:
+            response = CTkMessagebox(title="PBLC Update Manager",message="No new patches found, you are up to date! Would you like to reinstall?",option_2="Reinstall",option_1="No",icon=PBLC_Icons.refresh(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+            if response.get() == "Reinstall":
+                startUpdate(github_repo_json[update_type],update_type)
+        else:
+            return "no_updates"
+    elif auto and patches == 'user_declined':
+        return "user_declined"
+    elif patches == "finished_installing":
+        self.redrawScrollFrame()
+        response = CTkMessagebox(title="PBLC Update Manager",message="Patches finished installing, you can start the game now.",sound=True,icon=PBLC_Icons.checkmark(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+        self.update_manager_version.configure(text=f"\n\nCurrently Running: PBLC Stable v{version_man.install_version('release')}")
+        return "finished_installing"
 
 def checkForUpdates(self,update_type):
 
     print("Checking for updates...")
 
-    installed_version, installed_beta_version, json_data_internal, performance_mode = get_current_version(True)
-    install_version = version_man.install_version(update_type)
+    #installed_version, installed_beta_version, json_data_internal, performance_mode = get_current_version(False)
+    installed_stable_version = version.Version(version_man.install_version("release"))
+    installed_beta_version = version.Version(version_man.install_version("beta"))
 
     #fetching latest version
-    github_repo_json = json.loads(request.urlopen(github_repo_version_db).read().decode())
-    #github_repo_json = open_json("version_db.json")
-    latest_version = int(str(github_repo_json[update_type]['version']).replace(".","")) if update_type == "release" else int(str(github_repo_json[update_type]['beta_version']).replace(".",""))
-
+    github_repo_json = open_json("version_db.json")#json.loads(request.urlopen(github_repo_version_db).read().decode())
+    needs_reinstall = github_repo_json[update_type]['needs_reinstall']
+    base_vers_req = version.Version(github_repo_json[update_type]['starting_version'])
+    latest_version = version.Version(github_repo_json[update_type]['version']) if update_type == "release" else version.Version(github_repo_json[update_type]['beta_version'])
 
     #RELEASE
     if update_type == "release":
 
-        if installed_beta_version > 0:
+        if not needs_reinstall:
+            if installed_stable_version >= base_vers_req and installed_stable_version >= latest_version:
+                response = patchesPrompt(self,update_type,installed_stable_version,github_repo_json,True)
+                if response == "user_declined" or response == "finished_installing":
+                    return
+                elif response == "no_updates":
+                    response = CTkMessagebox(title="PBLC Update Manager",message="No new patches found, you are up to date! Would you like to reinstall?",option_2="Reinstall",option_1="No",icon=PBLC_Icons.refresh(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+                    if response.get() == "Reinstall":
+                        startUpdate(github_repo_json[update_type],update_type)
+                    return
+
+        if not os.path.exists(bepinex_path) or not os.path.exists(doorstop_path) or not os.path.exists(winhttp_path):
+            print("Vanilla or broken version found.")
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Vanilla or broken version detected, would you like to install the latest mods?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+            #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"Vanilla or broken version detected, would you like to install the latest mods?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
+            if prompt_answer.get() == "Yes":
+                startUpdate(github_repo_json[update_type],update_type)
+        elif installed_beta_version > version.Version("0.0.0"):
             print("Beta release detected, prompting switch...")
-            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"It looks like you're using a beta version of our modpack, would you like to switch back to the last stable release?",option_2="Yes",option_1="No",icon="",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"It looks like you're using a beta version of our modpack, would you like to switch back to the last stable release?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"It looks like you're using a beta version of our modpack, would you like to switch back to the last stable release?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
                 startUpdate(github_repo_json[update_type],update_type)
 
-        elif installed_version < latest_version:
+        elif installed_stable_version < latest_version:
             print("New Update Found.")
-            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"An update is available, would you like to install it?",option_2="Yes",option_1="No",icon="",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"An update is available, would you like to install it?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"An update is available, would you like to install it?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
-            if prompt_answer.get() == "Yes":
-                startUpdate(github_repo_json[update_type],update_type)
-        elif not os.path.exists(bepinex_path) or not os.path.exists(doorstop_path) or not os.path.exists(winhttp_path):
-            print("Vanilla or broken version found.")
-            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Vanilla or broken version detected, would you like to install the latest mods?",option_2="Yes",option_1="No",icon="",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
-            #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"Vanilla or broken version detected, would you like to install the latest mods?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
                 startUpdate(github_repo_json[update_type],update_type)
         else:
 
-            #Checking for patches
-            print("No updates found, checking for patches...")
-            patches = checkForPatches(update_type,install_version)
-            if patches == "no_patches":
-                response = CTkMessagebox(title="PBLC Update Manager",message="No new patches found, you are up to date! Would you like to reinstall?",option_2="Reinstall",option_1="No",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
-                if response.get() == "Reinstall":
-                    startUpdate(github_repo_json[update_type],update_type)
-            elif patches == "finished_installing":
-                self.redrawScrollFrame()
-                response = CTkMessagebox(title="PBLC Update Manager",message="Patches finished installing, you can start the game now.",sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+            patchesPrompt(self,update_type,installed_stable_version,github_repo_json)
 
             #print("No updates found.")
             #ctypes.windll.user32.MessageBoxW(0, "No updates available.", "PBLC Update Manager")
@@ -519,39 +616,32 @@ def checkForUpdates(self,update_type):
 
     #BETA
     else:
-        if installed_version > 0:
+
+        if not os.path.exists(bepinex_path) or not os.path.exists(doorstop_path) or not os.path.exists(winhttp_path):
+            print("Vanilla or broken version found.")
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Vanilla or broken version detected, would you like to install the latest beta mods?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+            #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"Vanilla or broken version detected, would you like to install the latest beta mods?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
+            if prompt_answer.get() == "Yes":
+                startUpdate(github_repo_json[update_type],update_type)
+
+        elif installed_stable_version > version.Version("0.0.0"):
             print("Stable release found, prompting switch...")
-            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"It looks like you're on the stable release of our modpack, would you like to switch to the latest beta?",option_2="Yes",option_1="No",icon="",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"It looks like you're on the stable release of our modpack, would you like to switch to the latest beta?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"It looks like you're on the stable release of our modpack, would you like to switch to the latest beta?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
                 startUpdate(github_repo_json[update_type],update_type)
 
         elif installed_beta_version < latest_version:
             print("New Beta Found.")
-            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"A new beta is available, would you like to install it?",option_2="Yes",option_1="No",icon="",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"A new beta is available, would you like to install it?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"A new beta is available, would you like to install it?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
                 startUpdate(github_repo_json[update_type],update_type)
-        elif not os.path.exists(bepinex_path) or not os.path.exists(doorstop_path) or not os.path.exists(winhttp_path):
-            print("Vanilla or broken version found.")
-            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Vanilla or broken version detected, would you like to install the latest beta mods?",option_2="Yes",option_1="No",icon="",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
-            #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"Vanilla or broken version detected, would you like to install the latest beta mods?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
-            if prompt_answer.get() == "Yes":
-                startUpdate(github_repo_json[update_type],update_type)
+        
         else:
 
-            #Checking for patches
-            print("No updates found, checking for patches...")
-            patches = checkForPatches(update_type,install_version)
-            if patches == "no_patches":
-                response = CTkMessagebox(title="PBLC Update Manager",message="No new patches found, you are up to date! Would you like to reinstall?",option_2="Reinstall",option_1="No",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
-                if response.get() == "Reinstall":
-                    startUpdate(github_repo_json[update_type],update_type)
-            elif patches == "finished_installing":
-                self.redrawScrollFrame()
-                response = CTkMessagebox(title="PBLC Update Manager",message="Patches finished installing, you can start the game now.",sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
-
-            #print("No updates found.")
+            print("No updates found.")
+            CTkMessagebox(title="PBLC Update Manager",message="No updates available.",icon=PBLC_Icons.checkmark(True))
             #ctypes.windll.user32.MessageBoxW(0, "No updates available.", "PBLC Update Manager")
 
 def checkForUpdatesmanager():
@@ -790,7 +880,7 @@ class thunderstore():
         with open(moddb_file, "w") as update_checker_all:
             update_checker_all.write(json.dumps(mod_database_local,indent=4))
         
-        finish_message = CTkMessagebox(title="PBLC Update Manager",message=f"Finished checking for updates, {mods_updating} mod(s) have updates available!",option_1="Ok",sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+        finish_message = CTkMessagebox(title="PBLC Update Manager",message=f"Finished checking for updates, {mods_updating} mod(s) have updates available!",option_1="Ok",icon=PBLC_Icons.info(True),sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
         print(f"\n\nFinished checking for updates, {mods_updating} mod(s) have updates available!")
 
 
@@ -810,7 +900,7 @@ class thunderstore_ops():
 
             print(f"Updates for {name} found")
 
-            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Updates found for {name}, do you want to update?",option_2="Update",option_3="Specific Version",option_1="Cancel",icon="question",sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Updates found for {name}, do you want to update?",option_2="Update",option_3="Specific Version",option_1="Cancel",icon=PBLC_Icons.download(True),sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
 
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"oopsies there are updates 😊😊😊","PBLC Update Manager",4)
             
@@ -823,14 +913,15 @@ class thunderstore_ops():
         else:
             print(f"Running latest version of {name}")
 
-            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"No new updates for {name}, would you like to reinstall it or downgrade?",option_3="Downgrade",option_2="Yes",option_1="No",icon="question",sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"No new updates for {name}, would you like to reinstall it or downgrade?",option_3="Downgrade",option_2="Yes",option_1="No",icon=PBLC_Icons.checkmark(True),sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
 
             if prompt_answer.get() == "Yes":
                 thunderstore_ops.download_package(namespace,name,package_json['latest']['version_number'],dependencies)
             elif prompt_answer.get() == "Downgrade":
-                dialog = customtkinter.CTkInputDialog(text="Enter Version:", title="PBLC Update Manager").get_input()
-                print(f"Selected version = {dialog}")
-                thunderstore_ops.download_package(namespace,name,dialog,dependencies)
+                dialog = customtkinter.CTkInputDialog(text="Enter Version:", title="PBLC Update Manager",button_fg_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover")).get_input()
+                if not dialog == None:
+                    print(f"Selected version = {dialog}")
+                    thunderstore_ops.download_package(namespace,name,dialog,dependencies)
 
     def download_package(namespace,name,version,dependencies):
 
@@ -1172,26 +1263,26 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
                 self.mod_toggle_switch.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"))
             self.mod_toggle_tooltip = CTkToolTip(self.mod_toggle_switch,message=f"Toggle the current mod.",delay=0.3)
     
-            self.website_icon = customtkinter.CTkImage(Image.open('assets/website.png'),size=(30,30))
+            self.website_icon = customtkinter.CTkImage(PBLC_Icons.website(),size=(30,30))
             self.website_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.website_icon,fg_color=PBLC_Colors.button("main_dark"),hover_color=PBLC_Colors.button("hover_dark"),command= lambda link=moddb['package_url']: self.openThunderstorePage(link))
             self.website_icon_lab.grid(row=i,column=4,pady=2,padx=2,sticky="e")
             if moddb['version'] == "devmode":
                 self.website_icon_lab.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"))
             self.mod_website_tooltip = CTkToolTip(self.website_icon_lab,message=f"Open this mod's thunderstore page.",delay=0.3)
     
-            self.refresh_icon = customtkinter.CTkImage(Image.open('assets/refresh.png'),size=(30,30))
+            self.refresh_icon = customtkinter.CTkImage(PBLC_Icons.refresh(),size=(30,30))
             self.refresh_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.refresh_icon,fg_color=PBLC_Colors.button("main_dark"),hover_color=PBLC_Colors.button("hover_dark"),command= lambda url=moddb['package_url'], mod_in = mod, version_grid=self.mod_version, icon_grid=self.mod_icon_lab: self.refreshThunderstorePackage(url,mod_in,version_grid,icon_grid))
             self.refresh_icon_lab.grid(row=i,column=5,pady=2,padx=2,sticky="e")
             if moddb['version'] == "devmode":
                 self.refresh_icon_lab.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"))
             self.mod_refresh_tooltip = CTkToolTip(self.refresh_icon_lab,message=f"Check this mod for updates.",delay=0.3)
     
-            self.delete_icon = customtkinter.CTkImage(Image.open('assets/trash_can.png'),size=(30,30))
+            self.delete_icon = customtkinter.CTkImage(PBLC_Icons.trash_can(),size=(30,30))
             self.delete_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.delete_icon,fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command= lambda mod_in=mod, frame = self.mod_entry_frame: self.uninstallThunderstorePackage(mod_in,frame))
             self.delete_icon_lab.grid(row=i,column=6,pady=2,padx=2,sticky="e")
             if moddb['version'] == "devmode":
                 self.delete_icon_lab.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"))
-            self.mod_delete_tooltip = CTkToolTip(self.delete_icon_lab,message=f"Uninstall this mod.",delay=0.3)
+            #self.mod_delete_tooltip = CTkToolTip(self.delete_icon_lab,message=f"Uninstall this mod.",delay=0.3)
             
             i+=1
     
@@ -1316,7 +1407,7 @@ class PBLCApp(customtkinter.CTk):
         self.actions_border.grid_columnconfigure(0, weight=1)
         self.actions_border.grid(row=2, column=0,pady=10)
 
-        self.download_button = customtkinter.CTkImage(Image.open('assets/download.png'),size=(15,15))
+        self.download_button = customtkinter.CTkImage(PBLC_Icons.download(),size=(15,15))
         self.update_button_main = customtkinter.CTkButton(self.actions_border,image=self.download_button, text=install_latest_stable_text,font=('IBM 3270',16),fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.check_for_updates_main)
         self.update_button_main.grid(row=0, column=0, padx=10, pady=20)
 
@@ -1343,7 +1434,7 @@ class PBLCApp(customtkinter.CTk):
         self.update_manager.grid_columnconfigure(0, weight=1)
         self.update_manager.grid(row=4, column=0)
 
-        self.new_builds_img = customtkinter.CTkImage(Image.open('assets/arrow_right_up.png'),size=(15,15))
+        self.new_builds_img = customtkinter.CTkImage(PBLC_Icons.arrow_up_right(),size=(15,15))
         self.update_self_button = customtkinter.CTkButton(self.update_manager,image=self.new_builds_img, text="Check for new builds",font=('IBM 3270',16),fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.check_for_updates_manager)
         self.update_self_button.grid(row=0, column=0, padx=20, pady=20)
 
@@ -1379,19 +1470,19 @@ class PBLCApp(customtkinter.CTk):
         self.pblc_pack_name.grid(row=0,column=0,padx=10)
 
 
-        self.archive_img = customtkinter.CTkImage(Image.open('assets/archive.png'),size=(15,15))
+        self.archive_img = customtkinter.CTkImage(PBLC_Icons.archive(),size=(15,15))
         self.pblc_pack_trigger = customtkinter.CTkButton(self.mods_list_frame,image=self.archive_img,text="Export Modpack",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.export_modpack)
         self.pblc_pack_trigger.grid(row=0,column=1,pady=20,padx=10)
 
-        self.patch_save_img = customtkinter.CTkImage(Image.open('assets/save.png'),size=(15,15))
+        self.patch_save_img = customtkinter.CTkImage(PBLC_Icons.save(),size=(15,15))
         self.create_patch_save = customtkinter.CTkButton(self.mods_list_frame,image=self.patch_save_img,text="Create Patch Save",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.create_patch_point)
         self.create_patch_save.grid(row=1,column=0,pady=20,padx=10)
 
-        self.checklist_img = customtkinter.CTkImage(Image.open('assets/checklist.png'),size=(15,15))
+        self.checklist_img = customtkinter.CTkImage(PBLC_Icons.checklist(),size=(15,15))
         self.generate_patch_changes = customtkinter.CTkButton(self.mods_list_frame,image=self.checklist_img,text="Generate Changes",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.gen_patch_change)
         self.generate_patch_changes.grid(row=1,column=1,pady=20,padx=10)
 
-        self.uninstall_img = customtkinter.CTkImage(Image.open('assets/uninstall.png'),size=(15,15))
+        self.uninstall_img = customtkinter.CTkImage(PBLC_Icons.uninstall(),size=(15,15))
         self.uninstall_mods = customtkinter.CTkButton(self.mods_list_frame,image=self.uninstall_img,text="Uninstall Mods",fg_color=PBLC_Colors.button("warning"),hover_color=PBLC_Colors.button("hover"),command=self.uninstall_everything)
         self.uninstall_mods.grid(row=2,column=0,columnspan=2,pady=20,padx=20)
 
@@ -1516,10 +1607,6 @@ class PBLCApp(customtkinter.CTk):
 
         self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,fg_color=PBLC_Colors.frame("main"),width=960,height=450,parent=self)
         self.thunderstore_mod_frame.grid(row=2,column=0)
-
-    def fetchModData(self):
-        print('rah')
-
     # click_methods
     def check_for_updates_main(self):
         checkForUpdates(self,"release")
