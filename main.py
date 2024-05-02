@@ -1347,6 +1347,9 @@ class PBLC_Colors():
     def invalid():
         return "#ff00ea"
 
+
+print(__file__)
+
 #UI
 class PBLCApp(customtkinter.CTk):
     def __init__(self):
@@ -1380,7 +1383,7 @@ class PBLCApp(customtkinter.CTk):
         self.tabview = customtkinter.CTkTabview(self,segmented_button_selected_color=PBLC_Colors.button("main"),segmented_button_selected_hover_color=PBLC_Colors.button("hover"))
         self.tabview.grid(row=0, column=1,sticky='nsew')
 
-        tabs = ["Home","Mods","Extras"]
+        tabs = ["Home","Mods","Extras","Dev"]
         for tab in tabs:
             self.tabview.add(tab)
             self.tabview.tab(tab).grid_columnconfigure(0, weight=1)
