@@ -3,7 +3,8 @@
         "release" : {
             "0.0.1": [
                 "delete_mod|mattymatty|LobbyControl",
-                "url_add_mod|anormaltwig|LateCompany|1.0.13"
+                "url_add_mod|anormaltwig|LateCompany|1.0.13",
+                "update_vers|0.0.1"
             ],
             "0.0.2": [
                 "url_add_mod|sfDesat|Celestial_Tint|1.4.2",
@@ -24,9 +25,8 @@
                 "delete_mod|Chdata|NecoArcHoarderBugMod",
                 "delete_mod|Tolian|Tolian_Moons",
                 "download_bepinex|1YcD3RHCC__MqxnMIdKvGOiPMQAGktQ8j",
-                "update_vers|9.1.0"
+                "update_vers|0.0.0|9.1.0"
             ]
-        },
-        "beta" : {}
+        }
     }
 }

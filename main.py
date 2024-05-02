@@ -313,10 +313,13 @@ def decompress_zip(zip_file,destination):
 
 def compress_zip(zip_file,files):
     with zipfile.ZipFile(zip_file,'w',zipfile.ZIP_DEFLATED) as zipf:
-        for file_path in files:
-            relative_path = os.path.basename(file_path)
-            print(f"Compressing {relative_path}...")
-            zipf.write(file_path,arcname=relative_path)
+        try:
+            for file_path in files:
+                relative_path = os.path.basename(file_path)
+                print(f"Compressing {relative_path}...")
+                zipf.write(file_path,arcname=relative_path)
+        except:
+            return "CANCELLED"
 
 def compress_zip_dir(zip_file,dir_path):
     with zipfile.ZipFile(zip_file,'a',zipfile.ZIP_DEFLATED) as zipf:
@@ -330,6 +333,8 @@ def compress_zip_dir(zip_file,dir_path):
 def startUpdate(update_data,update_type):
     #try:
     print("Update Available, beginning download...")
+
+    print(f"\nUpdating modpack to version {update_data['version']}\n")
 
     if not os.path.exists(downloads_folder):
         os.mkdir(downloads_folder)
@@ -380,7 +385,7 @@ def startUpdate(update_data,update_type):
     with open(pblc_vers, "w") as pblc_vers_upd:
         pblc_vers_upd.write(json.dumps(current_installed_versions))
     
-    patch_db = open_json("patch_instructions.json")#json.loads(request.urlopen(github_repo_patch_instructions).read().decode())
+    patch_db = json.loads(request.urlopen(github_repo_patch_instructions).read().decode())
     cur_patch_ver = version_man.get_patch()
 
     if update_data['version'] in patch_db:
@@ -490,6 +495,7 @@ def applyNewPatches(patch_db,update_type,cur_version):
 
     for patch in patch_db[cur_version][update_type]:
         if version.Version(patch) > version.Version(cur_patch_ver):
+            print(f"\nApplying patches for {cur_version}\n")
             for command in patch_db[cur_version][update_type][patch]:
                 decodePatchCommand(command)
             cur_patch_ver = patch
@@ -517,7 +523,7 @@ def applyNewPatches(patch_db,update_type,cur_version):
 
 def checkForPatches(update_type,cur_version):
     cur_version = str(cur_version)
-    patch_db = open_json("patch_instructions.json")#json.loads(request.urlopen(github_repo_patch_instructions).read().decode())
+    patch_db = json.loads(request.urlopen(github_repo_patch_instructions).read().decode())
     cur_patch_ver = version_man.get_patch()
 
     if cur_version in patch_db:
@@ -541,7 +547,7 @@ def checkForPatches(update_type,cur_version):
 
 def patchesPrompt(self,update_type,install_version,github_repo_json,auto=False):
     #Checking for patches
-    print("Checking for patches...")
+    print(f"Checking for patches on {install_version}...")
     patches = checkForPatches(update_type,install_version)
     if patches == "no_patches":
         if not auto:
@@ -567,16 +573,23 @@ def checkForUpdates(self,update_type):
     installed_beta_version = version.Version(version_man.install_version("beta"))
 
     #fetching latest version
-    github_repo_json = open_json("version_db.json")#json.loads(request.urlopen(github_repo_version_db).read().decode())
+    github_repo_json = json.loads(request.urlopen(github_repo_version_db).read().decode())
     needs_reinstall = github_repo_json[update_type]['needs_reinstall']
     base_vers_req = version.Version(github_repo_json[update_type]['starting_version'])
+    pblc_min_vers = version.Version(github_repo_json[update_type]['pblc_min'])
     latest_version = version.Version(github_repo_json[update_type]['version']) if update_type == "release" else version.Version(github_repo_json[update_type]['beta_version'])
+
+    #checking min reqs
+    if pblc_min_vers > version.Version(PBLC_Update_Manager_Version):
+        outdated_launcher = CTkMessagebox(title="PBLC Update Manager",message=f"ERROR: Update your PBLC Update Manager and try again!",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"),icon=PBLC_Icons.uninstall(True))
+        return
 
     #RELEASE
     if update_type == "release":
 
         if not needs_reinstall:
-            if installed_stable_version >= base_vers_req and installed_stable_version >= latest_version:
+
+            if installed_stable_version >= base_vers_req:
                 response = patchesPrompt(self,update_type,installed_stable_version,github_repo_json,True)
                 if response == "user_declined" or response == "finished_installing":
                     return
@@ -653,11 +666,11 @@ def checkForUpdatesmanager():
         print("Manager update found, prompting user.")
         
         #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"A new manager version has been found, would you like to update?","PBLC Update Manager",4)
-        prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"A new manager version has been found, would you like to update?",option_2="Yes",option_1="No",icon="",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+        prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"A new manager version has been found, would you like to update?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
         if prompt_answer.get() == "Yes":
             updateManager(github_api_manager)
     else:
-        prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"No new updates found",icon="",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+        prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"No new updates found",icon=PBLC_Icons.checkmark(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
         #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"No new updates found.","PBLC Update Manager",0)
 
 def performanceModSwitchEvent(toggle):
@@ -1578,7 +1591,10 @@ class PBLCApp(customtkinter.CTk):
         
         target_files = [doorstop_path,winhttp_path,moddb_file]
 
-        compress_zip(zip_file_loc,target_files)
+        result = compress_zip(zip_file_loc,target_files)
+        if result == "CANCELLED":
+            CTkMessagebox(title="PBLC Update Manager",message="Error creating modpack zip, make sure you have a working install of BepInEx!",icon=PBLC_Icons.info(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+            return
         compress_zip_dir(zip_file_loc,bepinex_path)
         compress_zip_dir(zip_file_loc,package_data_path)
         print(f"Finished compressing {self.pblc_pack_name.get()}.zip!")
