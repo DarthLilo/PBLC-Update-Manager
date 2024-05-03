@@ -34,5 +34,5 @@ First you will want to setup a local copy of the repository:
 * Run this command to install all required libraries ``pip install -r requirements.txt``
   
 To actually build it into an executable, you will need to install [cx_Freeze](https://pypi.org/project/cx-Freeze/).
-* After installing cx_Freeze run this command ``cxfreeze -c main.py --target-dir dist --icon assets/pill_bottle.ico --include-files updater.py,assets``
-* Once it is finished building, rename ``main.exe`` to ``PBLC Update Manager.exe`` to allow the updater script to find it again.
+* After installing cx_Freeze run this command ``cxfreeze -c main.py --target-dir dist --icon assets/pill_bottle.ico --include-files updater.py,assets --target-name "PBLC Update Manager"``
+* It will output the finished executable to the "dist" folder
