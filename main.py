@@ -149,6 +149,7 @@ winhttp_path = os.path.normpath(f"{LC_Path}/winhttp.dll")
 current_file_loc = getCurrentPathLoc()
 default_pblc_vers = {"version": "0.0.0", "beta_version": "0.0.0", "beta_goal": "0.0.0","performance_mode":"off"}
 package_data_path = os.path.normpath(f"{current_file_loc}/data/pkg")
+isScriptFrozen = getattr(sys, "frozen", False)
 
 # download_bepinex | GDCODE
 # url_add_mod | NAMESPACE | NAME | VERSION
@@ -1346,9 +1347,7 @@ class PBLC_Colors():
 
     def invalid():
         return "#ff00ea"
-
-
-print(__file__)
+    
 
 #UI
 class PBLCApp(customtkinter.CTk):
@@ -1383,7 +1382,11 @@ class PBLCApp(customtkinter.CTk):
         self.tabview = customtkinter.CTkTabview(self,segmented_button_selected_color=PBLC_Colors.button("main"),segmented_button_selected_hover_color=PBLC_Colors.button("hover"))
         self.tabview.grid(row=0, column=1,sticky='nsew')
 
-        tabs = ["Home","Mods","Extras","Dev"]
+        if isScriptFrozen:
+            tabs = ["Home","Mods","Extras"]
+        else:
+            tabs = ["Home","Mods","Extras","Dev"]
+            
         for tab in tabs:
             self.tabview.add(tab)
             self.tabview.tab(tab).grid_columnconfigure(0, weight=1)
@@ -1535,6 +1538,59 @@ class PBLCApp(customtkinter.CTk):
         self.check_for_updates_all.grid(row=1,column=3,pady=6,padx=3)
 
         print(f"Welcome to PBLC {PBLC_Update_Manager_Version}, the launcher is still currently in alpha and could be unstable, report any bugs to DarthLilo!")
+
+        # Dev Only
+
+        #
+        #
+        # Program - -
+        #
+        # Version Database Location/Url|update | MODE -> ONLINE/LOCAL
+        #
+        #
+        # Patches - -
+        #
+        # Create Patch Save | Generate Changes
+        #
+        #
+        # Modpack - -
+        #
+        # Pack Name | Export Modpack
+        #
+        # Uninstall Mods
+        #
+
+
+        if not isScriptFrozen:
+            self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Dev"), corner_radius=0, fg_color="transparent")
+            self.main_frame.grid(row=0, column=0,sticky="nsew")
+            self.main_frame.grid_columnconfigure(0, weight=1)
+            self.main_frame.grid_columnconfigure(1, weight=1)
+            
+
+            self.extras_frame = customtkinter.CTkFrame(self.main_frame,corner_radius=5,fg_color=PBLC_Colors.frame("main"))
+            self.extras_frame.grid(row=0,column=0,sticky="nsew")
+
+            self.program_frame = customtkinter.CTkFrame(self.extras_frame,corner_radius=5,fg_color=PBLC_Colors.frame("darker"))
+            self.program_frame.grid(row=0,column=0,pady=15,padx=15)
+
+            self.program_label = customtkinter.CTkLabel(self.program_frame,text="Program:",justify='left',font=('IBM 3270',35))
+            self.program_label.grid(row=0,column=0,pady=5,padx=5,sticky="w")
+
+            self.version_database_entry = customtkinter.CTkEntry(self.program_frame,placeholder_text="URL to a version_db.file",width=460)
+            self.version_database_entry.grid(row=1,column=0,pady=(35,5),padx=(5,0))
+
+            self.save_version_entry = customtkinter.CTkButton(self.program_frame,text="Apply")
+            self.save_version_entry.grid(row=1,column=1,pady=(35,5))
+
+            #self.create_patch_save_temp = customtkinter.CTkButton(self.program_frame,text="Create Patch Save")
+            #self.create_patch_save_temp.grid(row=1,column=0,pady=(35,5),padx=5,sticky="w")
+
+            self.save_version_path_url = customtkinter.CTkSegmentedButton(self.program_frame,values=["URL","PATH"])
+            self.save_version_path_url.grid(row=1,column=2,pady=(35,5),padx=(40,5))
+            self.save_version_path_url.set("URL")
+
+            
     
     # download_bepinex | GDCODE
     # url_add_mod | NAMESPACE | NAME | VERSION
