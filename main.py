@@ -104,8 +104,8 @@ def roundImageCorners(source_image, rad):
     return source_image
 
 steam_install_path = str(read_reg(ep = winreg.HKEY_LOCAL_MACHINE, p = r"SOFTWARE\\Wow6432Node\\Valve\\Steam", k = 'InstallPath'))
-steamapps = steam_install_path+"\steamapps"
-library_folders = steamapps+"\libraryfolders.vdf"
+steamapps = steam_install_path+"\\steamapps"
+library_folders = steamapps+"\\libraryfolders.vdf"
 libdata = vdf.load(open(library_folders))
 lethal_company_steamid = "1966720"
 
