@@ -1,4 +1,4 @@
-import json, os, winreg, vdf, shutil, zipfile,gdown, sys, customtkinter, pyglet, subprocess, progressbar, webbrowser, requests
+import json, os, winreg, vdf, shutil, zipfile,gdown, sys, customtkinter, pyglet, subprocess, progressbar, webbrowser, requests, validators
 from PIL import Image,ImageDraw
 from urllib import request
 from urllib.error import HTTPError, URLError
@@ -12,8 +12,6 @@ pbar = None
 
 PBLC_Update_Manager_Version = "0.2.9"
 
-github_repo_version_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
-github_repo_patch_instructions = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/patch_instructions.json"
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
 customtkinter.set_appearance_mode("dark")
 
@@ -103,19 +101,42 @@ def roundImageCorners(source_image, rad):
     source_image.putalpha(alpha)
     return source_image
 
-steam_install_path = str(read_reg(ep = winreg.HKEY_LOCAL_MACHINE, p = r"SOFTWARE\\Wow6432Node\\Valve\\Steam", k = 'InstallPath'))
-steamapps = steam_install_path+"\\steamapps"
-library_folders = steamapps+"\\libraryfolders.vdf"
-libdata = vdf.load(open(library_folders))
-lethal_company_steamid = "1966720"
+settings_file = os.path.normpath(f"{getCurrentPathLoc()}/data/config.json")
+
+def get_settings_file():
+    settings_data = open_json(settings_file)
+    return settings_data
+
+def readSettingsValue(container,value):
+    settings_data = get_settings_file()
+
+    try:
+        setting = settings_data[container][value]
+    except KeyError:
+        setting = None
+    
+    return setting
 
 def locate_lethal_company():
-    for library in libdata['libraryfolders']:
-        cur_lib = libdata['libraryfolders'][library]
-        apps = cur_lib["apps"]
-        if lethal_company_steamid in apps:
-            lethal_path = os.path.normpath(f"{cur_lib['path']}/steamapps/common/Lethal Company")
-            return lethal_path
+
+    custom_lethal_path = readSettingsValue("program","lethal_path")
+    
+    if os.path.exists(custom_lethal_path):
+        return custom_lethal_path
+    else:
+        print("Locating lethal path...")
+        steam_install_path = str(read_reg(ep = winreg.HKEY_LOCAL_MACHINE, p = r"SOFTWARE\\Wow6432Node\\Valve\\Steam", k = 'InstallPath'))
+        steamapps = steam_install_path+"\\steamapps"
+        library_folders = steamapps+"\\libraryfolders.vdf"
+        libdata = vdf.load(open(library_folders))
+        lethal_company_steamid = "1966720"
+
+        for library in libdata['libraryfolders']:
+            cur_lib = libdata['libraryfolders'][library]
+            apps = cur_lib["apps"]
+            if lethal_company_steamid in apps:
+                lethal_path = os.path.normpath(f"{cur_lib['path']}/steamapps/common/Lethal Company")
+                return lethal_path
 
 def download_from_google_drive(source,destination):
     print(f"Beginning download of {source} from Google Drive...")
@@ -160,6 +181,60 @@ dev_mode = f"{current_file_loc}/data/pooworms"
 if not os.path.exists(dev_mode):
     dev_mode = None
 
+
+
+def grab_version_db():
+    
+    default_version_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
+    local_version_db = readSettingsValue("program","version_db")
+    is_url = False
+    if validators.url(local_version_db):
+        is_url = True
+    
+    if local_version_db.strip(): #Custom Path
+        try:
+            if is_url:
+                return json.loads(request.urlopen(local_version_db).read().decode())
+            else:
+                return open_json(local_version_db)
+        except:
+            print("INVALID VERSION DATABASE")
+            return None
+    else: #default
+        return json.loads(request.urlopen(default_version_db).read().decode())
+
+def grab_patch_instructions():
+    default_patch_instruct = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/patch_instructions.json"
+    local_patch_instruct = readSettingsValue("program","patch_instructions")
+    is_url = False
+    if validators.url(local_patch_instruct):
+        is_url = True
+    if local_patch_instruct.strip(): #Custom Path
+        try:
+            if is_url:
+                return json.loads(request.urlopen(local_patch_instruct).read().decode())
+            else:
+                return open_json(local_patch_instruct)
+        except:
+            print("INVALID PATCH INSTRUCTIONS")
+            return None
+    else: #default
+        return json.loads(request.urlopen(default_patch_instruct).read().decode())
+    
+
+
+def resetSettingsDefault(settings_file):
+    default_settings = {
+        "program": {
+            "version_db": "",
+            "patch_instructions": "",
+            "lethal_path": ""
+        }
+    }
+
+    with open(settings_file, "w") as settings_gen:
+        settings_gen.write(json.dumps(default_settings,indent=4))
+
 def startupFunc():
     cur_folder = getCurrentPathLoc()
 
@@ -185,6 +260,10 @@ def startupFunc():
     
     if not os.path.exists(mod_pkg):
         os.mkdir(mod_pkg)
+    
+    #settings generation
+    if not os.path.exists(settings_file):
+        resetSettingsDefault(settings_file)
 
 startupFunc()
 
@@ -386,7 +465,8 @@ def startUpdate(update_data,update_type):
     with open(pblc_vers, "w") as pblc_vers_upd:
         pblc_vers_upd.write(json.dumps(current_installed_versions))
     
-    patch_db = json.loads(request.urlopen(github_repo_patch_instructions).read().decode())
+    patch_db = grab_patch_instructions()
+    if patch_db == None: return
     cur_patch_ver = version_man.get_patch()
 
     if update_data['version'] in patch_db:
@@ -524,7 +604,8 @@ def applyNewPatches(patch_db,update_type,cur_version):
 
 def checkForPatches(update_type,cur_version):
     cur_version = str(cur_version)
-    patch_db = json.loads(request.urlopen(github_repo_patch_instructions).read().decode())
+    patch_db = grab_patch_instructions()
+    if patch_db == None: return
     cur_patch_ver = version_man.get_patch()
 
     if cur_version in patch_db:
@@ -574,7 +655,9 @@ def checkForUpdates(self,update_type):
     installed_beta_version = version.Version(version_man.install_version("beta"))
 
     #fetching latest version
-    github_repo_json = json.loads(request.urlopen(github_repo_version_db).read().decode())
+    github_repo_json = grab_version_db()
+    if github_repo_json == None:
+        return
     needs_reinstall = github_repo_json[update_type]['needs_reinstall']
     base_vers_req = version.Version(github_repo_json[update_type]['starting_version'])
     pblc_min_vers = version.Version(github_repo_json[update_type]['pblc_min'])
@@ -1209,8 +1292,8 @@ class thunderstoreModIcon(customtkinter.CTkLabel):
         self.load_image()
 
 class thunderstoreModToggle(customtkinter.CTkSwitch):
-    def __init__(self,master,mod,fg_color,progress_color):
-        customtkinter.CTkSwitch.__init__(self,master,fg_color=fg_color,progress_color=progress_color,switch_width=60,switch_height=30,onvalue="true",offvalue="false",text="",command=lambda mod_in=mod: self.toggle_mod(mod_in))
+    def __init__(self,master,mod,fg_color,progress_color,outline,outline_size):
+        customtkinter.CTkSwitch.__init__(self,master,fg_color=fg_color,progress_color=progress_color,switch_width=60,switch_height=30,onvalue="true",offvalue="false",text="",command=lambda mod_in=mod: self.toggle_mod(mod_in),border_color=outline,border_width=outline_size)
         self.mod = mod
         self.load_toggle()
     
@@ -1271,28 +1354,28 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
             #self.mod_version = customtkinter.CTkLabel(self.mod_entry_frame,text=moddb['version'],font=('IBM 3270',16))
             self.mod_version.grid(row=i,column=2,pady=2,sticky="w")
 
-            self.mod_toggle_switch = thunderstoreModToggle(self.mod_entry_frame,mod,PBLC_Colors.button("disabled"),PBLC_Colors.button("main"))
+            self.mod_toggle_switch = thunderstoreModToggle(self.mod_entry_frame,mod,PBLC_Colors.button("disabled"),PBLC_Colors.button("main"),PBLC_Colors.button("outline"),PBLC_Colors.button("outline_size"))
             self.mod_toggle_switch.grid(row=i,column=3,pady=2,padx=2,sticky="e")
             if not dev_mode and moddb['version'] == "devmode":
                 self.mod_toggle_switch.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"))
             self.mod_toggle_tooltip = CTkToolTip(self.mod_toggle_switch,message=f"Toggle the current mod.",delay=0.3)
     
             self.website_icon = customtkinter.CTkImage(PBLC_Icons.website(),size=(30,30))
-            self.website_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.website_icon,fg_color=PBLC_Colors.button("main_dark"),hover_color=PBLC_Colors.button("hover_dark"),command= lambda link=moddb['package_url']: self.openThunderstorePage(link))
+            self.website_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.website_icon,fg_color=PBLC_Colors.button("main_dark"),hover_color=PBLC_Colors.button("hover_dark"),command= lambda link=moddb['package_url']: self.openThunderstorePage(link),border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
             self.website_icon_lab.grid(row=i,column=4,pady=2,padx=2,sticky="e")
             if moddb['version'] == "devmode":
                 self.website_icon_lab.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"))
             self.mod_website_tooltip = CTkToolTip(self.website_icon_lab,message=f"Open this mod's thunderstore page.",delay=0.3)
     
             self.refresh_icon = customtkinter.CTkImage(PBLC_Icons.refresh(),size=(30,30))
-            self.refresh_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.refresh_icon,fg_color=PBLC_Colors.button("main_dark"),hover_color=PBLC_Colors.button("hover_dark"),command= lambda url=moddb['package_url'], mod_in = mod, version_grid=self.mod_version, icon_grid=self.mod_icon_lab: self.refreshThunderstorePackage(url,mod_in,version_grid,icon_grid))
+            self.refresh_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.refresh_icon,fg_color=PBLC_Colors.button("main_dark"),hover_color=PBLC_Colors.button("hover_dark"),command= lambda url=moddb['package_url'], mod_in = mod, version_grid=self.mod_version, icon_grid=self.mod_icon_lab: self.refreshThunderstorePackage(url,mod_in,version_grid,icon_grid),border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
             self.refresh_icon_lab.grid(row=i,column=5,pady=2,padx=2,sticky="e")
             if moddb['version'] == "devmode":
                 self.refresh_icon_lab.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"))
             self.mod_refresh_tooltip = CTkToolTip(self.refresh_icon_lab,message=f"Check this mod for updates.",delay=0.3)
     
             self.delete_icon = customtkinter.CTkImage(PBLC_Icons.trash_can(),size=(30,30))
-            self.delete_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.delete_icon,fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command= lambda mod_in=mod, frame = self.mod_entry_frame: self.uninstallThunderstorePackage(mod_in,frame))
+            self.delete_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.delete_icon,fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command= lambda mod_in=mod, frame = self.mod_entry_frame: self.uninstallThunderstorePackage(mod_in,frame),border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
             self.delete_icon_lab.grid(row=i,column=6,pady=2,padx=2,sticky="e")
             if moddb['version'] == "devmode":
                 self.delete_icon_lab.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"))
@@ -1326,7 +1409,9 @@ class PBLC_Colors():
             "main_dark" : "#3F3F3F",
             "hover_dark" : "#2D2D2D",
             "disabled_dark" : "#1f1f1f",
-            "warning" : "#fb4130"
+            "warning" : "#fb4130",
+            "outline": "#dd786f",
+            "outline_size": 2
         }
 
         if not selection in options:
@@ -1427,10 +1512,10 @@ class PBLCApp(customtkinter.CTk):
         self.actions_border.grid(row=2, column=0,pady=10)
 
         self.download_button = customtkinter.CTkImage(PBLC_Icons.download(),size=(15,15))
-        self.update_button_main = customtkinter.CTkButton(self.actions_border,image=self.download_button, text=install_latest_stable_text,font=('IBM 3270',16),fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.check_for_updates_main)
+        self.update_button_main = customtkinter.CTkButton(self.actions_border,image=self.download_button, text=install_latest_stable_text,font=('IBM 3270',16),fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.check_for_updates_main,border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
         self.update_button_main.grid(row=0, column=0, padx=10, pady=20)
 
-        self.update_button_main_2 = customtkinter.CTkButton(self.actions_border,image=self.download_button, text=install_latest_beta_text,font=('IBM 3270',16),fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.check_for_updates_beta)
+        self.update_button_main_2 = customtkinter.CTkButton(self.actions_border,image=self.download_button, text=install_latest_beta_text,font=('IBM 3270',16),fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.check_for_updates_beta,border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
         self.update_button_main_2.grid(row=0, column=1, padx=10, pady=20)
 
         self.performance_frame = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color=PBLC_Colors.frame("main"),bg_color="transparent",corner_radius=5)
@@ -1438,7 +1523,7 @@ class PBLCApp(customtkinter.CTk):
         self.performance_frame.grid(row=3, column=0)
 
         self.performance_mode_var = customtkinter.StringVar(value=performance_mode)
-        self.performance_switch = customtkinter.CTkSwitch(self.performance_frame, text="Low Quality Mode",variable=self.performance_mode_var, onvalue="on", offvalue="off",fg_color=PBLC_Colors.button("disabled"),progress_color=PBLC_Colors.button("main"), command=self.performance_switch_event)
+        self.performance_switch = customtkinter.CTkSwitch(self.performance_frame, text="Low Quality Mode",variable=self.performance_mode_var, onvalue="on", offvalue="off",fg_color=PBLC_Colors.button("disabled"),progress_color=PBLC_Colors.button("main"), command=self.performance_switch_event,border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
         self.performance_switch.grid(row=0, column=0, padx=10, pady=20)
         #self.performance_switch.configure(state="disabled")
 
@@ -1454,7 +1539,7 @@ class PBLCApp(customtkinter.CTk):
         self.update_manager.grid(row=4, column=0)
 
         self.new_builds_img = customtkinter.CTkImage(PBLC_Icons.arrow_up_right(),size=(15,15))
-        self.update_self_button = customtkinter.CTkButton(self.update_manager,image=self.new_builds_img, text="Check for new builds",font=('IBM 3270',16),fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.check_for_updates_manager)
+        self.update_self_button = customtkinter.CTkButton(self.update_manager,image=self.new_builds_img, text="Check for new builds",font=('IBM 3270',16),fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.check_for_updates_manager,border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
         self.update_self_button.grid(row=0, column=0, padx=20, pady=20)
 
         
@@ -1490,19 +1575,19 @@ class PBLCApp(customtkinter.CTk):
 
 
         self.archive_img = customtkinter.CTkImage(PBLC_Icons.archive(),size=(15,15))
-        self.pblc_pack_trigger = customtkinter.CTkButton(self.mods_list_frame,image=self.archive_img,text="Export Modpack",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.export_modpack)
+        self.pblc_pack_trigger = customtkinter.CTkButton(self.mods_list_frame,image=self.archive_img,text="Export Modpack",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.export_modpack,border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
         self.pblc_pack_trigger.grid(row=0,column=1,pady=20,padx=10)
 
         self.patch_save_img = customtkinter.CTkImage(PBLC_Icons.save(),size=(15,15))
-        self.create_patch_save = customtkinter.CTkButton(self.mods_list_frame,image=self.patch_save_img,text="Create Patch Save",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.create_patch_point)
+        self.create_patch_save = customtkinter.CTkButton(self.mods_list_frame,image=self.patch_save_img,text="Create Patch Save",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.create_patch_point,border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
         self.create_patch_save.grid(row=1,column=0,pady=20,padx=10)
 
         self.checklist_img = customtkinter.CTkImage(PBLC_Icons.checklist(),size=(15,15))
-        self.generate_patch_changes = customtkinter.CTkButton(self.mods_list_frame,image=self.checklist_img,text="Generate Changes",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.gen_patch_change)
+        self.generate_patch_changes = customtkinter.CTkButton(self.mods_list_frame,image=self.checklist_img,text="Generate Changes",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.gen_patch_change,border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
         self.generate_patch_changes.grid(row=1,column=1,pady=20,padx=10)
 
         self.uninstall_img = customtkinter.CTkImage(PBLC_Icons.uninstall(),size=(15,15))
-        self.uninstall_mods = customtkinter.CTkButton(self.mods_list_frame,image=self.uninstall_img,text="Uninstall Mods",fg_color=PBLC_Colors.button("warning"),hover_color=PBLC_Colors.button("hover"),command=self.uninstall_everything)
+        self.uninstall_mods = customtkinter.CTkButton(self.mods_list_frame,image=self.uninstall_img,text="Uninstall Mods",fg_color=PBLC_Colors.button("warning"),hover_color=PBLC_Colors.button("hover"),command=self.uninstall_everything,border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
         self.uninstall_mods.grid(row=2,column=0,columnspan=2,pady=20,padx=20)
 
         #Mods
@@ -1531,10 +1616,10 @@ class PBLCApp(customtkinter.CTk):
         self.import_url_vers_box.grid(row=1,column=1,padx=3)
         self.import_url_vers_box.bind("<Return>",lambda mod_frame=self.thunderstore_mod_frame: self.import_thunderstore_url(mod_frame))
 
-        self.import_from_url = customtkinter.CTkButton(self.url_import_frame,text="Import",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=lambda mod_frame = self.thunderstore_mod_frame: self.import_thunderstore_url(mod_frame))
+        self.import_from_url = customtkinter.CTkButton(self.url_import_frame,text="Import",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=lambda mod_frame = self.thunderstore_mod_frame: self.import_thunderstore_url(mod_frame),border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
         self.import_from_url.grid(row=1,column=2,pady=6,padx=3)
 
-        self.check_for_updates_all = customtkinter.CTkButton(self.url_import_frame,text="Scan for Updates",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.check_for_updates_all)
+        self.check_for_updates_all = customtkinter.CTkButton(self.url_import_frame,text="Scan for Updates",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.check_for_updates_all,border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
         self.check_for_updates_all.grid(row=1,column=3,pady=6,padx=3)
 
         print(f"Welcome to PBLC {PBLC_Update_Manager_Version}, the launcher is still currently in alpha and could be unstable, report any bugs to DarthLilo!")
