@@ -155,6 +155,24 @@ def migrate_update_files(source,destination):
 
         shutil.move(file_path,destination_path)
 
+def resetSettingsDefault(settings_file):
+    default_settings = {
+        "program": {
+            "version_db": "",
+            "patch_instructions": "",
+            "lethal_path": ""
+        }
+    }
+
+    with open(settings_file, "w") as settings_gen:
+        settings_gen.write(json.dumps(default_settings,indent=4))
+    
+    return
+
+#settings generation
+if not os.path.exists(settings_file):
+    resetSettingsDefault(settings_file)
+
 def move_file(source,dest):
     if os.path.exists(dest):
         os.remove(dest)
@@ -220,20 +238,6 @@ def grab_patch_instructions():
             return None
     else: #default
         return json.loads(request.urlopen(default_patch_instruct).read().decode())
-    
-
-
-def resetSettingsDefault(settings_file):
-    default_settings = {
-        "program": {
-            "version_db": "",
-            "patch_instructions": "",
-            "lethal_path": ""
-        }
-    }
-
-    with open(settings_file, "w") as settings_gen:
-        settings_gen.write(json.dumps(default_settings,indent=4))
 
 def startupFunc():
     cur_folder = getCurrentPathLoc()
@@ -260,10 +264,6 @@ def startupFunc():
     
     if not os.path.exists(mod_pkg):
         os.mkdir(mod_pkg)
-    
-    #settings generation
-    if not os.path.exists(settings_file):
-        resetSettingsDefault(settings_file)
 
 startupFunc()
 
@@ -1400,6 +1400,30 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
         version_grid.refresh_version(mod)
         icon_grid.refresh_icon()
 
+class configSettingScrollFrame(customtkinter.CTkScrollableFrame):
+    def __init__(self,master,fg_color):
+        super().__init__(master,fg_color=fg_color)
+        self.grid_columnconfigure(0,weight=1)
+        self.draw_settings_ui()
+    
+    def draw_settings_ui(self):
+        settings_data = get_settings_file()
+
+        field_index = 0
+        
+        for field in settings_data:
+
+            self.field_frame = customtkinter.CTkFrame(self,fg_color=PBLC_Colors.frame("main"),corner_radius=15)
+            self.field_frame.grid(row=field_index,column=0,sticky='nsew')
+
+            field_index+=1
+
+            for entry in settings_data[field]:
+
+                value = settings_data[field][entry]
+                print(f"{entry}:{value}")
+
+
 class PBLC_Colors():
     def button(selection):
         options = {
@@ -1433,6 +1457,13 @@ class PBLC_Colors():
     def invalid():
         return "#ff00ea"
     
+class MyFrame(customtkinter.CTkScrollableFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+
+        # add widgets onto the frame...
+        self.label = customtkinter.CTkLabel(self)
+        self.label.grid(row=0, column=0, padx=20)
 
 #UI
 class PBLCApp(customtkinter.CTk):
@@ -1647,33 +1678,38 @@ class PBLCApp(customtkinter.CTk):
 
 
         if not isScriptFrozen:
-            self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Dev"), corner_radius=0, fg_color="transparent")
-            self.main_frame.grid(row=0, column=0,sticky="nsew")
+            self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Dev"), corner_radius=0, fg_color="black")
+            self.main_frame.grid_rowconfigure(0, weight=1)
             self.main_frame.grid_columnconfigure(0, weight=1)
-            self.main_frame.grid_columnconfigure(1, weight=1)
+            self.main_frame.grid(row=0,column=0,rowspan=2,sticky="nsew")
             
 
-            self.extras_frame = customtkinter.CTkFrame(self.main_frame,corner_radius=5,fg_color=PBLC_Colors.frame("main"))
-            self.extras_frame.grid(row=0,column=0,sticky="nsew")
+            #self.config_frame = configSettingScrollFrame(self.tabview.tab("Dev"),fg_color="transparent")
+            #self.config_frame.grid(row=0,column=0,sticky="nsew")
+            
 
-            self.program_frame = customtkinter.CTkFrame(self.extras_frame,corner_radius=5,fg_color=PBLC_Colors.frame("darker"))
-            self.program_frame.grid(row=0,column=0,pady=15,padx=15)
+            #self.extras_frame = customtkinter.CTkFrame(self.main_frame,corner_radius=5,fg_color=PBLC_Colors.frame("main"))
+            #self.extras_frame.grid(row=0,column=0,sticky="nsew")
+            #self.extras_frame.grid_columnconfigure(0, weight=1)
 
-            self.program_label = customtkinter.CTkLabel(self.program_frame,text="Program:",justify='left',font=('IBM 3270',35))
-            self.program_label.grid(row=0,column=0,pady=5,padx=5,sticky="w")
-
-            self.version_database_entry = customtkinter.CTkEntry(self.program_frame,placeholder_text="URL to a version_db.file",width=460)
-            self.version_database_entry.grid(row=1,column=0,pady=(35,5),padx=(5,0))
-
-            self.save_version_entry = customtkinter.CTkButton(self.program_frame,text="Apply")
-            self.save_version_entry.grid(row=1,column=1,pady=(35,5))
+            #self.program_frame = customtkinter.CTkFrame(self.extras_frame,corner_radius=5,fg_color=PBLC_Colors.frame("darker"))
+            #self.program_frame.grid(row=0,column=0,pady=15,padx=15)
+#
+            #self.program_label = customtkinter.CTkLabel(self.program_frame,text="Program:",justify='left',font=('IBM 3270',35))
+            #self.program_label.grid(row=0,column=0,pady=5,padx=5,sticky="w")
+#
+            #self.version_database_entry = customtkinter.CTkEntry(self.program_frame,placeholder_text="URL to a version_db.file",width=460)
+            #self.version_database_entry.grid(row=1,column=0,pady=(35,5),padx=(5,0))
+#
+            #self.save_version_entry = customtkinter.CTkButton(self.program_frame,text="Apply")
+            #self.save_version_entry.grid(row=1,column=1,pady=(35,5))
 
             #self.create_patch_save_temp = customtkinter.CTkButton(self.program_frame,text="Create Patch Save")
             #self.create_patch_save_temp.grid(row=1,column=0,pady=(35,5),padx=5,sticky="w")
 
-            self.save_version_path_url = customtkinter.CTkSegmentedButton(self.program_frame,values=["URL","PATH"])
-            self.save_version_path_url.grid(row=1,column=2,pady=(35,5),padx=(40,5))
-            self.save_version_path_url.set("URL")
+            #self.save_version_path_url = customtkinter.CTkSegmentedButton(self.program_frame,values=["URL","PATH"])
+            #self.save_version_path_url.grid(row=1,column=2,pady=(35,5),padx=(40,5))
+            #self.save_version_path_url.set("URL")
 
             
     
