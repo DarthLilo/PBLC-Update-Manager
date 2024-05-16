@@ -1456,14 +1456,6 @@ class PBLC_Colors():
 
     def invalid():
         return "#ff00ea"
-    
-class MyFrame(customtkinter.CTkScrollableFrame):
-    def __init__(self, master, **kwargs):
-        super().__init__(master, **kwargs)
-
-        # add widgets onto the frame...
-        self.label = customtkinter.CTkLabel(self)
-        self.label.grid(row=0, column=0, padx=20)
 
 #UI
 class PBLCApp(customtkinter.CTk):
@@ -1681,7 +1673,7 @@ class PBLCApp(customtkinter.CTk):
             self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Dev"), corner_radius=0, fg_color="black")
             self.main_frame.grid_rowconfigure(0, weight=1)
             self.main_frame.grid_columnconfigure(0, weight=1)
-            self.main_frame.grid(row=0,column=0,rowspan=2,sticky="nsew")
+            self.main_frame.grid(row=0,column=0,sticky="nsew")
             
 
             #self.config_frame = configSettingScrollFrame(self.tabview.tab("Dev"),fg_color="transparent")
