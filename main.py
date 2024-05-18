@@ -1,4 +1,4 @@
-import json, os, winreg, vdf, shutil, zipfile,gdown, sys, customtkinter, pyglet, subprocess, progressbar, webbrowser, requests, validators
+import json, os, winreg, vdf, shutil, zipfile,gdown, sys, customtkinter, pyglet, subprocess, progressbar, webbrowser, requests, validators, colour, threading, time
 from PIL import Image,ImageDraw
 from urllib import request
 from urllib.error import HTTPError, URLError
@@ -795,6 +795,17 @@ def uninstallMods():
     with open(pblc_vers, "w") as pblc_reset:
         pblc_reset.write(json.dumps({"version": "0.0.0", "beta_version": "0.0.0", "beta_goal": "0.0.0", "performance_mode": "off"}))
 
+class widgetAnimation():
+    def gradientTimer(master,colors,steps):
+        for i in range(steps):
+            threading.Thread(target=widgetAnimation.updateBorderColor(master,str(colors[i]))).start()
+
+    def updateBorderColor(master,color):
+        time.sleep(1)
+        print("rah")
+        #app.after(1000,threading.Thread(target=print("rah")).start())
+    
+
 class thunderstore():
     def package_from_url(url):
         package_url = url.replace("https://","").split("/")
@@ -1401,8 +1412,8 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
         icon_grid.refresh_icon()
 
 class configSettingScrollFrame(customtkinter.CTkScrollableFrame):
-    def __init__(self,master,fg_color):
-        super().__init__(master,fg_color=fg_color)
+    def __init__(self,master,fg_color,height):
+        super().__init__(master,fg_color=fg_color,height=height)
         self.grid_columnconfigure(0,weight=1)
         self.draw_settings_ui()
     
@@ -1413,15 +1424,51 @@ class configSettingScrollFrame(customtkinter.CTkScrollableFrame):
         
         for field in settings_data:
 
-            self.field_frame = customtkinter.CTkFrame(self,fg_color=PBLC_Colors.frame("main"),corner_radius=15)
-            self.field_frame.grid(row=field_index,column=0,sticky='nsew')
+            self.field_frame = customtkinter.CTkFrame(self,fg_color=PBLC_Colors.frame("main"),corner_radius=5)
+            self.field_frame.grid(row=field_index,column=0,sticky='nsew',pady=4)
 
             field_index+=1
+
+            self.test_label = customtkinter.CTkLabel(self.field_frame,text=f"{field.capitalize()}:",font=('IBM 3270',30))
+            self.test_label.grid(row=0,column=0,sticky='w',padx=10,pady=5)
+
+            self.entry_container = customtkinter.CTkFrame(self.field_frame,fg_color=PBLC_Colors.frame("darker"),corner_radius=5)
+            self.entry_container.grid(row=1,column=0,sticky='nsew',padx=10,pady=10)
+
+            entry_index = 1
 
             for entry in settings_data[field]:
 
                 value = settings_data[field][entry]
-                print(f"{entry}:{value}")
+                proper_text = str(entry).split("_")
+                proper_text = " ".join(proper_text)
+                self.setting_name = customtkinter.CTkLabel(self.entry_container,text=f"{proper_text}:",font=('IBM 3270',15))
+                self.setting_name.grid(row=entry_index,column=0,sticky='w',padx=(30,10),pady=2)
+
+                self.setting_value = customtkinter.CTkEntry(self.entry_container,placeholder_text=settings_data[field][entry],width=500)
+                self.setting_value.grid(row=entry_index,column=1,sticky='w',pady=5,padx=(0,2))
+
+                self.save_settings = customtkinter.CTkButton(self.entry_container,text="Save",command=lambda entry=self.setting_value,field_i=field,entry_i=entry:self.update_setting(entry,field_i,entry_i))
+                self.save_settings.grid(row=entry_index,column=2,sticky='w',pady=5,padx=10)
+
+                entry_index +=1
+    
+    def update_setting(self,entry_value,field,entry):
+        settings_data = get_settings_file()
+
+        settings_data[field][entry] = entry_value.get()
+
+        with open(settings_file, "w") as settings_changes:
+            settings_changes.write(json.dumps(settings_data,indent=4))
+
+        entry_value.configure(placeholder_text=settings_data[field][entry])
+        entry_value.delete(0,len(entry_value.get()))
+        confirm_colors = list(colour.Color(PBLC_Colors.button("green_confirm")).range_to(colour.Color(PBLC_Colors.button("neutral_outline")),10))
+
+        widgetAnimation.gradientTimer(entry_value,confirm_colors,10)
+
+        #color_list =  list(colour.Color("red").range_to(colour.Color("green"),10))
+        
 
 
 class PBLC_Colors():
@@ -1435,7 +1482,9 @@ class PBLC_Colors():
             "disabled_dark" : "#1f1f1f",
             "warning" : "#fb4130",
             "outline": "#dd786f",
-            "outline_size": 2
+            "outline_size": 2,
+            "neutral_outline": "#363636",
+            "green_confirm": "#3eff48"
         }
 
         if not selection in options:
@@ -1468,7 +1517,9 @@ class PBLCApp(customtkinter.CTk):
         self.iconbitmap(resource_path("assets/pill_bottle.ico"))
 
         self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(1, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
+        
 
         installed_version_disp, installed_beta_version_disp, json_data_internal_disp, performance_mode_disp = get_current_version()
         installed_version, installed_beta_version, json_data_internal, performance_mode = get_current_version(True)
@@ -1488,7 +1539,7 @@ class PBLCApp(customtkinter.CTk):
         #frame
 
         self.tabview = customtkinter.CTkTabview(self,segmented_button_selected_color=PBLC_Colors.button("main"),segmented_button_selected_hover_color=PBLC_Colors.button("hover"))
-        self.tabview.grid(row=0, column=1,sticky='nsew')
+        self.tabview.grid(row=0, column=0,sticky='nsew')
 
         if isScriptFrozen:
             tabs = ["Home","Mods","Extras"]
@@ -1670,14 +1721,14 @@ class PBLCApp(customtkinter.CTk):
 
 
         if not isScriptFrozen:
-            self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Dev"), corner_radius=0, fg_color="black")
+            self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Dev"), corner_radius=0, fg_color="transparent")
             self.main_frame.grid_rowconfigure(0, weight=1)
             self.main_frame.grid_columnconfigure(0, weight=1)
             self.main_frame.grid(row=0,column=0,sticky="nsew")
             
 
-            #self.config_frame = configSettingScrollFrame(self.tabview.tab("Dev"),fg_color="transparent")
-            #self.config_frame.grid(row=0,column=0,sticky="nsew")
+            self.config_frame = configSettingScrollFrame(self.main_frame,fg_color="transparent",height=500)
+            self.config_frame.grid(row=0,column=0,sticky="nsew")
             
 
             #self.extras_frame = customtkinter.CTkFrame(self.main_frame,corner_radius=5,fg_color=PBLC_Colors.frame("main"))
