@@ -63,6 +63,13 @@
                 "url_add_mod|SimonTendo|LCGoldScrapMod|1.7.0",
                 "url_add_mod|BunyaPineTree|ModelReplacementAPI|2.4.5",
                 "update_vers|0.0.3"
+            ],
+            "0.0.4": [
+                "url_add_mod|IntegrityChaos|Diversity|2.1.0",
+                "url_add_mod|IntegrityChaos|GraphicsAPI|1.0.0",
+                "url_add_mod|IntegrityChaos|LCCutscene|1.0.0",
+                "download_bepinex|1nQiboRmeVun_AbhwWftwzCwE0KggHrTM",
+                "update_vers|0.0.4"
             ]
         }
     }
