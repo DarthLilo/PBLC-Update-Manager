@@ -52,7 +52,12 @@
                 "url_add_mod|FlipMods|TooManyEmotes|2.1.17",
                 "delete_mod|thomas|AlwaysShowClock",
                 "delete_mod|Dev1A3|ButlerAdditionalPlayerFix",
+                "download_bepinex|1hi9mJTBdyfVppQpzDC2zV_gwuQSrHvYg",
                 "update_vers|0.0.1"
+            ],
+            "0.0.2": [
+                "download_bepinex|1eTG0G4vGL1yfhhckuPAchiXQnmxRzBel",
+                "update_vers|0.0.2"
             ]
         }
     }
