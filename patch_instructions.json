@@ -28,5 +28,32 @@
                 "update_vers|0.0.0|9.1.0"
             ]
         }
+    },
+    "9.1.0": {
+        "release" : {
+            "0.0.1": [
+                "url_add_mod|KlutzyBubbles|BetterEmotes|1.5.0",
+                "url_add_mod|sfDesat|Celestial_Tint|1.4.3",
+                "url_add_mod|fumiko|CullFactory|1.1.2",
+                "url_add_mod|Sparble|FacelessStalker|1.1.5",
+                "url_add_mod|ShaosilGaming|GeneralImprovements|1.2.8",
+                "url_add_mod|XuXiaolan|ImmersiveScrap|1.0.2",
+                "url_add_mod|HGG|JigglePhysicsPlugin|1.1.21",
+                "url_add_mod|SimonTendo|LCGoldScrapMod|1.6.3",
+                "url_add_mod|Hardy|LCMaxSoundsFix|1.2.0",
+                "url_add_mod|IAmBatby|LethalLevelLoader|1.2.3",
+                "url_add_mod|qwbarch|Mirage|1.7.0",
+                "url_add_mod|mrov|MrovLib|0.0.9",
+                "url_add_mod|Zaggy1024|OpenBodyCams|2.1.2",
+                "url_add_mod|Zaggy1024|PathfindingLagFix|1.2.1",
+                "url_add_mod|ButteryStancakes|SnowyHolidayDropship|1.0.3",
+                "url_add_mod|mrov|TerminalFormatter|0.2.10",
+                "url_add_mod|XuXiaolan|TheGiantSpecimens|2.1.2",
+                "url_add_mod|FlipMods|TooManyEmotes|2.1.17",
+                "delete_mod|thomas|AlwaysShowClock",
+                "delete_mod|Dev1A3|ButlerAdditionalPlayerFix",
+                "update_vers|0.0.1"
+            ]
+        }
     }
 }
