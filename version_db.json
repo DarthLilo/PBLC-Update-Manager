@@ -1,6 +1,6 @@
 {
     "release" : {
-        "name":"PBLC","description":"Latest update for our v50 build, this is a massive update around 2.6GB but you should only need to install it once!","version": "9.0.0","release_date":"4-27-2024","source":"1Kog2EiVpYXEB2ljnSLXuzUO5Olpo4Z4G", "needs_reinstall":false, "starting_version":"9.0.0", "pblc_min":"0.2.8"
+        "name":"PBLC","description":"Recent build for v50 with multiple bug fixes and a new map!","version": "9.1.0","release_date":"5-17-2024","source":"1PQF-UCblShCjCRkmjNNzMbLPleYQ7N4C", "needs_reinstall":false, "starting_version":"9.0.0", "pblc_min":"0.2.8"
     },
     "beta" : {
         "name":"PBLC BETA","description":"Latest update for our v50 build, this is a massive update around 2.6GB but you should only need to install it once!","version": "9.0.0","beta_version":"0.1.1","release_date":"4-27-2024","source":"1Kog2EiVpYXEB2ljnSLXuzUO5Olpo4Z4G", "needs_reinstall":false, "starting_version":"9.0.0", "pblc_min":"0.2.8"
