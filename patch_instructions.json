@@ -58,6 +58,11 @@
             "0.0.2": [
                 "download_bepinex|1eTG0G4vGL1yfhhckuPAchiXQnmxRzBel",
                 "update_vers|0.0.2"
+            ],
+            "0.0.3": [
+                "url_add_mod|SimonTendo|LCGoldScrapMod|1.7.0",
+                "url_add_mod|BunyaPineTree|ModelReplacementAPI|2.4.5",
+                "update_vers|0.0.3"
             ]
         }
     }
