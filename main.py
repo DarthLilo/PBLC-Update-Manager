@@ -1,4 +1,4 @@
-import json, os, winreg, vdf, shutil, zipfile,gdown, sys, customtkinter, pyglet, subprocess, progressbar, webbrowser, requests, validators, colour, threading, time
+import json, os, winreg, vdf, shutil, zipfile,gdown, sys, customtkinter, pyglet, subprocess, progressbar, webbrowser, requests, validators, threading, pyeaze, configobj
 from PIL import Image,ImageDraw
 from urllib import request
 from urllib.error import HTTPError, URLError
@@ -101,25 +101,66 @@ def roundImageCorners(source_image, rad):
     source_image.putalpha(alpha)
     return source_image
 
-settings_file = os.path.normpath(f"{getCurrentPathLoc()}/data/config.json")
 
-def get_settings_file():
-    settings_data = open_json(settings_file)
-    return settings_data
+class settingsMan():
+        
+    settings_file_path = os.path.normpath(f"{getCurrentPathLoc()}/data/pblc_update_man.ini")
 
-def readSettingsValue(container,value):
-    settings_data = get_settings_file()
-
-    try:
-        setting = settings_data[container][value]
-    except KeyError:
-        setting = None
+    def generate_settings():
+        #if not os.path.exists(settingsMan.settings_file_path):
+        settingsMan.resetSettingsDefault()
     
-    return setting
+    def get_settings_file():
+        settings_data = open_json(settingsMan.settings_file_path)
+        return settings_data
+
+    def resetSettingsDefault():
+
+        config=configobj.ConfigObj()
+        config.filename = settingsMan.settings_file_path
+        config.initial_comment = ["PBLC Update Manager Configuration",""]
+        
+
+        #CONFIG WRITING
+
+        program = {
+            "version_db": {"value":"","description":"This is a test description"},
+            "patch_instructions": {"value":"","description":"This is a test description"},
+            "lethal_path": {"value":"","description":"This is a test description"}
+        }
+        
+        config['program'] = program
+
+        config.comments['version_db'] = ["test"]
+
+        config.write()
+
+        return
+
+    def readSettingsValue(container,value):
+        settings_data = settingsMan.get_settings_file()
+
+        try:
+            setting = settings_data[container][value]
+        except KeyError:
+            setting = None
+
+        return setting
+
+    def writeSettingsValue(container,value,new_value):
+
+        cur_data = settingsMan.get_settings_file()
+
+        cur_data[container][value] = new_value
+
+        with open(settingsMan.settings_file_path, "w") as settings_changes:
+            settings_changes.write(json.dumps(cur_data,indent=4))
+
+settingsMan.generate_settings()
 
 def locate_lethal_company():
 
-    custom_lethal_path = readSettingsValue("program","lethal_path")
+    custom_lethal_path = ""#settingsMan.readSettingsValue("program","lethal_path")
     
     if os.path.exists(custom_lethal_path):
         return custom_lethal_path
@@ -155,24 +196,6 @@ def migrate_update_files(source,destination):
 
         shutil.move(file_path,destination_path)
 
-def resetSettingsDefault(settings_file):
-    default_settings = {
-        "program": {
-            "version_db": "",
-            "patch_instructions": "",
-            "lethal_path": ""
-        }
-    }
-
-    with open(settings_file, "w") as settings_gen:
-        settings_gen.write(json.dumps(default_settings,indent=4))
-    
-    return
-
-#settings generation
-if not os.path.exists(settings_file):
-    resetSettingsDefault(settings_file)
-
 def move_file(source,dest):
     if os.path.exists(dest):
         os.remove(dest)
@@ -204,7 +227,7 @@ if not os.path.exists(dev_mode):
 def grab_version_db():
     
     default_version_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
-    local_version_db = readSettingsValue("program","version_db")
+    local_version_db = settingsMan.readSettingsValue("program","version_db")
     is_url = False
     if validators.url(local_version_db):
         is_url = True
@@ -223,7 +246,7 @@ def grab_version_db():
 
 def grab_patch_instructions():
     default_patch_instruct = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/patch_instructions.json"
-    local_patch_instruct = readSettingsValue("program","patch_instructions")
+    local_patch_instruct = settingsMan.readSettingsValue("program","patch_instructions")
     is_url = False
     if validators.url(local_patch_instruct):
         is_url = True
@@ -796,14 +819,10 @@ def uninstallMods():
         pblc_reset.write(json.dumps({"version": "0.0.0", "beta_version": "0.0.0", "beta_goal": "0.0.0", "performance_mode": "off"}))
 
 class widgetAnimation():
-    def gradientTimer(master,colors,steps):
-        for i in range(steps):
-            threading.Thread(target=widgetAnimation.updateBorderColor(master,str(colors[i]))).start()
-
-    def updateBorderColor(master,color):
-        time.sleep(1)
-        print("rah")
-        #app.after(1000,threading.Thread(target=print("rah")).start())
+    def animate_border(master,start_color,end_color,duration):
+        border_anim = pyeaze.Animator(current_value=start_color,target_value=end_color,duration=duration,fps=60,easing='ease')
+        for color in border_anim:
+            master.configure(border_color=color)
     
 
 class thunderstore():
@@ -1418,7 +1437,7 @@ class configSettingScrollFrame(customtkinter.CTkScrollableFrame):
         self.draw_settings_ui()
     
     def draw_settings_ui(self):
-        settings_data = get_settings_file()
+        settings_data = settingsMan.get_settings_file()
 
         field_index = 0
         
@@ -1442,32 +1461,25 @@ class configSettingScrollFrame(customtkinter.CTkScrollableFrame):
                 value = settings_data[field][entry]
                 proper_text = str(entry).split("_")
                 proper_text = " ".join(proper_text)
-                self.setting_name = customtkinter.CTkLabel(self.entry_container,text=f"{proper_text}:",font=('IBM 3270',15))
+                self.setting_name = customtkinter.CTkLabel(self.entry_container,text=f"{proper_text}:",font=('IBM 3270',17))
                 self.setting_name.grid(row=entry_index,column=0,sticky='w',padx=(30,10),pady=2)
 
                 self.setting_value = customtkinter.CTkEntry(self.entry_container,placeholder_text=settings_data[field][entry],width=500)
                 self.setting_value.grid(row=entry_index,column=1,sticky='w',pady=5,padx=(0,2))
 
-                self.save_settings = customtkinter.CTkButton(self.entry_container,text="Save",command=lambda entry=self.setting_value,field_i=field,entry_i=entry:self.update_setting(entry,field_i,entry_i))
+                self.save_icon = customtkinter.CTkImage(PBLC_Icons.save(),size=(30,30))
+                self.save_settings = customtkinter.CTkButton(self.entry_container,text="",width=10,image=self.save_icon,command=lambda entrya=self.setting_value,field_i=field,entry_i=entry:threading.Thread(target=lambda entrya=entrya,field_i=field_i,entry_i=entry_i:self.update_setting(entrya,field_i,entry_i)).start())
                 self.save_settings.grid(row=entry_index,column=2,sticky='w',pady=5,padx=10)
 
                 entry_index +=1
     
     def update_setting(self,entry_value,field,entry):
-        settings_data = get_settings_file()
 
-        settings_data[field][entry] = entry_value.get()
-
-        with open(settings_file, "w") as settings_changes:
-            settings_changes.write(json.dumps(settings_data,indent=4))
-
-        entry_value.configure(placeholder_text=settings_data[field][entry])
+        settingsMan.writeSettingsValue(field,entry,entry_value.get())
+        entry_value.configure(placeholder_text=entry_value.get())
         entry_value.delete(0,len(entry_value.get()))
-        confirm_colors = list(colour.Color(PBLC_Colors.button("green_confirm")).range_to(colour.Color(PBLC_Colors.button("neutral_outline")),10))
-
-        widgetAnimation.gradientTimer(entry_value,confirm_colors,10)
-
-        #color_list =  list(colour.Color("red").range_to(colour.Color("green"),10))
+        app.focus_set()
+        widgetAnimation.animate_border(entry_value,PBLC_Colors.button("green_confirm"),PBLC_Colors.button("neutral_outline"),0.15)
         
 
 
@@ -1483,7 +1495,7 @@ class PBLC_Colors():
             "warning" : "#fb4130",
             "outline": "#dd786f",
             "outline_size": 2,
-            "neutral_outline": "#363636",
+            "neutral_outline": "#565b5e",
             "green_confirm": "#3eff48"
         }
 
@@ -1727,8 +1739,8 @@ class PBLCApp(customtkinter.CTk):
             self.main_frame.grid(row=0,column=0,sticky="nsew")
             
 
-            self.config_frame = configSettingScrollFrame(self.main_frame,fg_color="transparent",height=500)
-            self.config_frame.grid(row=0,column=0,sticky="nsew")
+            #self.config_frame = configSettingScrollFrame(self.main_frame,fg_color="transparent",height=500)
+            #self.config_frame.grid(row=0,column=0,sticky="nsew")
             
 
             #self.extras_frame = customtkinter.CTkFrame(self.main_frame,corner_radius=5,fg_color=PBLC_Colors.frame("main"))
