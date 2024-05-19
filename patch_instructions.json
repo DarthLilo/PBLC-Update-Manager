@@ -70,6 +70,10 @@
                 "url_add_mod|IntegrityChaos|LCCutscene|1.0.0",
                 "download_bepinex|1nQiboRmeVun_AbhwWftwzCwE0KggHrTM",
                 "update_vers|0.0.4"
+            ],
+            "0.0.5": [
+                "download_bepinex|18keXHmss_bfjQ0GogZ4nH3FwZF0Ryw9p",
+                "update_vers|0.0.5"
             ]
         }
     }
