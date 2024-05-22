@@ -1,4 +1,4 @@
-import json, os, winreg, vdf, shutil, zipfile,gdown, sys, customtkinter, pyglet, subprocess, progressbar, webbrowser, requests, validators, threading, pyeaze, configobj
+import json, os, winreg, vdf, shutil, zipfile,gdown, sys, customtkinter, pyglet, subprocess, progressbar, webbrowser, requests, validators, threading, pyeaze, configobj, time
 from PIL import Image,ImageDraw
 from urllib import request
 from urllib.error import HTTPError, URLError
@@ -435,6 +435,13 @@ def compress_zip_dir(zip_file,dir_path):
                 zipf.write(absolute_path, arcname=relative_path)
 
 def startUpdate(update_data,update_type):
+    print("Beginning Update \"Download\"...")
+    
+    time.sleep(5)
+
+    print("Finished updating")
+
+def startUpdate_ORG(update_data,update_type):
     #try:
     print("Update Available, beginning download...")
 
@@ -451,6 +458,7 @@ def startUpdate(update_data,update_type):
 
         if os.path.exists(f):
             if os.path.isdir(f):
+                pass
                 shutil.rmtree(f)
 
             elif os.path.isfile(f):
@@ -712,7 +720,9 @@ def checkForUpdates(self,update_type):
             prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Vanilla or broken version detected, would you like to install the latest mods?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"Vanilla or broken version detected, would you like to install the latest mods?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
-                startUpdate(github_repo_json[update_type],update_type)
+                threading.Thread(target=lambda update_data = github_repo_json[update_type], update_type = update_type: startUpdate(update_data,update_type)).start()
+                #startUpdate(github_repo_json[update_type],update_type)
+                print("oh hey the bypass worked :blush:")
         elif installed_beta_version > version.Version("0.0.0"):
             print("Beta release detected, prompting switch...")
             prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"It looks like you're using a beta version of our modpack, would you like to switch back to the last stable release?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
@@ -897,8 +907,6 @@ class thunderstore():
 
             mod_database_local = get_mod_database()
             mod_list = mod_database_local["installed_mods"]
-
-            print()
             
             mod_list[f"{namespace}-{name}"] = {
                 "name": name,
@@ -1070,27 +1078,37 @@ class thunderstore_ops():
             os.mkdir(downloads_folder)
 
         
-        pack_req = requests.get(download_link)
+        pack_req = requests.get(download_link,stream=True)
         
         total_size_in_bytes = int(pack_req.headers.get('content-length', 0))
         widgets = [progressbar.Percentage(), ' ', progressbar.Bar()]
         progress_bar = progressbar.ProgressBar(maxval=total_size_in_bytes, widgets=widgets).start()
+        
+        #print(progress_bar.percentage())
+
+        pbar_enabled = app.download_ui_visible
+
+        downloaded_size = 0
 
         with open(download_loc,'wb') as dl_package:
-            #dl_package.write(pack_req.content)
-            def progress_bar_update(chunk):
+            #dl_package.write(pack_req.content)  
+            for chunk in pack_req.iter_content(chunk_size=1024):
+                current_progress = round(progress_bar.percentage())/100
+                
                 dl_package.write(chunk)
                 progress_bar.update(dl_package.tell())
-                
-            for chunk in pack_req.iter_content(chunk_size=1024):
-                if chunk:
-                    progress_bar_update(chunk)
-        
-        print("")
+
+                downloaded_size += len(chunk)
+
+                if pbar_enabled and downloaded_size >= total_size_in_bytes // 10:
+                    print("testing")
+                    app.pblc_progress_bar.set(current_progress)
         
         decompress_zip(download_loc,downloads_folder)
 
-        thunderstore_ops.install_package(namespace,name,version,dependencies)
+        #thunderstore_ops.install_package(namespace,name,version,dependencies)
+    
+    #def update_progress_bar()
     
 
     def copy_icon(cur_path,full_name):
@@ -1568,7 +1586,11 @@ class PBLCApp(customtkinter.CTk):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        
+        self.download_ui_visible = False
+
+        self.drawPBLCUI()
+    
+    def drawPBLCUI(self):
 
         installed_version_disp, installed_beta_version_disp, json_data_internal_disp, performance_mode_disp = get_current_version()
         installed_version, installed_beta_version, json_data_internal, performance_mode = get_current_version(True)
@@ -1775,34 +1797,34 @@ class PBLCApp(customtkinter.CTk):
             self.main_frame.grid_columnconfigure(0, weight=1)
             self.main_frame.grid(row=0,column=0,sticky="nsew")
             
+            self.devresetbutton = customtkinter.CTkButton(self.main_frame,text="display update ui",command=self.drawUpdateUI)
+            self.devresetbutton.grid(row=0,column=0)
+    
+            #self.config_frame = configSettingScrollFrame(self.main_frame,fg_color="transparent",height=500)
+            #self.config_frame.grid(row=0,column=0,sticky="nsew")
+    
+    def drawUpdateUI(self):
+        print("Destroying main UI")
+        self.destroyPBLCUI()
+        print("Drawing Update UI...")
 
-            self.config_frame = configSettingScrollFrame(self.main_frame,fg_color="transparent",height=500)
-            self.config_frame.grid(row=0,column=0,sticky="nsew")
-            
+        self.download_ui_visible = True
 
-            #self.extras_frame = customtkinter.CTkFrame(self.main_frame,corner_radius=5,fg_color=PBLC_Colors.frame("main"))
-            #self.extras_frame.grid(row=0,column=0,sticky="nsew")
-            #self.extras_frame.grid_columnconfigure(0, weight=1)
+        self.update_frame = customtkinter.CTkFrame(self,fg_color="black")
+        self.update_frame.grid(row=0,column=0,sticky="nsew")
+        self.update_frame.grid_columnconfigure(0,weight=1)
+        self.update_frame.grid_rowconfigure(0,weight=1)
+        self.update_frame.grid_rowconfigure(1,weight=1)
 
-            #self.program_frame = customtkinter.CTkFrame(self.extras_frame,corner_radius=5,fg_color=PBLC_Colors.frame("darker"))
-            #self.program_frame.grid(row=0,column=0,pady=15,padx=15)
-#
-            #self.program_label = customtkinter.CTkLabel(self.program_frame,text="Program:",justify='left',font=('IBM 3270',35))
-            #self.program_label.grid(row=0,column=0,pady=5,padx=5,sticky="w")
-#
-            #self.version_database_entry = customtkinter.CTkEntry(self.program_frame,placeholder_text="URL to a version_db.file",width=460)
-            #self.version_database_entry.grid(row=1,column=0,pady=(35,5),padx=(5,0))
-#
-            #self.save_version_entry = customtkinter.CTkButton(self.program_frame,text="Apply")
-            #self.save_version_entry.grid(row=1,column=1,pady=(35,5))
+        self.pblc_progress_bar = customtkinter.CTkProgressBar(self.update_frame,width=800)
+        self.pblc_progress_bar.grid(row=0,column=0)
+        self.pblc_progress_bar.set(0)
 
-            #self.create_patch_save_temp = customtkinter.CTkButton(self.program_frame,text="Create Patch Save")
-            #self.create_patch_save_temp.grid(row=1,column=0,pady=(35,5),padx=5,sticky="w")
+        self.temp_button = customtkinter.CTkButton(self.update_frame,text="test_button",command=lambda namespace="FlipMods",name="TooManyEmotes",pkg_version="2.1.17":threading.Thread(target=lambda namespace=namespace, name=name, pkg_version=pkg_version: thunderstore_ops.download_package(namespace,name,pkg_version,None),daemon=True).start())
+        self.temp_button.grid(row=1,column=0)
 
-            #self.save_version_path_url = customtkinter.CTkSegmentedButton(self.program_frame,values=["URL","PATH"])
-            #self.save_version_path_url.grid(row=1,column=2,pady=(35,5),padx=(40,5))
-            #self.save_version_path_url.set("URL")
-
+    def destroyPBLCUI(self):
+        self.tabview.destroy()
             
     
     # download_bepinex | GDCODE
