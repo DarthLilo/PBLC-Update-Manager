@@ -10,7 +10,7 @@ print("Loading...")
 
 pbar = None
 
-PBLC_Update_Manager_Version = "0.2.9"
+PBLC_Update_Manager_Version = "0.3.0"
 
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
 customtkinter.set_appearance_mode("dark")
@@ -107,12 +107,8 @@ class settingsMan():
     settings_file_path = os.path.normpath(f"{getCurrentPathLoc()}/data/pblc_update_man.ini")
 
     def generate_settings():
-        #if not os.path.exists(settingsMan.settings_file_path):
-        settingsMan.resetSettingsDefault()
-    
-    def get_settings_file():
-        settings_data = open_json(settingsMan.settings_file_path)
-        return settings_data
+        if not os.path.exists(settingsMan.settings_file_path):
+            settingsMan.resetSettingsDefault()
 
     def resetSettingsDefault():
 
@@ -123,44 +119,49 @@ class settingsMan():
 
         #CONFIG WRITING
 
+        paths = {
+            "version_database": {"value":"","description":"Determines where the program checks for updates. This can be a URL or a PATH","default":"","type":"string"},
+            "patch_instructions": {"value":"","description":"Determines where the program checks for patches. This can be a URL or a PATH","default":"","type":"string"},
+            "lethal_company_path": {"value":"","description":"Location of your Lethal Company root folder","default":"","type":"string"}
+        }
+
         program = {
-            "version_db": {"value":"","description":"This is a test description"},
-            "patch_instructions": {"value":"","description":"This is a test description"},
-            "lethal_path": {"value":"","description":"This is a test description"}
+            "check_for_updates_automatically": {"value": True,"description":"Does the program check for updates automatically on startup and prompt the user?","default":True,"type":"bool"},
+            "show_beta_options": {"value":False,"description":"Will the user be able to see the beta options?","default":False,"type":"bool"},
+            "enable_mods_menu": {"value": False,"description":"Will the program cache enabled mods on startup or ignore them?","default":False,"type":"bool"}
         }
         
+        config['paths'] = paths
         config['program'] = program
 
-        config.comments['version_db'] = ["test"]
+        config.comments['paths'] = ["Path related settings, changing these may break the program!"]
+        config.comments['program'] = ["","General settings related to the program"]
 
         config.write()
 
         return
 
-    def readSettingsValue(container,value):
-        settings_data = settingsMan.get_settings_file()
-
-        try:
-            setting = settings_data[container][value]
-        except KeyError:
-            setting = None
-
-        return setting
+    def readSettingsValue(container,value,index=0):
+        config = configobj.ConfigObj(settingsMan.settings_file_path)
+        selections = ['value','description','default','type']
+        return config[container][value][selections[index]]
 
     def writeSettingsValue(container,value,new_value):
 
-        cur_data = settingsMan.get_settings_file()
+        config = configobj.ConfigObj(settingsMan.settings_file_path)
 
-        cur_data[container][value] = new_value
+        config[container][value]['value'] = new_value
 
-        with open(settingsMan.settings_file_path, "w") as settings_changes:
-            settings_changes.write(json.dumps(cur_data,indent=4))
+        config.write()
+
+    def returnSettingsData():
+        return configobj.ConfigObj(settingsMan.settings_file_path)
 
 settingsMan.generate_settings()
 
 def locate_lethal_company():
 
-    custom_lethal_path = ""#settingsMan.readSettingsValue("program","lethal_path")
+    custom_lethal_path = settingsMan.readSettingsValue("paths","lethal_company_path")
     
     if os.path.exists(custom_lethal_path):
         return custom_lethal_path
@@ -227,7 +228,7 @@ if not os.path.exists(dev_mode):
 def grab_version_db():
     
     default_version_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
-    local_version_db = settingsMan.readSettingsValue("program","version_db")
+    local_version_db = settingsMan.readSettingsValue("paths","version_database")
     is_url = False
     if validators.url(local_version_db):
         is_url = True
@@ -246,7 +247,7 @@ def grab_version_db():
 
 def grab_patch_instructions():
     default_patch_instruct = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/patch_instructions.json"
-    local_patch_instruct = settingsMan.readSettingsValue("program","patch_instructions")
+    local_patch_instruct = settingsMan.readSettingsValue("paths","patch_instructions")
     is_url = False
     if validators.url(local_patch_instruct):
         is_url = True
@@ -706,7 +707,7 @@ def checkForUpdates(self,update_type):
                         startUpdate(github_repo_json[update_type],update_type)
                     return
 
-        if not os.path.exists(bepinex_path) or not os.path.exists(doorstop_path) or not os.path.exists(winhttp_path):
+        if not os.path.exists(bepinex_path) or not os.path.exists(doorstop_path) or not os.path.exists(winhttp_path) or installed_stable_version == version.Version("0.0.0"):
             print("Vanilla or broken version found.")
             prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Vanilla or broken version detected, would you like to install the latest mods?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"Vanilla or broken version detected, would you like to install the latest mods?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
@@ -721,7 +722,7 @@ def checkForUpdates(self,update_type):
 
         elif installed_stable_version < latest_version:
             print("New Update Found.")
-            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"An update is available, would you like to install it?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"An update is available, would you like to install it?\n{installed_stable_version} < {latest_version}",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"An update is available, would you like to install it?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
                 startUpdate(github_repo_json[update_type],update_type)
@@ -737,7 +738,7 @@ def checkForUpdates(self,update_type):
     #BETA
     else:
 
-        if not os.path.exists(bepinex_path) or not os.path.exists(doorstop_path) or not os.path.exists(winhttp_path):
+        if not os.path.exists(bepinex_path) or not os.path.exists(doorstop_path) or not os.path.exists(winhttp_path) or installed_beta_version == version.Version("0.0.0"):
             print("Vanilla or broken version found.")
             prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Vanilla or broken version detected, would you like to install the latest beta mods?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"Vanilla or broken version detected, would you like to install the latest beta mods?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
@@ -1437,7 +1438,7 @@ class configSettingScrollFrame(customtkinter.CTkScrollableFrame):
         self.draw_settings_ui()
     
     def draw_settings_ui(self):
-        settings_data = settingsMan.get_settings_file()
+        settings_data = settingsMan.returnSettingsData()
 
         field_index = 0
         
@@ -1445,39 +1446,65 @@ class configSettingScrollFrame(customtkinter.CTkScrollableFrame):
 
             self.field_frame = customtkinter.CTkFrame(self,fg_color=PBLC_Colors.frame("main"),corner_radius=5)
             self.field_frame.grid(row=field_index,column=0,sticky='nsew',pady=4)
+            self.field_frame.grid_columnconfigure(0,weight=1)
 
             field_index+=1
 
             self.test_label = customtkinter.CTkLabel(self.field_frame,text=f"{field.capitalize()}:",font=('IBM 3270',30))
             self.test_label.grid(row=0,column=0,sticky='w',padx=10,pady=5)
 
-            self.entry_container = customtkinter.CTkFrame(self.field_frame,fg_color=PBLC_Colors.frame("darker"),corner_radius=5)
-            self.entry_container.grid(row=1,column=0,sticky='nsew',padx=10,pady=10)
-
             entry_index = 1
 
             for entry in settings_data[field]:
 
-                value = settings_data[field][entry]
+                self.setting_details = customtkinter.CTkFrame(self.field_frame,fg_color="black",width=400,height=100)
+                self.setting_details.grid(row=entry_index,column=0,pady=3,padx=3,sticky='we')
+                self.setting_details.grid_columnconfigure(0,weight=1)
+
                 proper_text = str(entry).split("_")
                 proper_text = " ".join(proper_text)
-                self.setting_name = customtkinter.CTkLabel(self.entry_container,text=f"{proper_text}:",font=('IBM 3270',17))
-                self.setting_name.grid(row=entry_index,column=0,sticky='w',padx=(30,10),pady=2)
+                self.setting_name = customtkinter.CTkLabel(self.setting_details,text=f"{proper_text.capitalize()}:",font=('IBM 3270',17))
+                self.setting_name.grid(row=0,column=0,sticky='w',padx=(30,10),pady=2)
 
-                self.setting_value = customtkinter.CTkEntry(self.entry_container,placeholder_text=settings_data[field][entry],width=500)
-                self.setting_value.grid(row=entry_index,column=1,sticky='w',pady=5,padx=(0,2))
+                setting_type = settingsMan.readSettingsValue(field,entry,3)
+
+                if setting_type == 'string':
+
+                    self.setting_value = customtkinter.CTkEntry(self.setting_details,placeholder_text=settingsMan.readSettingsValue(field,entry),width=500,height=38)
+                    self.setting_value.grid(row=0,column=1,sticky='w',pady=5,padx=(0,2))
+                
+                elif setting_type == 'bool':
+
+                    self.setting_box_var = customtkinter.StringVar(value=settingsMan.readSettingsValue(field,entry))
+                    self.setting_value = customtkinter.CTkCheckBox(self.setting_details,text="",variable=self.setting_box_var,onvalue="True",offvalue="False")
+                    self.setting_value.grid(row=0,column=1,sticky='w')
 
                 self.save_icon = customtkinter.CTkImage(PBLC_Icons.save(),size=(30,30))
-                self.save_settings = customtkinter.CTkButton(self.entry_container,text="",width=10,image=self.save_icon,command=lambda entrya=self.setting_value,field_i=field,entry_i=entry:threading.Thread(target=lambda entrya=entrya,field_i=field_i,entry_i=entry_i:self.update_setting(entrya,field_i,entry_i)).start())
-                self.save_settings.grid(row=entry_index,column=2,sticky='w',pady=5,padx=10)
+                self.save_settings = customtkinter.CTkButton(self.setting_details,text="",width=10,image=self.save_icon,command=lambda entrya=self.setting_value,field_i=field,entry_i=entry:threading.Thread(target=lambda entrya=entrya,field_i=field_i,entry_i=entry_i:self.update_setting(entrya,field_i,entry_i)).start())
+                self.save_settings.grid(row=0,column=2,sticky='w',pady=5,padx=10)
+
+                if settingsMan.readSettingsValue(field,entry,2):
+
+                    self.entry_description = customtkinter.CTkLabel(self.setting_details,text=settingsMan.readSettingsValue(field,entry,1),font=customtkinter.CTkFont("Segoe UI",size=15,slant='italic'),text_color=PBLC_Colors.text("gray"))
+                    self.entry_description.grid(row=1,column=0,sticky='w',padx=(60,0),columnspan=2)
+
+                    self.entry_default = customtkinter.CTkLabel(self.setting_details,text=f"Default = {settingsMan.readSettingsValue(field,entry,2)}",font=customtkinter.CTkFont("Segoe UI",size=15,slant='italic'),text_color=PBLC_Colors.text("gray"))
+                    self.entry_default.grid(row=2,column=0,sticky='w',padx=(90,0),pady=7,columnspan=2)
+                else:
+                    self.entry_description = customtkinter.CTkLabel(self.setting_details,text=settingsMan.readSettingsValue(field,entry,1),font=customtkinter.CTkFont("Segoe UI",size=15,slant='italic'),text_color=PBLC_Colors.text("gray"))
+                    self.entry_description.grid(row=1,column=0,sticky='w',padx=(60,0),pady=7,columnspan=2)
 
                 entry_index +=1
     
     def update_setting(self,entry_value,field,entry):
 
         settingsMan.writeSettingsValue(field,entry,entry_value.get())
-        entry_value.configure(placeholder_text=entry_value.get())
-        entry_value.delete(0,len(entry_value.get()))
+        try:
+            entry_value.configure(placeholder_text=entry_value.get())
+            entry_value.delete(0,len(entry_value.get()))
+        except:
+            pass
+
         app.focus_set()
         widgetAnimation.animate_border(entry_value,PBLC_Colors.button("green_confirm"),PBLC_Colors.button("neutral_outline"),0.15)
         
@@ -1508,6 +1535,16 @@ class PBLC_Colors():
         options = {
             "main" : "#191919",
             "darker": "#0C0C0C"
+        }
+
+        if not selection in options:
+            return PBLC_Colors.invalid()
+
+        return options[selection]
+    
+    def text(selection):
+        options = {
+            "gray": "#5c5c5c"
         }
 
         if not selection in options:
@@ -1739,8 +1776,8 @@ class PBLCApp(customtkinter.CTk):
             self.main_frame.grid(row=0,column=0,sticky="nsew")
             
 
-            #self.config_frame = configSettingScrollFrame(self.main_frame,fg_color="transparent",height=500)
-            #self.config_frame.grid(row=0,column=0,sticky="nsew")
+            self.config_frame = configSettingScrollFrame(self.main_frame,fg_color="transparent",height=500)
+            self.config_frame.grid(row=0,column=0,sticky="nsew")
             
 
             #self.extras_frame = customtkinter.CTkFrame(self.main_frame,corner_radius=5,fg_color=PBLC_Colors.frame("main"))
