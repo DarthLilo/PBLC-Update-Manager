@@ -180,9 +180,11 @@ def locate_lethal_company():
                 lethal_path = os.path.normpath(f"{cur_lib['path']}/steamapps/common/Lethal Company")
                 return lethal_path
 
-def download_from_google_drive(source,destination):
+def download_from_google_drive(source,destination,bar=None):
     print(f"Beginning download of {source} from Google Drive...")
-    gdown.download(id=source,output=destination)
+    gdown.download(id=source,output=destination,bar=bar)
+    if bar:
+        app.updateProgressCount()
 
 def migrate_update_files(source,destination):
     print("Moving files...")
@@ -404,9 +406,9 @@ class version_man():
 
         return patch_version
 
-def download_update(update_data):
+def download_update(update_data,bar=None):
     latest_update_zip = f"{downloads_folder}/{update_data['name']}.zip"
-    download_from_google_drive(update_data['source'],latest_update_zip)
+    download_from_google_drive(update_data['source'],latest_update_zip,bar=bar)
     return latest_update_zip
 
 def decompress_zip(zip_file,destination):
@@ -434,23 +436,51 @@ def compress_zip_dir(zip_file,dir_path):
                 print(f"Compressing {relative_path}...")
                 zipf.write(absolute_path, arcname=relative_path)
 
-def startUpdate(update_data,update_type):
-    print("Beginning Update \"Download\"...")
+def cacheInstructionLen(cache_type,target_version):
+    instruction_len = 0
+
+    #cache type
+    if cache_type == "full":
+        instruction_len += 1
+
+    patch_instruct = grab_patch_instructions()
+    current_patch = version_man.get_patch()
+
     
-    time.sleep(5)
 
-    print("Finished updating")
+    
+    
+    #patch len
 
-def startUpdate_ORG(update_data,update_type):
+    if target_version in patch_instruct:
+        for patch in patch_instruct[target_version]['release']:
+            if version.Version(patch) > version.Version(current_patch):
+                instruction_len += len(patch_instruct[target_version]['release'][patch])
+    
+    #recursive version checking
+    for release in patch_instruct:
+        if version.Version(release) > version.Version(target_version):
+            instruction_len += cacheInstructionLen(cache_type,release)
+            break
+    return instruction_len
+
+
+
+#def startUpdate(update_data,update_type):
+#    
+#    instruction_len = cacheInstructionLen("full",update_data['version'])
+#    print(instruction_len)
+
+def startUpdate(update_data,update_type):
     #try:
-    print("Update Available, beginning download...")
+    print("Beginning download...")
 
     print(f"\nUpdating modpack to version {update_data['version']}\n")
 
     if not os.path.exists(downloads_folder):
         os.mkdir(downloads_folder)
 
-    latest_update_zip = download_update(update_data)
+    latest_update_zip = download_update(update_data,app.updateProgressBar)
 
     clear_files = [bepinex_path,doorstop_path,winhttp_path]
     for i in range(len(clear_files)):
@@ -501,7 +531,7 @@ def startUpdate_ORG(update_data,update_type):
     if patch_db == None: return
     cur_patch_ver = version_man.get_patch()
 
-    if update_data['version'] in patch_db:
+    if update_data['version'] in patch_db and update_type == "release":
         for patch in patch_db[update_data['version']][update_type]:
             if version.Version(patch) > version.Version(cur_patch_ver):
                     applyNewPatches(patch_db,update_type,update_data['version'])
@@ -553,11 +583,11 @@ def downloadGDPatch(gdlink):
         os.mkdir(downloads_folder)
 
     zip_down_loc = f"{downloads_folder}/pblc_patch.zip"
-    download_from_google_drive(gdlink,zip_down_loc)
+    download_from_google_drive(gdlink,zip_down_loc,app.updateProgressBar)
     decompress_zip(zip_down_loc,LC_Path)
     shutil.rmtree(downloads_folder)
 
-def decodePatchCommand(input_command):
+def decodePatchCommand(input_command,bar=None):
     split_commnad = str(input_command).split("|")
 
     command=split_commnad[0]
@@ -569,8 +599,11 @@ def decodePatchCommand(input_command):
         namespace = split_commnad[1]
         name = split_commnad[2]
         target_vers = split_commnad[3]
-        print(f"Importing {namespace}-{name} from Thunderstore...")
-        thunderstore.import_from_url(f"https://thunderstore.io/c/lethal-company/p/{namespace}/{name}/",target_vers)
+        if not thunderstore.is_installed(namespace,name,target_vers):
+            print(f"Importing {namespace}-{name} from Thunderstore...")
+            thunderstore.import_from_url(f"https://thunderstore.io/c/lethal-company/p/{namespace}/{name}/",target_vers)
+        else:
+            print(f"{namespace}-{name}-{target_vers} is already installed, skipping...")
     elif command == "delete_mod":
         namespace = split_commnad[1]
         name = split_commnad[2]
@@ -597,24 +630,29 @@ def decodePatchCommand(input_command):
             install_version["beta_goal"] = "0.0.0"
             mod_database_local["patch_version"] = new_patch_head
 
+            
+
             with open(pblc_vers, "w") as patch_updater:
                 patch_updater.write(json.dumps(install_version))
 
         with open(moddb_file, "w") as patch_db_updater:
                 patch_db_updater.write(json.dumps(mod_database_local,indent=4))
+        
+        app.updateProgressCount()
+        
+        
 
-def applyNewPatches(patch_db,update_type,cur_version):
+def applyNewPatches(patch_db,update_type,cur_version,bar=None): #INIT PATCH COUNT BEFOREHAND
     cur_patch_ver = version_man.get_patch()
 
     for patch in patch_db[cur_version][update_type]:
         if version.Version(patch) > version.Version(cur_patch_ver):
             print(f"\nApplying patches for {cur_version}\n")
             for command in patch_db[cur_version][update_type][patch]:
-                decodePatchCommand(command)
+                decodePatchCommand(command,bar)
             cur_patch_ver = patch
 
-    
-    
+
     new_version = version_man.install_version(update_type)
     cur_patch = version_man.get_patch()
 
@@ -625,14 +663,13 @@ def applyNewPatches(patch_db,update_type,cur_version):
         pass
     else:
         applyNewPatches(patch_db,update_type,new_version)
-    
-    
 
-    #mod_database_local = get_mod_database()
-    #mod_database_local['patch_version'] = patch
-    #
-    #with open(moddb_file, "w") as patch_installer:
-    #    patch_installer.write(json.dumps(mod_database_local,indent=4))
+
+    mod_database_local = get_mod_database()
+    mod_database_local['patch_version'] = patch
+    
+    with open(moddb_file, "w") as patch_installer:
+        patch_installer.write(json.dumps(mod_database_local,indent=4))
 
 def checkForPatches(update_type,cur_version):
     cur_version = str(cur_version)
@@ -648,8 +685,9 @@ def checkForPatches(update_type,cur_version):
 
                     if user_response.get() == "Yes":
                         print("Starting initial patch download")
-                        applyNewPatches(patch_db,update_type,cur_version)
-                        return "finished_installing"
+                        threading.Thread(target=lambda patch_db=patch_db, update_type=update_type,cur_version=cur_version:applyNewPatches(patch_db,update_type,cur_version),daemon=True).start()
+                        app.drawUpdateUI()
+                        return "install_started"
                     else:
                         return "user_declined"
         except KeyError:
@@ -672,15 +710,23 @@ def patchesPrompt(self,update_type,install_version,github_repo_json,auto=False):
             return "no_updates"
     elif auto and patches == 'user_declined':
         return "user_declined"
+    elif patches == "install_started":
+        app.drawUpdateUI()
+        return "install_started"
     elif patches == "finished_installing":
         self.redrawScrollFrame()
         response = CTkMessagebox(title="PBLC Update Manager",message="Patches finished installing, you can start the game now.",sound=True,icon=PBLC_Icons.checkmark(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
         self.update_manager_version.configure(text=f"\n\nCurrently Running: PBLC Stable v{version_man.install_version('release')}")
         return "finished_installing"
 
+def callUpdateThread(github_repo_json,update_type):
+    threading.Thread(target=lambda update_data = github_repo_json[update_type], update_type = update_type: startUpdate(update_data,update_type),daemon=True).start()
+
 def checkForUpdates(self,update_type):
 
     print("Checking for updates...")
+
+    draw_update_ui = False
 
     #installed_version, installed_beta_version, json_data_internal, performance_mode = get_current_version(False)
     installed_stable_version = version.Version(version_man.install_version("release"))
@@ -707,11 +753,12 @@ def checkForUpdates(self,update_type):
 
             if installed_stable_version >= base_vers_req:
                 response = patchesPrompt(self,update_type,installed_stable_version,github_repo_json,True)
-                if response == "user_declined" or response == "finished_installing":
+                if response == "user_declined" or response == "finished_installing" or response == "install_started":
                     return
                 elif response == "no_updates":
                     response = CTkMessagebox(title="PBLC Update Manager",message="No new patches found, you are up to date! Would you like to reinstall?",option_2="Reinstall",option_1="No",icon=PBLC_Icons.refresh(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
                     if response.get() == "Reinstall":
+                        draw_update_ui = True
                         startUpdate(github_repo_json[update_type],update_type)
                     return
 
@@ -720,24 +767,25 @@ def checkForUpdates(self,update_type):
             prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Vanilla or broken version detected, would you like to install the latest mods?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"Vanilla or broken version detected, would you like to install the latest mods?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
-                threading.Thread(target=lambda update_data = github_repo_json[update_type], update_type = update_type: startUpdate(update_data,update_type)).start()
+                draw_update_ui = True
+                callUpdateThread(github_repo_json,update_type)
                 #startUpdate(github_repo_json[update_type],update_type)
-                print("oh hey the bypass worked :blush:")
         elif installed_beta_version > version.Version("0.0.0"):
             print("Beta release detected, prompting switch...")
             prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"It looks like you're using a beta version of our modpack, would you like to switch back to the last stable release?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"It looks like you're using a beta version of our modpack, would you like to switch back to the last stable release?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
-                startUpdate(github_repo_json[update_type],update_type)
+                draw_update_ui = True
+                callUpdateThread(github_repo_json,update_type)
 
         elif installed_stable_version < latest_version:
             print("New Update Found.")
             prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"An update is available, would you like to install it?\n{installed_stable_version} < {latest_version}",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"An update is available, would you like to install it?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
-                startUpdate(github_repo_json[update_type],update_type)
+                draw_update_ui = True
+                callUpdateThread(github_repo_json,update_type)
         else:
-
             patchesPrompt(self,update_type,installed_stable_version,github_repo_json)
 
             #print("No updates found.")
@@ -748,32 +796,45 @@ def checkForUpdates(self,update_type):
     #BETA
     else:
 
-        if not os.path.exists(bepinex_path) or not os.path.exists(doorstop_path) or not os.path.exists(winhttp_path) or installed_beta_version == version.Version("0.0.0"):
+        if not os.path.exists(bepinex_path) or not os.path.exists(doorstop_path) or not os.path.exists(winhttp_path) or (installed_beta_version == version.Version("0.0.0") and installed_stable_version == version.Version("0.0.0")):
             print("Vanilla or broken version found.")
             prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Vanilla or broken version detected, would you like to install the latest beta mods?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"Vanilla or broken version detected, would you like to install the latest beta mods?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
-                startUpdate(github_repo_json[update_type],update_type)
+                draw_update_ui = True
+                callUpdateThread(github_repo_json,update_type)
 
         elif installed_stable_version > version.Version("0.0.0"):
             print("Stable release found, prompting switch...")
             prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"It looks like you're on the stable release of our modpack, would you like to switch to the latest beta?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"It looks like you're on the stable release of our modpack, would you like to switch to the latest beta?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
-                startUpdate(github_repo_json[update_type],update_type)
+                draw_update_ui = True
+                callUpdateThread(github_repo_json,update_type)
 
         elif installed_beta_version < latest_version:
             print("New Beta Found.")
             prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"A new beta is available, would you like to install it?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"A new beta is available, would you like to install it?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
-                startUpdate(github_repo_json[update_type],update_type)
+                draw_update_ui = True
+                callUpdateThread(github_repo_json,update_type)
         
         else:
 
             print("No updates found.")
             CTkMessagebox(title="PBLC Update Manager",message="No updates available.",icon=PBLC_Icons.checkmark(True))
             #ctypes.windll.user32.MessageBoxW(0, "No updates available.", "PBLC Update Manager")
+    
+    #Drawing Update UI
+
+    print(draw_update_ui)
+
+    if draw_update_ui:
+        app.drawUpdateUI()
+
+        instruction_len = cacheInstructionLen("full",github_repo_json[update_type]['version'])
+        app.updateProgressMax(instruction_len)
 
 def checkForUpdatesmanager():
     github_api_manager = json.loads(request.urlopen(github_repo_latest_release).read().decode())
@@ -947,7 +1008,7 @@ class thunderstore():
 
             print(f"Downloading {namespace}-{name}-{target_version}...")
 
-            thunderstore_ops.download_package(namespace,name,target_version,dependencies)
+            thunderstore_ops.download_package(namespace,name,target_version,dependencies,app.updateProgressBar)
 
             #Dependencies
 
@@ -1019,6 +1080,14 @@ class thunderstore():
         finish_message = CTkMessagebox(title="PBLC Update Manager",message=f"Finished checking for updates, {mods_updating} mod(s) have updates available!",option_1="Ok",icon=PBLC_Icons.info(True),sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
         print(f"\n\nFinished checking for updates, {mods_updating} mod(s) have updates available!")
 
+    def is_installed(namespace,name,version):
+        mod_database_local = get_mod_database()["installed_mods"]
+
+        if f"{namespace}-{name}" in mod_database_local:
+            if mod_database_local[f"{namespace}-{name}"]['version'] == version:
+                return True
+        
+        return False
 
 class thunderstore_ops():
     def check_for_updates(url,mod):
@@ -1059,7 +1128,7 @@ class thunderstore_ops():
                     print(f"Selected version = {dialog}")
                     thunderstore_ops.download_package(namespace,name,dialog,dependencies)
 
-    def download_package(namespace,name,version,dependencies):
+    def download_package(namespace,name,version,dependencies,bar=None):
 
         try:
             version_test = f"https://thunderstore.io/api/experimental/package/{namespace}/{name}/{version}/"
@@ -1086,27 +1155,24 @@ class thunderstore_ops():
         
         #print(progress_bar.percentage())
 
-        pbar_enabled = app.download_ui_visible
-
-        downloaded_size = 0
-
         with open(download_loc,'wb') as dl_package:
-            #dl_package.write(pack_req.content)  
+            chunk_count = 0
             for chunk in pack_req.iter_content(chunk_size=1024):
-                current_progress = round(progress_bar.percentage())/100
+                current_progress = round(progress_bar.percentage())
                 
                 dl_package.write(chunk)
                 progress_bar.update(dl_package.tell())
-
-                downloaded_size += len(chunk)
-
-                if pbar_enabled and downloaded_size >= total_size_in_bytes // 10:
-                    print("testing")
-                    app.pblc_progress_bar.set(current_progress)
+                chunk_count += len(chunk)
+                if bar:
+                    bar(chunk_count, total_size_in_bytes)
+        
+        if bar:
+            app.updateProgressCount()
+                    
         
         decompress_zip(download_loc,downloads_folder)
 
-        #thunderstore_ops.install_package(namespace,name,version,dependencies)
+        thunderstore_ops.install_package(namespace,name,version,dependencies)
     
     #def update_progress_bar()
     
@@ -1257,6 +1323,11 @@ class thunderstore_ops():
 
         with open(moddb_file, "w") as mod_deleter:
             mod_deleter.write(json.dumps(mod_database_local,indent=4))
+        
+        try:
+            app.updateProgressCount()
+        except:
+            pass
 
         print(f"{package} uninstalled.")
 
@@ -1815,16 +1886,40 @@ class PBLCApp(customtkinter.CTk):
         self.update_frame.grid_columnconfigure(0,weight=1)
         self.update_frame.grid_rowconfigure(0,weight=1)
         self.update_frame.grid_rowconfigure(1,weight=1)
+        self.update_frame.grid_rowconfigure(3,weight=1)
 
         self.pblc_progress_bar = customtkinter.CTkProgressBar(self.update_frame,width=800)
         self.pblc_progress_bar.grid(row=0,column=0)
         self.pblc_progress_bar.set(0)
 
-        self.temp_button = customtkinter.CTkButton(self.update_frame,text="test_button",command=lambda namespace="FlipMods",name="TooManyEmotes",pkg_version="2.1.17":threading.Thread(target=lambda namespace=namespace, name=name, pkg_version=pkg_version: thunderstore_ops.download_package(namespace,name,pkg_version,None),daemon=True).start())
-        self.temp_button.grid(row=1,column=0)
+        self.pblc_progress_value = customtkinter.CTkLabel(self.update_frame,text="")
+        self.pblc_progress_value.grid(row=1,column=0)
+
+        self.pblc_progress_int = 0
+        self.pblc_progress_max = 0
+        self.pblc_progress_count = customtkinter.CTkLabel(self.update_frame,text="0/0")
+        self.pblc_progress_count.grid(row=2,column=0)
+    
+    def updateProgressBar(self,chunk_count,total):
+        new_prog = round(chunk_count/total,2)
+        if not app.pblc_progress_bar.get() == new_prog:
+            app.pblc_progress_bar.set(new_prog)
+            app.pblc_progress_value.configure(text=f"{round(new_prog*100)}%")
+    
+    def updateProgressCount(self):
+        app.pblc_progress_int += 1
+        app.pblc_progress_count.configure(text=f"{app.pblc_progress_int}/{app.pblc_progress_max}")
+    
+    def updateProgressMax(self,max):
+        app.pblc_progress_max = max
+        app.pblc_progress_count.configure(text=f"{app.pblc_progress_int}/{app.pblc_progress_max}")
 
     def destroyPBLCUI(self):
         self.tabview.destroy()
+    
+    def redrawPBLCUI(self):
+        self.update_frame.destroy()
+        self.drawPBLCUI()
             
     
     # download_bepinex | GDCODE
@@ -1896,10 +1991,11 @@ class PBLCApp(customtkinter.CTk):
 
     
     def import_thunderstore_url(self,mod_frame):
-        thunderstore.import_from_url(self.import_url_box.get(),self.import_url_vers_box.get())
-        self.import_url_box.delete(0,len(self.import_url_box.get()))
-        self.import_url_vers_box.delete(0,len(self.import_url_vers_box.get()))
-        self.redrawScrollFrame()
+        threading.Thread(target=lambda imp_url = self.import_url_box.get(), imp_box_url = self.import_url_vers_box.get() :thunderstore.import_from_url(imp_url,imp_box_url),daemon=True).start()
+        self.drawUpdateUI()
+        #self.import_url_box.delete(0,len(self.import_url_box.get()))
+        #self.import_url_vers_box.delete(0,len(self.import_url_vers_box.get()))
+        #self.redrawScrollFrame()
     
     def check_for_updates_all(self):
         thunderstore.check_for_updates_all(self)
