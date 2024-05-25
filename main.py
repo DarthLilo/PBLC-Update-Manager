@@ -120,9 +120,10 @@ class settingsMan():
         #CONFIG WRITING
 
         paths = {
-            "version_database": {"value":"","description":"Determines where the program checks for updates. This can be a URL or a PATH","default":"","type":"string"},
-            "patch_instructions": {"value":"","description":"Determines where the program checks for patches. This can be a URL or a PATH","default":"","type":"string"},
-            "lethal_company_path": {"value":"","description":"Location of your Lethal Company root folder","default":"","type":"string"}
+            "version_database": {"value":"","description":"Determines where the program checks for updates. URL or a FILEPATH","default":"","type":"string"},
+            "update_instructions" : {"value":"","description":"Folder location of version update files. DIRPATH","default":"","type":"string"},
+            "patch_instructions": {"value":"","description":"Determines where the program checks for patches. URL or a FILEPATH","default":"","type":"string"},
+            "lethal_company_path": {"value":"","description":"Location of your Lethal Company root folder. DIRPATH","default":"","type":"string"}
         }
 
         program = {
@@ -184,14 +185,12 @@ def download_from_google_drive(source,destination,bar=None):
     print(f"Beginning download of {source} from Google Drive...")
     try:
         gdown.download(id=source,output=destination,bar=bar)
+        if bar:
+            app.updateProgressCount()
+        return "finished"
     except gdown.exceptions.FileURLRetrievalError:
-        too_many_downloads_error = CTkMessagebox(title="PBLC Update Manager",message="Google Drive link has too many downloads!\nApp will automatically close after 15 seconds!",icon=PBLC_Icons.uninstall(True),sound=True,option_1="Close App")
-        if too_many_downloads_error.get() == "Close App":
-            app.destroy()
-        time.sleep(15)
-        app.destroy()
-    if bar:
-        app.updateProgressCount()
+        print("Google Drive file has too many requests, going to Dropbox backup...")
+        return "too_many_requests"
 
 def migrate_update_files(source,destination):
     print("Moving files...")
@@ -223,10 +222,12 @@ default_pblc_vers = {"version": "0.0.0", "beta_version": "0.0.0", "beta_goal": "
 package_data_path = os.path.normpath(f"{current_file_loc}/data/pkg")
 isScriptFrozen = getattr(sys, "frozen", False)
 
-# download_bepinex | GDCODE
+# download_override | GDCODE | DROPBOX
 # url_add_mod | NAMESPACE | NAME | VERSION
 # delete_mod | NAMESPACE | NAME
 # update_vers | PATCH_VERSION | VERSION
+# download_bepinex
+# clean_install
 
 dev_mode = f"{current_file_loc}/data/pooworms"
 if not os.path.exists(dev_mode):
@@ -271,6 +272,26 @@ def grab_patch_instructions():
             return None
     else: #default
         return json.loads(request.urlopen(default_patch_instruct).read().decode())
+
+def grab_update_instructions(version,beta=False):
+    
+    default_update_instructions = ""#"https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
+    local_update_instructions = settingsMan.readSettingsValue("paths","update_instructions")
+    is_url = False
+    if validators.url(local_update_instructions):
+        is_url = True
+    
+    if local_update_instructions.strip(): #Custom Path
+        try:
+            if is_url:
+                return json.loads(request.urlopen(local_update_instructions).read().decode())
+            else:
+                return open_json(f"{local_update_instructions}/{version}.json") if not beta else open_json(f"{local_update_instructions}/{version}_beta.json")
+        except:
+            print("INVALID VERSION DATABASE")
+            return None
+    else: #default
+        return json.loads(request.urlopen(default_update_instructions).read().decode())
 
 def startupFunc():
     cur_folder = getCurrentPathLoc()
@@ -419,11 +440,6 @@ class version_man():
         with open(moddb_file,"w") as patch_set:
             patch_set.write(json.dumps(mod_db,indent=4))
 
-def download_update(update_data,bar=None):
-    latest_update_zip = f"{downloads_folder}/{update_data['name']}.zip"
-    download_from_google_drive(update_data['source'],latest_update_zip,bar=bar)
-    return latest_update_zip
-
 def decompress_zip(zip_file,destination):
     print("Unzipping file...")
     with zipfile.ZipFile(zip_file, 'r',zipfile.ZIP_DEFLATED) as zip_ref:
@@ -449,165 +465,46 @@ def compress_zip_dir(zip_file,dir_path):
                 print(f"Compressing {relative_path}...")
                 zipf.write(absolute_path, arcname=relative_path)
 
-def cacheInstructionLen(cache_type,target_version):
+def cacheInstructionLen(cache_type,target_version,update_type="release"):
     instruction_len = 0
 
-    #cache type
-    if cache_type == "full":
-        instruction_len += 1
-
+    if update_type == "release":
+        update_instructions = grab_update_instructions(target_version)
+    else:
+        update_instructions = grab_update_instructions(target_version,True)
     patch_instruct = grab_patch_instructions()
     current_patch = version_man.get_patch()
+
+    if cache_type == "full":
+        instruction_len += len(update_instructions['instructions'])
     
     #patch len
 
-    if target_version in patch_instruct:
-        print("found target version in pach")
-        for patch in patch_instruct[target_version]['release']:
-            print(f"scanning {patch}")
-            if version.Version(patch) > version.Version(current_patch):
-                print(len(patch_instruct[target_version]['release'][patch]))
-                instruction_len += len(patch_instruct[target_version]['release'][patch])
-    
-    #recursive version checking
-    for release in patch_instruct:
-        if version.Version(release) > version.Version(target_version):
-            instruction_len += cacheInstructionLen(cache_type,release)
-            break
+    if update_type == "release":
+        if target_version in patch_instruct:
+            print("found target version in pach")
+            for patch in patch_instruct[target_version]['release']:
+                if version.Version(patch) > version.Version(current_patch):
+                    instruction_len += len(patch_instruct[target_version]['release'][patch])
+
+        #recursive version checking
+        for release in patch_instruct:
+            if version.Version(release) > version.Version(target_version):
+                instruction_len += cacheInstructionLen(cache_type,release)
+                break
+
+    print(instruction_len)
     return instruction_len
 
-
-
-#def startUpdate(update_data,update_type):
-#    
-#    instruction_len = cacheInstructionLen("full",update_data['version'])
-#    print(instruction_len)
-
-def startUpdate(update_data,update_type):
-    time.sleep(0.5)
-    #try:
-    print("Beginning download...")
-
-    print(f"\nUpdating modpack to version {update_data['version']}\n")
-
-    if not os.path.exists(downloads_folder):
-        os.mkdir(downloads_folder)
-
-    latest_update_zip = download_update(update_data,app.updateProgressBar)
-
-    clear_files = [bepinex_path,doorstop_path,winhttp_path]
-    for i in range(len(clear_files)):
-        f = clear_files[i]
-
-        if os.path.exists(f):
-            if os.path.isdir(f):
-                pass
-                shutil.rmtree(f)
-
-            elif os.path.isfile(f):
-                os.remove(f)
-
-    decompress_zip(latest_update_zip,LC_Path)
-
-    mod_db_install = f"{LC_Path}/mod_database.json"
-    pkg_fold_install = f"{LC_Path}/pkg"
-
-    if os.path.exists(mod_db_install):
-        os.remove(moddb_file)
-        shutil.move(mod_db_install,moddb_file)
-    
-    if os.path.exists(pkg_fold_install):
-        shutil.rmtree(package_data_path)
-        shutil.move(pkg_fold_install,package_data_path)
-
-    shutil.rmtree(downloads_folder)
-    print("Updating version cache...")
-
-    try:
-        current_installed_versions = open_json(pblc_vers)
-    except:
-        current_installed_versions = default_pblc_vers
-
-    if update_type == "release":
-        current_installed_versions["version"] = update_data['version']
-        current_installed_versions["beta_version"] = "0.0.0"
-        current_installed_versions["beta_goal"] = "0.0.0"
-    else:
-        current_installed_versions["beta_version"] = update_data['beta_version']
-        current_installed_versions["version"] = "0.0.0"
-        current_installed_versions["beta_goal"] = update_data['version']
-
-    with open(pblc_vers, "w") as pblc_vers_upd:
-        pblc_vers_upd.write(json.dumps(current_installed_versions))
-    
-    patch_db = grab_patch_instructions()
-    if patch_db == None: return
-    cur_patch_ver = version_man.get_patch()
-
-    if update_data['version'] in patch_db and update_type == "release":
-        for patch in patch_db[update_data['version']][update_type]:
-            if version.Version(patch) > version.Version(cur_patch_ver):
-                    applyNewPatches(patch_db,update_type,update_data['version'])
-    
-
-    update_finished = CTkMessagebox(title="PBLC Update Manager",message="Succsessfully installed update!",sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
-    print("Update installed, app will relaunch shortly.")
-    relaunch_location = os.path.normpath(os.path.join(getCurrentPathLoc(),"PBLC Update Manager.exe"))
-    if os.path.exists(relaunch_location):
-        app.destroy()
-        subprocess.run(relaunch_location)
-    else:
-        print("Couldn't run EXE")
-        app.after(1500,app.destroy)
-    #except:
-    #    ctypes.windll.user32.MessageBoxW(0, "Error (ask lilo this message isn't supposed to show up LMFAO)", "PBLC Update Manager")
-    #    print("Contact Lilo on discord for troubleshooting.")
-
-def updateManager(github_api_manager):
-    print("Beginning manager update download...")
-
-    zip_link = github_api_manager['assets'][0]['browser_download_url']
-
-
-    temp_download_folder = os.path.normpath(f"{current_file_loc}/download_cache")
-    print(temp_download_folder)
-    target_zip = f"{temp_download_folder}/latest_manager.zip"
-
-    if os.path.exists(temp_download_folder):
-        shutil.rmtree(temp_download_folder)
-        os.mkdir(temp_download_folder)
-    else:
-        os.mkdir(temp_download_folder)
-
-    request.urlretrieve(zip_link,target_zip,show_progress)
-
-    print("Download finished, beginning extraction...")
-
-    decompress_zip(target_zip,temp_download_folder)
-
-    print("Finished extracting, installing now...")
-
-    subprocess.Popen(["python",resource_path("updater.py")])
-    sys.exit()
-
-def downloadGDPatch(gdlink):
-
-    if not os.path.exists(downloads_folder):
-        os.mkdir(downloads_folder)
-
-    zip_down_loc = f"{downloads_folder}/pblc_patch.zip"
-    download_from_google_drive(gdlink,zip_down_loc,app.updateProgressBar)
-    decompress_zip(zip_down_loc,LC_Path)
-    shutil.rmtree(downloads_folder)
-
-def decodePatchCommand(input_command,bar=None):
+def decodeDownloadCommand(input_command,bar=None):
     split_commnad = str(input_command).split("|")
 
     command=split_commnad[0]
-    if command == "download_bepinex":
+    if command == "download_override":
         gdlink = split_commnad[1]
-        print("Downloading custom patch files...")
-        downloadGDPatch(gdlink)
+        dropbox = split_commnad[2]
+        print("Downloading override files...")
+        downloadOverridePatch(gdlink,dropbox)
     elif command == "url_add_mod":
         namespace = split_commnad[1]
         name = split_commnad[2]
@@ -647,14 +544,118 @@ def decodePatchCommand(input_command,bar=None):
 
             with open(pblc_vers, "w") as patch_updater:
                 patch_updater.write(json.dumps(install_version))
+        
+        elif len(split_commnad) == 4:
+            print("Updating beta version")
+
+            beta_goal = split_commnad[2]
+            beta_version = split_commnad[3]
+
+            install_version["version"] = "0.0.0"
+            install_version["beta_version"] = beta_version
+            install_version["beta_goal"] = beta_goal
+            mod_database_local["patch_version"] = "0.0.0"
+
+            with open(pblc_vers, "w") as patch_updater:
+                patch_updater.write(json.dumps(install_version))
+            
 
         with open(moddb_file, "w") as patch_db_updater:
                 patch_db_updater.write(json.dumps(mod_database_local,indent=4))
                 print(f"Updated patch version to {new_patch_head}")
         
         app.updateProgressCount()
+    elif command == "download_bepinex":
+        thunderstore_ops.install_bepinex()
+        app.updateProgressCount() 
+    elif command == "clean_install":
+        if os.path.exists(bepinex_path):
+            shutil.rmtree(bepinex_path)
+        os.makedirs(f"{bepinex_path}/plugins")
+
+        with open(moddb_file, "w") as moddb_reset:
+            moddb_reset.write(json.dumps({"installed_mods":{},"patch_version":"0.0.0"},indent=4))
         
-        
+        app.updateProgressCount()
+
+def installRelease(version,update_type):
+    if update_type == "beta":
+        update_instructions = grab_update_instructions(version,True)['instructions']
+    else:
+        update_instructions = grab_update_instructions(version)['instructions']
+    
+    for command in update_instructions:
+        decodeDownloadCommand(command,app.updateProgressBar)
+
+def startUpdate(update_data,update_type):
+    time.sleep(0.5)
+    print("Beginning download...")
+
+    print(f"\nUpdating modpack to version {update_data['version']}\n")
+
+    installRelease(update_data['version'],update_type)
+
+    patch_db = grab_patch_instructions()
+    if patch_db == None: return
+    cur_patch_ver = version_man.get_patch()
+
+    if update_data['version'] in patch_db and update_type == "release":
+        for patch in patch_db[update_data['version']][update_type]:
+            if version.Version(patch) > version.Version(cur_patch_ver):
+                    applyNewPatches(patch_db,update_type,update_data['version'])
+    
+
+    update_finished = CTkMessagebox(title="PBLC Update Manager",message="Succsessfully installed update!",sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+    print("Update installed, app will relaunch shortly.")
+    relaunch_location = os.path.normpath(os.path.join(getCurrentPathLoc(),"PBLC Update Manager.exe"))
+    if os.path.exists(relaunch_location):
+        app.destroy()
+        subprocess.run(relaunch_location)
+    else:
+        print("Couldn't run EXE")
+        #app.after(1500,app.destroy)
+
+def updateManager(github_api_manager):
+    print("Beginning manager update download...")
+
+    zip_link = github_api_manager['assets'][0]['browser_download_url']
+
+
+    temp_download_folder = os.path.normpath(f"{current_file_loc}/download_cache")
+    print(temp_download_folder)
+    target_zip = f"{temp_download_folder}/latest_manager.zip"
+
+    if os.path.exists(temp_download_folder):
+        shutil.rmtree(temp_download_folder)
+        os.mkdir(temp_download_folder)
+    else:
+        os.mkdir(temp_download_folder)
+
+    request.urlretrieve(zip_link,target_zip,show_progress)
+
+    print("Download finished, beginning extraction...")
+
+    decompress_zip(target_zip,temp_download_folder)
+
+    print("Finished extracting, installing now...")
+
+    subprocess.Popen(["python",resource_path("updater.py")])
+    sys.exit()
+
+def downloadOverridePatch(gdlink,dropbox):
+
+    if not os.path.exists(downloads_folder):
+        os.mkdir(downloads_folder)
+
+    zip_down_loc = f"{downloads_folder}/pblc_patch.zip"
+    gd_file = download_from_google_drive(gdlink,zip_down_loc,app.updateProgressBar)
+    if gd_file == "too_many_requests":
+        if str(dropbox).endswith("&dl=0"):
+            dropbox = str(dropbox).replace("&dl=0","&dl=1")
+        downloadFromURL(dropbox,zip_down_loc,app.updateProgressBar)
+        app.updateProgressCount()
+    decompress_zip(zip_down_loc,LC_Path)
+    shutil.rmtree(downloads_folder)
 
 def applyNewPatches(patch_db,update_type,cur_version,bar=None):
     time.sleep(0.5)
@@ -664,7 +665,7 @@ def applyNewPatches(patch_db,update_type,cur_version,bar=None):
         if version.Version(patch) > version.Version(cur_patch_ver):
             print(f"\nApplying patches for {cur_version}\n")
             for command in patch_db[cur_version][update_type][patch]:
-                decodePatchCommand(command,bar)
+                decodeDownloadCommand(command,bar)
             cur_patch_ver = patch
 
 
@@ -775,7 +776,6 @@ def checkForUpdates(self,update_type):
             if not os.path.exists(bepinex_path) or not os.path.exists(doorstop_path) or not os.path.exists(winhttp_path) or installed_stable_version == version.Version("0.0.0"):
                 print("Vanilla or broken version found.")
                 prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Vanilla or broken version detected, would you like to install the latest mods?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
-                #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"Vanilla or broken version detected, would you like to install the latest mods?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
                 if prompt_answer.get() == "Yes":
                     draw_update_ui = True
                     callUpdateThread(github_repo_json,update_type)
@@ -783,7 +783,6 @@ def checkForUpdates(self,update_type):
             elif installed_beta_version > version.Version("0.0.0"):
                 print("Beta release detected, prompting switch...")
                 prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"It looks like you're using a beta version of our modpack, would you like to switch back to the last stable release?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
-                #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"It looks like you're using a beta version of our modpack, would you like to switch back to the last stable release?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
                 if prompt_answer.get() == "Yes":
                     draw_update_ui = True
                     callUpdateThread(github_repo_json,update_type)
@@ -791,12 +790,18 @@ def checkForUpdates(self,update_type):
             elif installed_stable_version < latest_version:
                 print("New Update Found.")
                 prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"An update is available, would you like to install it?\n{installed_stable_version} < {latest_version}",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
-                #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"An update is available, would you like to install it?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
                 if prompt_answer.get() == "Yes":
                     draw_update_ui = True
                     callUpdateThread(github_repo_json,update_type)
             else:
-                patchesPrompt(self,update_type,installed_stable_version,github_repo_json)
+                response = patchesPrompt(self,update_type,installed_stable_version,github_repo_json)
+                if response == "no_updates":
+                    response = CTkMessagebox(title="PBLC Update Manager",message="No new patches found, you are up to date! Would you like to reinstall?",option_2="Reinstall",option_1="No",icon=PBLC_Icons.refresh(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+                    if response.get() == "Reinstall":
+                        draw_update_ui = True
+                        skip_checks = True
+                        version_man.set_patch("0.0.0")
+                        callUpdateThread(github_repo_json,update_type)
 
                 #print("No updates found.")
                 #ctypes.windll.user32.MessageBoxW(0, "No updates available.", "PBLC Update Manager")
@@ -809,7 +814,6 @@ def checkForUpdates(self,update_type):
         if not os.path.exists(bepinex_path) or not os.path.exists(doorstop_path) or not os.path.exists(winhttp_path) or (installed_beta_version == version.Version("0.0.0") and installed_stable_version == version.Version("0.0.0")):
             print("Vanilla or broken version found.")
             prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Vanilla or broken version detected, would you like to install the latest beta mods?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
-            #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"Vanilla or broken version detected, would you like to install the latest beta mods?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
                 draw_update_ui = True
                 callUpdateThread(github_repo_json,update_type)
@@ -817,7 +821,6 @@ def checkForUpdates(self,update_type):
         elif installed_stable_version > version.Version("0.0.0"):
             print("Stable release found, prompting switch...")
             prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"It looks like you're on the stable release of our modpack, would you like to switch to the latest beta?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
-            #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"It looks like you're on the stable release of our modpack, would you like to switch to the latest beta?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
                 draw_update_ui = True
                 callUpdateThread(github_repo_json,update_type)
@@ -825,7 +828,6 @@ def checkForUpdates(self,update_type):
         elif installed_beta_version < latest_version:
             print("New Beta Found.")
             prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"A new beta is available, would you like to install it?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
-            #prompt_answer = ctypes.windll.user32.MessageBoxW(0,f"A new beta is available, would you like to install it?\n\n\n{github_repo_json[update_type]['description']}\nReleased: {github_repo_json[update_type]['release_date']}\nBeta Version: {github_repo_json[update_type]['beta_version']}\nVersion: {github_repo_json[update_type]['version']}","PBLC Update Manager",4)
             if prompt_answer.get() == "Yes":
                 draw_update_ui = True
                 callUpdateThread(github_repo_json,update_type)
@@ -841,7 +843,7 @@ def checkForUpdates(self,update_type):
     if draw_update_ui:
         app.drawUpdateUI()
 
-        instruction_len = cacheInstructionLen("full",github_repo_json[update_type]['version'])
+        instruction_len = cacheInstructionLen("full",github_repo_json[update_type]['version'],update_type)
         app.updateProgressMax(instruction_len)
 
 def checkForUpdatesmanager():
@@ -897,6 +899,23 @@ def uninstallMods():
     
     with open(pblc_vers, "w") as pblc_reset:
         pblc_reset.write(json.dumps({"version": "0.0.0", "beta_version": "0.0.0", "beta_goal": "0.0.0", "performance_mode": "off"}))
+
+def downloadFromURL(download_link,download_loc,bar=None):
+
+        pack_req = requests.get(download_link,stream=True)
+        
+        total_size_in_bytes = int(pack_req.headers.get('content-length', 0))
+        widgets = [progressbar.Percentage(), ' ', progressbar.Bar()]
+        progress_bar = progressbar.ProgressBar(maxval=total_size_in_bytes, widgets=widgets).start()
+
+        with open(download_loc,'wb') as dl_package:
+            chunk_count = 0
+            for chunk in pack_req.iter_content(chunk_size=1024):
+                dl_package.write(chunk)
+                progress_bar.update(dl_package.tell())
+                chunk_count += len(chunk)
+                if bar:
+                    bar(chunk_count, total_size_in_bytes)  
 
 class widgetAnimation():
     def animate_border(master,start_color,end_color,duration):
@@ -1361,6 +1380,29 @@ class thunderstore_ops():
 
         with open(moddb_file, "w") as moddb_toggle:
             moddb_toggle.write(json.dumps(mod_database_local,indent=4)) 
+
+    def install_bepinex():
+
+        print("Installing BepInEx...")
+        if not os.path.exists(downloads_folder):
+            os.mkdir(downloads_folder)
+        
+        bepinex_zip = f"{downloads_folder}/bepinex.zip"
+        
+        downloadFromURL("https://thunderstore.io/package/download/BepInEx/BepInExPack/5.4.2100/",bepinex_zip,app.updateProgressBar)
+        decompress_zip(bepinex_zip,downloads_folder)
+
+        bepinex_pack = os.path.normpath(f"{downloads_folder}/BepInExPack")
+
+        for file in os.listdir(bepinex_pack):
+            filepath = f"{bepinex_pack}/{file}"
+            if file == "BepInEx":
+                shutil.copytree(filepath,f"{LC_Path}/{file}",dirs_exist_ok=True)
+            else:
+                shutil.move(filepath,f"{LC_Path}/{file}")
+        
+        shutil.rmtree(downloads_folder)
+        print("Installed BepInEx")
 
     #def delete_package():
 
@@ -1875,6 +1917,9 @@ class PBLCApp(customtkinter.CTk):
             
             self.devresetbutton = customtkinter.CTkButton(self.main_frame,text="display update ui",command=self.drawUpdateUI)
             self.devresetbutton.grid(row=0,column=0)
+
+            self.devtestbutton = customtkinter.CTkButton(self.main_frame,text="download test file",command=self.tempDevFunc)
+            self.devtestbutton.grid(row=1,column=0)
     
             #self.config_frame = configSettingScrollFrame(self.main_frame,fg_color="transparent",height=500)
             #self.config_frame.grid(row=0,column=0,sticky="nsew")
@@ -1928,7 +1973,12 @@ class PBLCApp(customtkinter.CTk):
     def redrawPBLCUI(self):
         self.update_frame.destroy()
         self.drawPBLCUI()
-            
+    
+    def tempDevFunc(self):
+
+        print(grab_update_instructions("9.2.0"))
+
+        #downloadFromURL("https://www.dropbox.com/scl/fi/e4hf9193q9ku82aplcng3/test.zip?rlkey=vxtyrub1vi3wf2uhu326i0cg0&st=mvqf77z0&dl=1","C:\\Users\\darth\\Desktop\\downloads\\test.zip") 
     
     # download_bepinex | GDCODE
     # url_add_mod | NAMESPACE | NAME | VERSION
