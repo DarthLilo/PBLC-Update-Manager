@@ -4,6 +4,10 @@
             "0.0.1": [
                 "url_add_mod|TestAccount666|LethalLevelLoaderCompanyFixer|2.0.0",
                 "update_vers|0.0.1"
+            ],
+            "0.0.2": [
+                "url_add_mod|Evaisa|LethalLib|0.15.1",
+                "update_vers|0.0.2"
             ]
         }
     }
