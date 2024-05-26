@@ -78,6 +78,20 @@
             "0.0.6": [
                 "url_add_mod|TestAccount666|LethalLevelLoaderCompanyFixer|2.0.0",
                 "update_vers|0.0.6"
+            ],
+            "0.0.7": [
+                "url_add_mod|taffyko|BetterSprayPaint|2.0.4",
+                "url_add_mod|Sigurd|CSync|5.0.1",
+                "url_add_mod|SZAKI|EnemyFix|1.0.0",
+                "url_add_mod|XuXiaolan|ImmersiveScrap|1.1.0",
+                "url_add_mod|IAmBatby|LethalLevelLoader|1.2.4",
+                "url_add_mod|Zaggy1024|OpenBodyCams|2.2.0",
+                "url_add_mod|coderCleric|Poltergeist|1.1.0",
+                "url_add_mod|RosiePies|Rosies_Moons|2.0.0",
+                "url_add_mod|mrov|TerminalFormatter|0.2.11",
+                "delete_mod|Suskitech|AlwaysHearActiveWalkies",
+                "delete_mod|TestAccount666|LethalLevelLoaderCompanyFixer",
+                "update_vers|0.0.7"
             ]
         }
     }
