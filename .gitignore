@@ -7,3 +7,4 @@ examples
 dist
 data
 .venv
+__pycache__
