@@ -1,22 +1,38 @@
 import customtkinter as ctk
 from PIL import Image
+import winreg
 
 #           CODE TAKEN FROM https://github.com/rudymohammadbali/ctk_components
 #
 #
 #           MODIFIED BY DARTHLILO, ORIGINAL BY RUDYMOHAMMADBALI
 #
-#
+#           Changes
+#               - Added a show cancel button argument
+#               - Added the ability to change the progress bar color
+#               - Added support for different windows DPI scaling options
 #
 #
 
+def get_windows_scaling_factor():
+    try:
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,r"Control Panel\Desktop\WindowMetrics")
+        value, _ = winreg.QueryValueEx(key,"AppliedDPI")
+        winreg.CloseKey(key)
+        return value/96
+    except Exception as e:
+        print("Error:",e)
+        return 1
 
 def place_frame(master, frame, horizontal="right", vertical="bottom", padx=20, pady=20):
-    master_width = master.winfo_width()
-    master_height = master.winfo_height()
 
-    frame_width = frame.winfo_reqwidth()
-    frame_height = frame.winfo_reqheight()
+    windows_scale = get_windows_scaling_factor()
+
+    master_width = master.winfo_width()/windows_scale
+    master_height = master.winfo_height()/windows_scale
+
+    frame_width = frame.winfo_reqwidth()/windows_scale
+    frame_height = frame.winfo_reqheight()/windows_scale
 
     frame_x = 20 if horizontal == "left" else master_width - frame_width - padx
     frame_y = 20 if vertical == "top" else master_height - frame_height - pady
