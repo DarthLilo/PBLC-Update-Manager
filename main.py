@@ -1,4 +1,4 @@
-import json, os, winreg, vdf, shutil, zipfile,gdown, sys, customtkinter, pyglet, subprocess, progressbar, webbrowser, requests, validators, threading, pyeaze, configobj, time, traceback, datetime, pywinstyles, hPyT, ctkextensions, ctkcomponents
+import json, os, winreg, vdf, shutil, zipfile,gdown, sys, customtkinter, pyglet, subprocess, progressbar, webbrowser, requests, validators, threading, pyeaze, configobj, time, traceback, datetime, pywinstyles, hPyT, ctkextensions
 from PIL import Image,ImageDraw
 from urllib import request
 from urllib.error import HTTPError, URLError
@@ -130,6 +130,36 @@ class settingsMan():
     def generate_settings():
         if not os.path.exists(settingsMan.settings_file_path):
             settingsMan.resetSettingsDefault()
+    def settings_library(container="",value="",return_all=False,return_comments=False):
+        settings_lib = {
+            "paths" : {
+            "version_database": {"value":"","description":"Determines where the program checks for updates. URL or a FILEPATH","default":"","type":"string"},
+            "update_instructions" : {"value":"","description":"Folder location of version update files. DIRPATH","default":"","type":"string"},
+            "patch_instructions": {"value":"","description":"Determines where the program checks for patches. URL or a FILEPATH","default":"","type":"string"},
+            "lethal_company_path": {"value":"","description":"Location of your Lethal Company root folder. DIRPATH","default":"","type":"string"}
+            },
+
+            "program" : {
+                "check_for_updates_automatically": {"value": True,"description":"Does the program check for updates automatically on startup and prompt the user?","default":True,"type":"bool"},
+                "auto_update_interval": {"value":"daily","description":"The interval at which the program will check for updates? Not recommended to change as you might fall behind!","default":"daily","type":"dropdown","values":["hourly","daily","weekly","bi-weekly","monthly"]},
+                "last_check_timestamp": {"value": 0,"description":"Internal storage value for when the program last checked for an update.","default":"","type":"hidden"},
+                "currently_has_update": {"value":False,"description":"Flags the program to display the update indicator.","default":"","type":"hidden"},
+                "show_beta_options": {"value":False,"description":"Will the user be able to see the beta options?","default":False,"type":"bool"},
+                "enable_mods_menu": {"value": False,"description":"Will the program cache enabled mods on startup or ignore them?","default":"","type":"bool"}
+            }
+        }
+        settings_lib_comments = {
+            "paths": ["Path related settings, changing these may break the program!"],
+            "program": ["","General settings related to the program."]
+        }
+        if return_all:
+            return settings_lib
+        elif return_comments:
+            return settings_lib_comments
+        elif container and not value:
+            return settings_lib[container]
+        elif container and value:
+            return settings_lib[container][value]
 
     def resetSettingsDefault():
 
@@ -143,28 +173,11 @@ class settingsMan():
         
 
         #CONFIG WRITING
-
-        paths = {
-            "version_database": {"value":"","description":"Determines where the program checks for updates. URL or a FILEPATH","default":"","type":"string"},
-            "update_instructions" : {"value":"","description":"Folder location of version update files. DIRPATH","default":"","type":"string"},
-            "patch_instructions": {"value":"","description":"Determines where the program checks for patches. URL or a FILEPATH","default":"","type":"string"},
-            "lethal_company_path": {"value":"","description":"Location of your Lethal Company root folder. DIRPATH","default":"","type":"string"}
-        }
-
-        program = {
-            "check_for_updates_automatically": {"value": True,"description":"Does the program check for updates automatically on startup and prompt the user?","default":True,"type":"bool"},
-            "auto_update_interval": {"value":"daily","description":"The interval at which the program will check for updates? Not recommended to change as you might fall behind!","default":"daily","type":"dropdown","values":["hourly","daily","weekly","bi-weekly","monthly"]},
-            "last_check_timestamp": {"value": 0,"description":"Internal storage value for when the program last checked for an update.","default":"","type":"hidden"},
-            "currently_has_update": {"value":False,"description":"Flags the program to display the update indicator.","default":"","type":"hidden"},
-            "show_beta_options": {"value":False,"description":"Will the user be able to see the beta options?","default":False,"type":"bool"},
-            "enable_mods_menu": {"value": False,"description":"Will the program cache enabled mods on startup or ignore them?","default":"","type":"bool"}
-        }
-        
-        config['paths'] = paths
-        config['program'] = program
-
-        config.comments['paths'] = ["Path related settings, changing these may break the program!"]
-        config.comments['program'] = ["","General settings related to the program"]
+        settings_lib = settingsMan.settings_library(return_all=True)
+        settings_comments = settingsMan.settings_library(return_comments=True)
+        for container in settings_lib:
+            config[container] = settings_lib[container]
+            config.comments[container] = settings_comments[container]
 
         config.write()
 
@@ -183,6 +196,12 @@ class settingsMan():
     def writeSettingsValue(container,value,new_value):
 
         config = configobj.ConfigObj(settingsMan.settings_file_path)
+
+        if container not in config:
+            config[container] = settingsMan.settings_library(container)
+        
+        if value not in config[container]:
+            config[container][value] = settingsMan.settings_library(container,value)
 
         config[container][value]['value'] = new_value
 
@@ -921,7 +940,10 @@ def startupAutoUpdate():
         return
 
     update_interval = settingsMan.readSettingsValue("program","auto_update_interval")
-    time_since_last = int(timeMan.time_passed(float(settingsMan.readSettingsValue("program","last_check_timestamp")),timeMan.now()).split(":")[0])
+    last_time_var = settingsMan.readSettingsValue("program","last_check_timestamp")
+    if last_time_var == None:
+        last_time_var = 0
+    time_since_last = int(timeMan.time_passed(float(last_time_var),timeMan.now()).split(":")[0])
 
     update_requirements = {
         "hourly": 1,
@@ -930,6 +952,10 @@ def startupAutoUpdate():
         "bi-weekly": 336,
         "monthly": 744,
     }
+
+    if not update_interval:
+        update_interval = "daily"
+        settingsMan.writeSettingsValue("program","auto_update_interval","daily")
 
     if time_since_last > update_requirements[update_interval]:
         settingsMan.writeSettingsValue("program","last_check_timestamp",timeMan.now())
@@ -1563,7 +1589,7 @@ class thunderstore_ops():
 
 class thunderstoreModVersionLabel(customtkinter.CTkLabel):
     def __init__(self,master,mod,override_vers=None):
-        customtkinter.CTkLabel.__init__(self,master,font=('IBM 3270',16))
+        customtkinter.CTkLabel.__init__(self,master,font=('IBM 3270',16),anchor="center")
         self.mod = mod
         self.override_vers = override_vers
         self.load_text(self.mod)
@@ -1680,47 +1706,48 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
 
         mod = f"{author}-{name}"
         self.mod_entry_frame = customtkinter.CTkFrame(self,fg_color=PBLC_Colors.frame("darker"),corner_radius=5)
-        self.mod_entry_frame.grid_columnconfigure(0, weight=0,minsize=105)
-        self.mod_entry_frame.grid_columnconfigure(1, weight=1,minsize=20)
-        self.mod_entry_frame.grid_columnconfigure(2, weight=0,minsize=185)
+        self.mod_entry_frame.grid_columnconfigure(0, weight=1,minsize=1)
+        self.mod_entry_frame.grid_columnconfigure(1, weight=0,minsize=1)
+        self.mod_entry_frame.grid_columnconfigure(2, weight=1,minsize=1)
         self.mod_entry_frame.grid_columnconfigure(3, weight=0,minsize=1)
         self.mod_entry_frame.grid_columnconfigure(4, weight=0,minsize=1)
         self.mod_entry_frame.grid_columnconfigure(5, weight=0,minsize=1)
         self.mod_entry_frame.grid_columnconfigure(6, weight=0,minsize=1)
+        self.mod_entry_frame.grid_rowconfigure(0)
         self.mod_entry_frame.grid(row=row,column=0,sticky="we",pady=3)
     
         self.mod_icon_lab = thunderstoreModIcon(self.mod_entry_frame,mod)
-        self.mod_icon_lab.grid(row=row,column=0,pady=2,padx=2,sticky="w")
+        self.mod_icon_lab.grid(row=0,column=0,pady=2,padx=(2,10),sticky="w")
     
         self.mod_name_author = customtkinter.CTkLabel(self.mod_entry_frame,text=f"{name}\nby {author}",justify='left',font=('IBM 3270',16))
-        self.mod_name_author.grid(row=row,column=1,pady=2,sticky="w")
+        self.mod_name_author.grid(row=0,column=1,pady=2,sticky="w")
 
         self.mod_version = thunderstoreModVersionLabel(self.mod_entry_frame,mod,override_vers)
-        self.mod_version.grid(row=row,column=2,pady=2,sticky="w")
+        self.mod_version.grid(row=0,column=2,pady=2,sticky="we")
 
         self.mod_toggle_switch = thunderstoreModToggle(self.mod_entry_frame,mod,PBLC_Colors.button("disabled"),PBLC_Colors.button("main"),PBLC_Colors.button("outline"),PBLC_Colors.button("outline_size"))
-        self.mod_toggle_switch.grid(row=row,column=3,pady=2,padx=2,sticky="e")
+        self.mod_toggle_switch.grid(row=0,column=3,pady=2,padx=2,sticky="e")
         if (not dev_mode and disabled) or disabled:
             self.mod_toggle_switch.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"),progress_color=PBLC_Colors.button("disabled"))
         self.mod_toggle_tooltip = CTkToolTip(self.mod_toggle_switch,message=f"Toggle the current mod.",delay=0.3)
     
         self.website_icon = customtkinter.CTkImage(PBLC_Icons.website(),size=(30,30))
         self.website_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.website_icon,fg_color=PBLC_Colors.button("main_dark"),hover_color=PBLC_Colors.button("hover_dark"),command= lambda link=package_url: self.openThunderstorePage(link),border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
-        self.website_icon_lab.grid(row=row,column=4,pady=2,padx=2,sticky="e")
+        self.website_icon_lab.grid(row=0,column=4,pady=2,padx=2,sticky="e")
         if disabled:
             self.website_icon_lab.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"))
         self.mod_website_tooltip = CTkToolTip(self.website_icon_lab,message=f"Open this mod's thunderstore page.",delay=0.3)
     
         self.refresh_icon = customtkinter.CTkImage(PBLC_Icons.refresh(),size=(30,30))
         self.refresh_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.refresh_icon,fg_color=PBLC_Colors.button("main_dark"),hover_color=PBLC_Colors.button("hover_dark"),command= lambda url=package_url, mod_in = mod, version_grid=self.mod_version, icon_grid=self.mod_icon_lab: self.refreshThunderstorePackage(url,mod_in,version_grid,icon_grid),border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
-        self.refresh_icon_lab.grid(row=row,column=5,pady=2,padx=2,sticky="e")
+        self.refresh_icon_lab.grid(row=0,column=5,pady=2,padx=2,sticky="e")
         if disabled:
             self.refresh_icon_lab.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"))
         self.mod_refresh_tooltip = CTkToolTip(self.refresh_icon_lab,message=f"Check this mod for updates.",delay=0.3)
     
         self.delete_icon = customtkinter.CTkImage(PBLC_Icons.trash_can(),size=(30,30))
         self.delete_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.delete_icon,fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command= lambda mod_in=mod, frame = self.mod_entry_frame: self.uninstallThunderstorePackage(mod_in,frame),border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
-        self.delete_icon_lab.grid(row=row,column=6,pady=2,padx=2,sticky="e")
+        self.delete_icon_lab.grid(row=0,column=6,pady=2,padx=2,sticky="e")
         if disabled:
             self.delete_icon_lab.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"))
     
@@ -1745,7 +1772,7 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
         if new_mod in new_frames:
             frame_refs[new_mod]['version'].refresh_version(f"{new_author}-{new_name}")
             return
-        add_mod_loader = ctkcomponents.CTkLoader(app,opacity=0.4)
+        add_mod_loader = ctkextensions.CTkLoader(app,opacity=0.4)
         
         new_frames.append(new_mod)
         sorted_frames_list = sorted(new_frames, key=lambda x: x.lower())
@@ -1972,7 +1999,7 @@ class PBLCApp(customtkinter.CTk):
         self.tabview.grid(row=0, column=0,sticky='nsew')
 
         if loader:
-            self.loader_menu = ctkcomponents.CTkLoader(self,opacity=1)
+            self.loader_menu = ctkextensions.CTkLoader(self,opacity=1)
 
         if isScriptFrozen:
             tabs = ["Home","Mods","Extras"]
@@ -1994,8 +2021,6 @@ class PBLCApp(customtkinter.CTk):
         self.background_frame.grid(row=0,column=0,sticky='nsew')
         self.background_frame.grid_columnconfigure(0,weight=1)
         self.background_frame.grid_rowconfigure(0,weight=1)
-
-        scale = 0.912
 
         self.background_image = customtkinter.CTkImage(Image.open("assets/lethal_banner.png"),size=(988,532))
         self.background_image_label = customtkinter.CTkLabel(self.background_frame,image=self.background_image,bg_color="#2b2b2b")

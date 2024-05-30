@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from PIL import Image
 import winreg
+from pywinstyles import set_opacity
 
 #           CODE SOURCED FROM
 #               https://github.com/rudymohammadbali/ctk_components
@@ -101,4 +102,83 @@ class CTkProgressPopup(ctk.CTkFrame):
 
     def close_progress_popup(self):
         self.root.unbind("<Configure>")
+        self.destroy()
+
+class CTkGif(ctk.CTkLabel):
+
+    def __init__(self, master: any, path, loop=True, acceleration=1, repeat=1, width=40, height=40, **kwargs):
+        super().__init__(master, **kwargs)
+        if acceleration <= 0:
+            raise ValueError('Acceleration must be strictly positive')
+        self.master = master
+        self.repeat = repeat
+        self.configure(text='')
+        self.path = path
+        self.count = 0
+        self.loop = loop
+        self.acceleration = acceleration
+        self.index = 0
+        self.is_playing = False
+        self.gif = Image.open(path)
+        self.n_frame = self.gif.n_frames
+        self.frame_duration = self.gif.info['duration'] * 1 / self.acceleration
+        self.force_stop = False
+
+        self.width = width
+        self.height = height
+
+    def update(self):
+        if self.index < self.n_frame:
+            if not self.force_stop:
+                self.gif.seek(self.index)
+                self.configure(image=ctk.CTkImage(self.gif, size=(self.width, self.height)))
+                self.index += 1
+                self.after(int(self.frame_duration), self.update)
+            else:
+                self.force_stop = False
+        else:
+            self.index = 0
+            self.count += 1
+            if self.is_playing and (self.count < self.repeat or self.loop):
+                self.after(int(self.frame_duration), self.update)
+            else:
+                self.is_playing = False
+
+    def start(self):
+        if not self.is_playing:
+            self.count = 0
+            self.is_playing = True
+            self.after(int(self.frame_duration), self.update)
+
+    def stop(self, forced=False):
+        if self.is_playing:
+            self.is_playing = False
+            self.force_stop = forced
+
+    def toggle(self, forced=False):
+        if self.is_playing:
+            self.stop(forced=forced)
+        else:
+            self.start()
+
+class CTkLoader(ctk.CTkFrame):
+    def __init__(self, master: any, opacity: float = 0.8, width: int = 40, height: int = 40):
+        self.master = master
+        self.master.update()
+        self.master_width = self.master.winfo_width()
+        self.master_height = self.master.winfo_height()
+        super().__init__(master, width=self.master_width, height=self.master_height, corner_radius=0)
+
+        set_opacity(self.winfo_id(), value=opacity)
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
+        self.loader = CTkGif(self, "assets/loader_wheel.gif", width=width, height=height)
+        self.loader.grid(row=0, column=0, sticky="nsew")
+        self.loader.start()
+
+        self.place(relwidth=1.0, relheight=1.0)
+
+    def stop_loader(self):
+        self.loader.stop()
         self.destroy()
