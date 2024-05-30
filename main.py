@@ -1,4 +1,4 @@
-import json, os, winreg, vdf, shutil, zipfile,gdown, sys, customtkinter, pyglet, subprocess, progressbar, webbrowser, requests, validators, threading, pyeaze, configobj, time, traceback, datetime, pywinstyles, hPyT, ctk_progress_popup
+import json, os, winreg, vdf, shutil, zipfile,gdown, sys, customtkinter, pyglet, subprocess, progressbar, webbrowser, requests, validators, threading, pyeaze, configobj, time, traceback, datetime, pywinstyles, hPyT, ctkextensions, ctkcomponents
 from PIL import Image,ImageDraw
 from urllib import request
 from urllib.error import HTTPError, URLError
@@ -153,8 +153,11 @@ class settingsMan():
 
         program = {
             "check_for_updates_automatically": {"value": True,"description":"Does the program check for updates automatically on startup and prompt the user?","default":True,"type":"bool"},
+            "auto_update_interval": {"value":"daily","description":"The interval at which the program will check for updates? Not recommended to change as you might fall behind!","default":"daily","type":"dropdown","values":["hourly","daily","weekly","bi-weekly","monthly"]},
+            "last_check_timestamp": {"value": 0,"description":"Internal storage value for when the program last checked for an update.","default":"","type":"hidden"},
+            "currently_has_update": {"value":False,"description":"Flags the program to display the update indicator.","default":"","type":"hidden"},
             "show_beta_options": {"value":False,"description":"Will the user be able to see the beta options?","default":False,"type":"bool"},
-            "enable_mods_menu": {"value": False,"description":"Will the program cache enabled mods on startup or ignore them?","default":False,"type":"bool"}
+            "enable_mods_menu": {"value": False,"description":"Will the program cache enabled mods on startup or ignore them?","default":"","type":"bool"}
         }
         
         config['paths'] = paths
@@ -169,10 +172,11 @@ class settingsMan():
 
     def readSettingsValue(container,value,index=0):
         config = configobj.ConfigObj(settingsMan.settings_file_path)
-        selections = ['value','description','default','type']
+        selections = ['value','description','default','type','values']
         try:
             data = config[container][value][selections[index]]
-        except KeyError:
+        except (KeyError,IndexError) as e:
+            print(f"Unable to find {container}/{value}, defaulting to None")
             data = None
         return data
 
@@ -321,14 +325,6 @@ def grab_update_instructions(version,beta=False):
             return None
     else: #default
         return json.loads(request.urlopen(default_update_instructions).read().decode())
-
-def grab_beta_visibility():
-    
-    beta_visibility = settingsMan.readSettingsValue("program","show_beta_options")
-    if beta_visibility == None:
-        return False
-    print(beta_visibility)
-    return beta_visibility
 
 def startupFunc():
     cur_folder = getCurrentPathLoc()
@@ -540,7 +536,6 @@ def cacheInstructionLen(cache_type,target_version,update_type="release"):
                 instruction_len += cacheInstructionLen(cache_type,release)
                 break
 
-    print(instruction_len)
     return instruction_len
 
 def decodeDownloadCommand(input_command,bar=None):
@@ -658,15 +653,8 @@ def startUpdate(update_data,update_type):
     
 
     update_finished = CTkMessagebox(title="PBLC Update Manager",message=f"Succsessfully installed update!\nElapsed Time: {app.pblc_elapsed_time.cget('text')}",sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"),icon=PBLC_Icons.checkmark(True))
-    print("Update installed, app will relaunch shortly.")
+    print("Update installed")
     app.redrawPBLCUI()
-    #relaunch_location = os.path.normpath(os.path.join(getCurrentPathLoc(),"PBLC Update Manager.exe"))
-    #if os.path.exists(relaunch_location):
-    #    app.destroy()
-    #    subprocess.run(relaunch_location)
-    #else:
-    #    print("Couldn't run EXE")
-    #    #app.after(1500,app.destroy)
 
 def updateManager(github_api_manager):
     print("Beginning manager update download...")
@@ -676,7 +664,6 @@ def updateManager(github_api_manager):
 
 
     temp_download_folder = os.path.normpath(f"{current_file_loc}/download_cache")
-    print(temp_download_folder)
     target_zip = f"{temp_download_folder}/latest_manager.zip"
 
     if os.path.exists(temp_download_folder):
@@ -692,6 +679,8 @@ def updateManager(github_api_manager):
     decompress_zip(target_zip,temp_download_folder)
 
     print("Finished extracting, installing now...")
+
+    settingsMan.writeSettingsValue("program","currently_has_update",False)
 
     subprocess.Popen(["python",resource_path("updater.py")])
     sys.exit()
@@ -905,19 +894,50 @@ def checkForUpdates(self,update_type):
         instruction_len = cacheInstructionLen("full",github_repo_json[update_type]['version'],update_type)
         app.updateProgressMax(instruction_len)
 
-def checkForUpdatesmanager():
+def checkForUpdatesmanager(hidden=False):
     github_api_manager = json.loads(request.urlopen(github_repo_latest_release).read().decode())
     latest_manager = str(github_api_manager['tag_name']).replace(".","")
     current_manager = PBLC_Update_Manager_Version.replace(".","")
 
-    if current_manager < latest_manager:
-        print("Manager update found, prompting user.")
-        
-        prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"A new manager version has been found, would you like to update?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
-        if prompt_answer.get() == "Yes":
-            updateManager(github_api_manager)
+    if hidden:
+        if current_manager < latest_manager:
+            settingsMan.writeSettingsValue("program","currently_has_update",True)
     else:
-        prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"No new updates found",icon=PBLC_Icons.checkmark(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+
+        if current_manager < latest_manager:
+            print("Manager update found, prompting user.")
+
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"A new manager version has been found, would you like to update?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+            settingsMan.writeSettingsValue("program","currently_has_update",True)
+            if prompt_answer.get() == "Yes":
+                updateManager(github_api_manager)
+        else:
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"No new updates found",icon=PBLC_Icons.checkmark(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+            settingsMan.writeSettingsValue("program","currently_has_update",False)
+
+def startupAutoUpdate():
+
+    if not settingsMan.readSettingsValue("program","check_for_updates_automatically") == "True":
+        return
+
+    update_interval = settingsMan.readSettingsValue("program","auto_update_interval")
+    time_since_last = int(timeMan.time_passed(float(settingsMan.readSettingsValue("program","last_check_timestamp")),timeMan.now()).split(":")[0])
+
+    update_requirements = {
+        "hourly": 1,
+        "daily": 24,
+        "weekly": 168,
+        "bi-weekly": 336,
+        "monthly": 744,
+    }
+
+    if time_since_last > update_requirements[update_interval]:
+        settingsMan.writeSettingsValue("program","last_check_timestamp",timeMan.now())
+        checkForUpdatesmanager(True)
+
+    return
+
+startupAutoUpdate()
 
 def performanceModSwitchEvent(toggle):
     hd_company = os.path.join(plugins_folder,"HDLethalCompany")
@@ -980,6 +1000,19 @@ class widgetAnimation():
         for color in border_anim:
             master.configure(border_color=color)
     
+    def animate_fgcolor(master,start_color,end_color,duration):
+        fgcolor_anim = pyeaze.Animator(current_value=start_color,target_value=end_color,duration=duration,fps=60,easing='ease')
+        for color in fgcolor_anim:
+            master.configure(fg_color=color)
+    
+    def looping_border_flash(master,start_color,end_color,duration):
+        try:
+            widgetAnimation.animate_border(master,start_color,end_color,duration)
+            time.sleep(1)
+            widgetAnimation.looping_border_flash(master,start_color,end_color,duration)
+        except:
+            pass
+    
 
 class thunderstore():
     def package_from_url(url):
@@ -1012,7 +1045,7 @@ class thunderstore():
         thunderstore.import_from_url(url,custom_version,bar,extend_max,popup)
         if popup:
             app.pblc_progress_bar_popup.close_progress_popup()
-        app.downloading_thunderstore_url = False
+        app.pblc_app_is_busy = False
         #app.redrawPBLCUI("Mods")
 
     def import_from_url(url, custom_version = None, bar=None, extend_max = False, popup = False):
@@ -1088,8 +1121,6 @@ class thunderstore():
             
             mod_names = list(sort_thing.keys())
 
-            print(mod_names)
-
             sorted_mod_list = sorted(mod_names, key=lambda x: x.lower())
 
             sorted_mod_dict = {}
@@ -1128,9 +1159,12 @@ class thunderstore():
             print(f"{url} is not a valid Thunderstore package link!")
 
     def check_for_updates_all(self):
+        time.sleep(0.2)
         mod_database_local = get_mod_database()
 
         mods_updating = 0
+
+        app.updateProgressMax(len(mod_database_local["installed_mods"]),popup=True)
 
         for mod in mod_database_local["installed_mods"]:
 
@@ -1139,6 +1173,7 @@ class thunderstore():
             if not mod_inf['version'] == "devmode":
 
                 print(f"Checking for updates on {mod}")
+                app.pblc_progress_bar_popup.update_label(f"Scanning {mod}")
 
                 current_version = mod_inf['version']
 
@@ -1169,6 +1204,7 @@ class thunderstore():
                     print(f"Updates found for: {mod}")
                 else:
                     print(f"No Updates: {mod}")
+                app.updateProgressCount(True)
             else:
                 continue
             
@@ -1179,6 +1215,18 @@ class thunderstore():
         
         finish_message = CTkMessagebox(title="PBLC Update Manager",message=f"Finished checking for updates, {mods_updating} mod(s) have updates available!",option_1="Ok",icon=PBLC_Icons.info(True),sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
         print(f"\n\nFinished checking for updates, {mods_updating} mod(s) have updates available!")
+
+    def check_for_updates_all_entry(self):
+        thunderstore.check_for_updates_all(self)
+
+        app.pblc_progress_bar_popup.close_progress_popup()
+        app.pblc_app_is_busy = False
+        app.pblc_progress_int, app.pblc_progress_max = 0,0
+        
+        for child in self.thunderstore_mod_frame.winfo_children():
+            for subchild in child.winfo_children():
+                if isinstance(subchild,thunderstoreModVersionLabel):
+                    subchild.refresh_version(subchild.mod)
 
     def is_installed(namespace,name,version):
         mod_database_local = get_mod_database()["installed_mods"]
@@ -1227,13 +1275,13 @@ class thunderstore_ops():
                     thunderstore_ops.call_download_thread(namespace,name,dialog,dependencies,bar=bar,popup=popup)
     
     def call_download_thread(namespace,name,version,dependencies,bar=None,extend_max=False,popup=False):
-        if not app.downloading_thunderstore_url:
+        if not app.pblc_app_is_busy:
             threading.Thread(target=lambda namespace=namespace,name=name,version=version,dependencies=dependencies,bar=bar,extend_max=extend_max, popup=popup: 
                              thunderstore_ops.download_package_entry(namespace,name,version,dependencies,bar,extend_max,popup),daemon=True).start()
             if popup:
-                app.pblc_progress_bar_popup = ctk_progress_popup.CTkProgressPopup(app,"PBLC Update Manager","Initializing Download","0%",show_cancel_button=False,progress_color=PBLC_Colors.button("main"))
+                app.pblc_progress_bar_popup = ctkextensions.CTkProgressPopup(app,"PBLC Update Manager","Initializing Download","0%",show_cancel_button=False,progress_color=PBLC_Colors.button("main"))
                 app.pblc_progress_bar_storage = customtkinter.DoubleVar(value=0.0)
-                app.downloading_thunderstore_url = True
+                app.pblc_app_is_busy = True
             else:
                 app.drawUpdateUI()
         else:
@@ -1245,7 +1293,7 @@ class thunderstore_ops():
             app.pblc_progress_bar_popup.close_progress_popup()
         else:
             app.redrawPBLCUI("Mods")
-        app.downloading_thunderstore_url = False
+        app.pblc_app_is_busy = False
 
     def download_package(namespace,name,version,dependencies,bar=None,extend_max=False,popup=False):
         try:
@@ -1495,6 +1543,7 @@ class thunderstore_ops():
         
         bepinex_zip = f"{downloads_folder}/bepinex.zip"
         
+        app.updateProgressIcon("BepInEx","BepInExPack","5.4.2100")
         downloadFromURL("https://thunderstore.io/package/download/BepInEx/BepInExPack/5.4.2100/",bepinex_zip,app.updateProgressBar)
         decompress_zip(bepinex_zip,downloads_folder)
 
@@ -1513,10 +1562,12 @@ class thunderstore_ops():
     #def delete_package():
 
 class thunderstoreModVersionLabel(customtkinter.CTkLabel):
-    def __init__(self,master,mod):
+    def __init__(self,master,mod,override_vers=None):
         customtkinter.CTkLabel.__init__(self,master,font=('IBM 3270',16))
         self.mod = mod
+        self.override_vers = override_vers
         self.load_text(self.mod)
+        
 
     def load_text(self,mod):
         json_db = get_mod_database()
@@ -1524,7 +1575,10 @@ class thunderstoreModVersionLabel(customtkinter.CTkLabel):
             mod_db = json_db["installed_mods"][mod]
             
         except KeyError:
-            self.configure(text="DUMMY VERSION")
+            if self.override_vers:
+                self.configure(text=self.override_vers)
+            else:
+                self.configure(text="UNKNOWN")
             return
         try:
             if not mod_db['has_updates']:
@@ -1594,9 +1648,8 @@ class thunderstoreModToggle(customtkinter.CTkSwitch):
         thunderstore_ops.toggle_package(mod)
 
 class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
-    def __init__(self,master,fg_color,width,height,parent):
-        scroll_text = "           Mod Name                                      Version                               Actions"
-        super().__init__(master,label_text=scroll_text,label_anchor="w",label_font=('IBM 3270',16),fg_color=fg_color,width=width,height=height,corner_radius=5)
+    def __init__(self,master,fg_color,width,height,parent, **kwargs):
+        super().__init__(master,label_anchor="w",label_font=('IBM 3270',16),fg_color=fg_color,width=width,height=height,corner_radius=5,**kwargs)
         self.grid_columnconfigure(0,weight=1)
         self.parent = parent
         self.draw_mods_list()
@@ -1607,16 +1660,24 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
 
         mod_database_local = get_mod_database()
 
-        for mod in mod_database_local["installed_mods"]:
-        
-            moddb = mod_database_local["installed_mods"][mod]
+        if settingsMan.readSettingsValue("program","enable_mods_menu") == "True":
 
-            print(f"Loading {mod}...")
+            for mod in mod_database_local["installed_mods"]:
 
-            self.addModFrame(i,moddb['name'],moddb['author'],moddb['version'],moddb['package_url'])
-            i+=1
+                    moddb = mod_database_local["installed_mods"][mod]
+
+                    print(f"Loading {mod}...")
+
+                    self.addModFrame(i,moddb['name'],moddb['author'],moddb['version'],moddb['package_url'])
+                    i+=1
+        else:
+            self.addModFrame(i,"Mod caching is disabled!","DarthLilo","0.0.0","https://github.com/DarthLilo/PBLC-Update-Manager",True,"Built-in")
     
-    def addModFrame(self,row,name,author,version,package_url):
+    def addModFrame(self,row,name,author,version,package_url,disabled=False,override_vers=None):
+        
+        if version == "devmode":
+            disabled=True
+
         mod = f"{author}-{name}"
         self.mod_entry_frame = customtkinter.CTkFrame(self,fg_color=PBLC_Colors.frame("darker"),corner_radius=5)
         self.mod_entry_frame.grid_columnconfigure(0, weight=0,minsize=105)
@@ -1634,33 +1695,33 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
         self.mod_name_author = customtkinter.CTkLabel(self.mod_entry_frame,text=f"{name}\nby {author}",justify='left',font=('IBM 3270',16))
         self.mod_name_author.grid(row=row,column=1,pady=2,sticky="w")
 
-        self.mod_version = thunderstoreModVersionLabel(self.mod_entry_frame,mod)
+        self.mod_version = thunderstoreModVersionLabel(self.mod_entry_frame,mod,override_vers)
         self.mod_version.grid(row=row,column=2,pady=2,sticky="w")
 
         self.mod_toggle_switch = thunderstoreModToggle(self.mod_entry_frame,mod,PBLC_Colors.button("disabled"),PBLC_Colors.button("main"),PBLC_Colors.button("outline"),PBLC_Colors.button("outline_size"))
         self.mod_toggle_switch.grid(row=row,column=3,pady=2,padx=2,sticky="e")
-        if not dev_mode and version == "devmode":
-            self.mod_toggle_switch.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"))
+        if (not dev_mode and disabled) or disabled:
+            self.mod_toggle_switch.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"),progress_color=PBLC_Colors.button("disabled"))
         self.mod_toggle_tooltip = CTkToolTip(self.mod_toggle_switch,message=f"Toggle the current mod.",delay=0.3)
     
         self.website_icon = customtkinter.CTkImage(PBLC_Icons.website(),size=(30,30))
         self.website_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.website_icon,fg_color=PBLC_Colors.button("main_dark"),hover_color=PBLC_Colors.button("hover_dark"),command= lambda link=package_url: self.openThunderstorePage(link),border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
         self.website_icon_lab.grid(row=row,column=4,pady=2,padx=2,sticky="e")
-        if version == "devmode":
+        if disabled:
             self.website_icon_lab.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"))
         self.mod_website_tooltip = CTkToolTip(self.website_icon_lab,message=f"Open this mod's thunderstore page.",delay=0.3)
     
         self.refresh_icon = customtkinter.CTkImage(PBLC_Icons.refresh(),size=(30,30))
         self.refresh_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.refresh_icon,fg_color=PBLC_Colors.button("main_dark"),hover_color=PBLC_Colors.button("hover_dark"),command= lambda url=package_url, mod_in = mod, version_grid=self.mod_version, icon_grid=self.mod_icon_lab: self.refreshThunderstorePackage(url,mod_in,version_grid,icon_grid),border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
         self.refresh_icon_lab.grid(row=row,column=5,pady=2,padx=2,sticky="e")
-        if version == "devmode":
+        if disabled:
             self.refresh_icon_lab.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"))
         self.mod_refresh_tooltip = CTkToolTip(self.refresh_icon_lab,message=f"Check this mod for updates.",delay=0.3)
     
         self.delete_icon = customtkinter.CTkImage(PBLC_Icons.trash_can(),size=(30,30))
         self.delete_icon_lab = customtkinter.CTkButton(self.mod_entry_frame,text="",width=45,height=45,image=self.delete_icon,fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command= lambda mod_in=mod, frame = self.mod_entry_frame: self.uninstallThunderstorePackage(mod_in,frame),border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
         self.delete_icon_lab.grid(row=row,column=6,pady=2,padx=2,sticky="e")
-        if version == "devmode":
+        if disabled:
             self.delete_icon_lab.configure(state="disabled",fg_color=PBLC_Colors.button("disabled_dark"))
     
     def addNewModFrame(self,new_name,new_author,new_version,new_url):
@@ -1684,6 +1745,7 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
         if new_mod in new_frames:
             frame_refs[new_mod]['version'].refresh_version(f"{new_author}-{new_name}")
             return
+        add_mod_loader = ctkcomponents.CTkLoader(app,opacity=0.4)
         
         new_frames.append(new_mod)
         sorted_frames_list = sorted(new_frames, key=lambda x: x.lower())
@@ -1701,6 +1763,7 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
             new_frame_index = sorted_frames_list.index(new_mod)
 
         self.addModFrame(new_frame_index,new_name,new_author,new_version,new_url)
+        add_mod_loader.stop_loader()
 
     def uninstallThunderstorePackage(self,mod,frame):
         thunderstore_ops.uninstall_package(mod)
@@ -1734,8 +1797,8 @@ class configSettingScrollFrame(customtkinter.CTkScrollableFrame):
 
             field_index+=1
 
-            self.test_label = customtkinter.CTkLabel(self.field_frame,text=f"{field.capitalize()}:",font=('IBM 3270',30))
-            self.test_label.grid(row=0,column=0,sticky='w',padx=10,pady=5)
+            self.settings_label = customtkinter.CTkLabel(self.field_frame,text=f"{field.capitalize()}:",font=('IBM 3270',30))
+            self.settings_label.grid(row=0,column=0,sticky='w',padx=10,pady=5)
 
             entry_index = 1
 
@@ -1760,11 +1823,24 @@ class configSettingScrollFrame(customtkinter.CTkScrollableFrame):
                 elif setting_type == 'bool':
 
                     self.setting_box_var = customtkinter.StringVar(value=settingsMan.readSettingsValue(field,entry))
-                    self.setting_value = customtkinter.CTkCheckBox(self.setting_details,text="",variable=self.setting_box_var,onvalue="True",offvalue="False")
+                    self.setting_value = customtkinter.CTkCheckBox(self.setting_details,text="",variable=self.setting_box_var,onvalue="True",offvalue="False",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),border_color=PBLC_Colors.button("neutral_outline"))
                     self.setting_value.grid(row=0,column=1,sticky='w')
+                
+                elif setting_type == 'dropdown':
+                    self.setting_value = customtkinter.CTkOptionMenu(self.setting_details,width=40,values=settingsMan.readSettingsValue(field,entry,4),fg_color=PBLC_Colors.button("main"),dropdown_hover_color=PBLC_Colors.button("hover"),button_color=PBLC_Colors.button("main"),hover=False,anchor='e')
+                    self.setting_value.set(settingsMan.readSettingsValue(field,entry))
+                    self.setting_value.grid(row=0,column=1,sticky='w',padx=(0,70))
+                
+                elif setting_type == 'hidden':
+                    self.setting_value = customtkinter.CTkEntry(self.setting_details,width=200,height=38,placeholder_text=settingsMan.readSettingsValue(field,entry))
+                    self.setting_value.grid(row=0,column=1,sticky='w',pady=5,padx=(0,2))
+                    self.setting_value.configure(state='disabled')
 
                 self.save_icon = customtkinter.CTkImage(PBLC_Icons.save(),size=(30,30))
-                self.save_settings = customtkinter.CTkButton(self.setting_details,text="",width=10,image=self.save_icon,command=lambda entrya=self.setting_value,field_i=field,entry_i=entry:threading.Thread(target=lambda entrya=entrya,field_i=field_i,entry_i=entry_i:self.update_setting(entrya,field_i,entry_i),daemon=True).start())
+                self.save_settings = customtkinter.CTkButton(self.setting_details,text="",width=10,fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),image=self.save_icon,border_width=PBLC_Colors.button("outline_size"),border_color=PBLC_Colors.button("outline"))
+                self.save_settings.configure(command=lambda entrya=self.setting_value,field_i=field,entry_i=entry, setting_type=setting_type, self_button = self.save_settings:threading.Thread(target=lambda entrya=entrya,field_i=field_i,entry_i=entry_i, s_type = setting_type, s_button = self_button:self.update_setting(entrya,field_i,entry_i,s_type,s_button),daemon=True).start())
+                if setting_type == 'hidden':
+                    self.save_settings.configure(state='disabled',fg_color=PBLC_Colors.button("disabled"))
                 self.save_settings.grid(row=0,column=2,sticky='w',pady=5,padx=10)
 
                 if settingsMan.readSettingsValue(field,entry,2):
@@ -1780,7 +1856,7 @@ class configSettingScrollFrame(customtkinter.CTkScrollableFrame):
 
                 entry_index +=1
     
-    def update_setting(self,entry_value,field,entry):
+    def update_setting(self,entry_value,field,entry,s_type,self_button):
 
         settingsMan.writeSettingsValue(field,entry,entry_value.get())
         try:
@@ -1790,7 +1866,16 @@ class configSettingScrollFrame(customtkinter.CTkScrollableFrame):
             pass
 
         app.focus_set()
-        widgetAnimation.animate_border(entry_value,PBLC_Colors.button("green_confirm"),PBLC_Colors.button("neutral_outline"),0.15)
+
+        if s_type == "string":
+            widgetAnimation.animate_border(entry_value,PBLC_Colors.button("green_confirm"),PBLC_Colors.button("neutral_outline"),0.15)
+        elif s_type == "bool":
+            if entry_value.get() == "True":
+                widgetAnimation.animate_fgcolor(entry_value,PBLC_Colors.button("green_confirm"),PBLC_Colors.button("main"),0.15)
+            else:
+                widgetAnimation.animate_border(entry_value,PBLC_Colors.button("green_confirm"),PBLC_Colors.button("neutral_outline"),0.15)
+        elif s_type == "dropdown":
+            widgetAnimation.animate_border(self_button,PBLC_Colors.button("green_confirm"),PBLC_Colors.button("outline"),0.15)
         
 
 
@@ -1857,9 +1942,14 @@ class PBLCApp(customtkinter.CTk):
         self.drawPBLCUI()
         self.kill_clock = False
 
-        self.downloading_thunderstore_url = False
+        self.pblc_app_is_busy = False
+        self.pblc_progress_int = 0
+        self.pblc_progress_max = 0
     
-    def drawPBLCUI(self,default_frame="Home"):
+    def drawPBLCUI(self,default_frame="Home",loader=False):
+
+        self.pblc_progress_int = 0
+        self.pblc_progress_max = 0
 
         installed_version_disp, installed_beta_version_disp, json_data_internal_disp, performance_mode_disp = get_current_version()
         installed_version, installed_beta_version, json_data_internal, performance_mode = get_current_version(True)
@@ -1880,6 +1970,9 @@ class PBLCApp(customtkinter.CTk):
 
         self.tabview = customtkinter.CTkTabview(self,segmented_button_selected_color=PBLC_Colors.button("main"),segmented_button_selected_hover_color=PBLC_Colors.button("hover"))
         self.tabview.grid(row=0, column=0,sticky='nsew')
+
+        if loader:
+            self.loader_menu = ctkcomponents.CTkLoader(self,opacity=1)
 
         if isScriptFrozen:
             tabs = ["Home","Mods","Extras"]
@@ -1936,8 +2029,7 @@ class PBLCApp(customtkinter.CTk):
         self.update_button_main = customtkinter.CTkButton(self.actions_border,image=self.download_button, text=install_latest_stable_text,font=('IBM 3270',16),fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.check_for_updates_main,border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
         self.update_button_main.grid(row=0, column=0, padx=20, pady=20)
 
-        if grab_beta_visibility() == "True":
-            print("JEALIFAEIOLFLIFALIGJEALIGJA")
+        if settingsMan.readSettingsValue("program","show_beta_options") == "True":
             self.actions_border.grid_columnconfigure(1, weight=1)
             self.update_button_main_2 = customtkinter.CTkButton(self.actions_border,image=self.download_button, text=install_latest_beta_text,font=('IBM 3270',16),fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.check_for_updates_beta,border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
             self.update_button_main_2.grid(row=0, column=1, padx=15, pady=20)
@@ -1952,8 +2044,6 @@ class PBLCApp(customtkinter.CTk):
                                                           progress_color=PBLC_Colors.button("main"), command=self.performance_switch_event,
                                                           border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
         self.performance_switch.grid(row=0, column=0, padx=10, pady=20)
-        
-        #self.performance_switch.configure(state="disabled")
 
         if not installed_version > 0 and not installed_beta_version > 0:
             self.performance_switch.configure(state="disabled")
@@ -1969,6 +2059,11 @@ class PBLCApp(customtkinter.CTk):
         self.new_builds_img = customtkinter.CTkImage(PBLC_Icons.arrow_up_right(),size=(15,15))
         self.update_self_button = customtkinter.CTkButton(self.update_manager,image=self.new_builds_img, text="Check for new builds",font=('IBM 3270',16),fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.check_for_updates_manager,border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
         self.update_self_button.grid(row=0, column=0, padx=20, pady=20)
+
+        if settingsMan.readSettingsValue("program","currently_has_update") == "True":
+            self.update_self_button.configure(text="Update Launcher")
+
+            threading.Thread(target=lambda update_button = self.update_self_button,c_start = PBLC_Colors.button("green_confirm"),c_end = PBLC_Colors.button("outline"), dur = 0.2 :widgetAnimation.looping_border_flash(update_button,c_start,c_end,dur),daemon=True).start()
 
         self.version_data_frame = customtkinter.CTkFrame(self.main_frame,fg_color=PBLC_Colors.frame("main"),bg_color="transparent",corner_radius=15)
         self.version_data_frame.grid(row=4,column=0)
@@ -2023,35 +2118,56 @@ class PBLCApp(customtkinter.CTk):
         print("Loading mods tab...")
 
         self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Mods"), corner_radius=0, fg_color="transparent")
-        self.main_frame.grid_columnconfigure(0, weight=0)
-        self.main_frame.grid_columnconfigure(1, weight=0)
-        self.main_frame.grid(row=0, column=0)
+        self.main_frame.grid_columnconfigure(0, weight=1)
+        self.main_frame.grid_rowconfigure(0, weight=1)
+        self.main_frame.grid_rowconfigure(1, weight=1)
+        self.main_frame.grid_rowconfigure(2, weight=1)
+        self.main_frame.grid(row=0, column=0,sticky='nsew')
 
         #self.fetch_mods = customtkinter.CTkButton(self.main_frame, text="Fetch Mods", command=self.fetchModData)
         #self.fetch_mods.grid(row=3, column=0)
 
+        self.text_display_frame = customtkinter.CTkFrame(self.main_frame,fg_color="black",height=30,corner_radius=10)
+        self.text_display_frame.grid_columnconfigure(0, weight=1)
+        self.text_display_frame.grid_columnconfigure(1, weight=1)
+        self.text_display_frame.grid_columnconfigure(2, weight=1)
+        self.text_display_frame.grid_rowconfigure(0, weight=1)
+        self.text_display_frame.grid(row=0,column=0,sticky='nsew',pady=2)
+
+        self.mod_name_display = customtkinter.CTkLabel(self.text_display_frame,text="Mod Name:")
+        self.mod_name_display.grid(row=0,column=0,sticky='nsew')
+
+        self.version_display = customtkinter.CTkLabel(self.text_display_frame,text="Version:")
+        self.version_display.grid(row=0,column=1,sticky='nsew')
+
+        self.actions_display = customtkinter.CTkLabel(self.text_display_frame,text="Actions:")
+        self.actions_display.grid(row=0,column=2,sticky='nsew')
+
         self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,fg_color=PBLC_Colors.frame("main"),width=960,height=450,parent=self)
-        self.thunderstore_mod_frame.grid(row=2,column=0,sticky="nsew")
+        self.thunderstore_mod_frame.grid(row=1,column=0,sticky="nsew")
 
         self.url_import_frame = customtkinter.CTkFrame(self.main_frame)
-        self.url_import_frame.grid(row=3,column=0)
+        self.url_import_frame.grid_columnconfigure(0,weight=1)
+        self.url_import_frame.grid_columnconfigure(1,weight=1)
+        self.url_import_frame.grid_columnconfigure(2,weight=1)
+        self.url_import_frame.grid_columnconfigure(3,weight=1)
+        self.url_import_frame.grid_rowconfigure(0,weight=1)
+        self.url_import_frame.grid(row=2,column=0,sticky='nsew',pady=2)
 
-        self.import_url_box = customtkinter.CTkEntry(self.url_import_frame,width=550,placeholder_text="Thunderstore Package URL")
-        self.import_url_box.grid(row=0,column=0,padx=3)
+        self.import_url_box = customtkinter.CTkEntry(self.url_import_frame,width=550,height=10,placeholder_text="Thunderstore Package URL")
+        self.import_url_box.grid(row=0,column=0,padx=3,sticky='nsew')
         self.import_url_box.bind("<Return>",lambda mod_frame=self.thunderstore_mod_frame: self.import_thunderstore_url(mod_frame))
 
-        self.import_url_vers_box = customtkinter.CTkEntry(self.url_import_frame,width=130,placeholder_text="Version (Optional)")
-        self.import_url_vers_box.grid(row=0,column=1,padx=3)
+        self.import_url_vers_box = customtkinter.CTkEntry(self.url_import_frame,width=130,height=10,placeholder_text="Version (Optional)")
+        self.import_url_vers_box.grid(row=0,column=1,padx=3,sticky='nsew')
         self.import_url_vers_box.bind("<Return>",lambda mod_frame=self.thunderstore_mod_frame: self.import_thunderstore_url(mod_frame))
 
-        self.import_from_url = customtkinter.CTkButton(self.url_import_frame,text="Import",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=lambda mod_frame = self.thunderstore_mod_frame: self.import_thunderstore_url(mod_frame),border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
-        self.import_from_url.grid(row=0,column=2,pady=6,padx=3)
+        self.import_from_url = customtkinter.CTkButton(self.url_import_frame,text="Download",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=lambda mod_frame = self.thunderstore_mod_frame: self.import_thunderstore_url(mod_frame),border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
+        self.import_from_url.grid(row=0,column=2,padx=3,sticky='nsew')
 
-        #self.check_for_updatesall = customtkinter.CTkButton(self.url_import_frame,text="Scan for Updates",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.check_for_updates_all,border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
-        #self.check_for_updatesall.grid(row=0,column=3,pady=6,padx=3)
+        self.check_for_updatesall = customtkinter.CTkButton(self.url_import_frame,text="Scan for Updates",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.check_for_updates_all,border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
+        self.check_for_updatesall.grid(row=0,column=3,padx=3,sticky='nsew')
 
-        self.teehee_button = customtkinter.CTkButton(self.url_import_frame,text="teehee",command=self.tempDevFunc)
-        self.teehee_button.grid(row=0,column=4,pady=6,padx=3)
 
         print(f"Welcome to PBLC {PBLC_Update_Manager_Version}, the launcher is still currently in alpha and could be unstable, report any bugs to DarthLilo!")
 
@@ -2083,14 +2199,15 @@ class PBLCApp(customtkinter.CTk):
             self.main_frame.grid_columnconfigure(0, weight=1)
             self.main_frame.grid(row=0,column=0,sticky="nsew")
             
-            self.devresetbutton = customtkinter.CTkButton(self.main_frame,text="display update ui",command=self.drawUpdateUI)
-            self.devresetbutton.grid(row=0,column=0)
-#
-            self.devtestbutton = customtkinter.CTkButton(self.main_frame,text="download test file",command=self.tempDevFunc)
-            self.devtestbutton.grid(row=1,column=0)
+            #self.devresetbutton = customtkinter.CTkButton(self.main_frame,text="display update ui",command=self.drawUpdateUI)
+            #self.devresetbutton.grid(row=0,column=0)
     
-            #self.config_frame = configSettingScrollFrame(self.main_frame,fg_color="transparent",height=500)
-            #self.config_frame.grid(row=0,column=0,sticky="nsew")
+            self.config_frame = configSettingScrollFrame(self.main_frame,fg_color="transparent",height=500)
+            self.config_frame.grid(row=0,column=0,sticky="nsew")
+        
+        #HIDE LOADING SCREEN
+        if loader:
+            self.loader_menu.stop_loader()
     
     def drawUpdateUI(self):
         print("Destroying main UI")
@@ -2108,40 +2225,49 @@ class PBLCApp(customtkinter.CTk):
         self.current_download.grid_rowconfigure(0,weight=1)
         self.current_download.grid_rowconfigure(1,weight=1)
         self.current_download.grid_rowconfigure(2,weight=1)
+        self.current_download.grid_rowconfigure(3,weight=1)
         self.current_download.grid_columnconfigure(0,weight=1)
 
         self.pblc_progress_icon = customtkinter.CTkImage(dark_image=roundImageCorners(PBLC_Icons.lethal_company(),35),size=(250,250))
         self.pblc_progress_icon_display = customtkinter.CTkLabel(self.current_download,text="",image=self.pblc_progress_icon)
         self.pblc_progress_icon_display.grid(row=0,column=0,sticky='nsew',pady=(30,15))
 
+        self.pblc_progress_display = customtkinter.CTkLabel(self.current_download,text="Initializing Download",font=('IBM 3270',20))
+        self.pblc_progress_display.grid(row=1,column=0,padx=20,pady=(15,5),sticky='nsew')
+
         self.pblc_progress_bar = customtkinter.CTkProgressBar(self.current_download,width=250,height=20,progress_color=PBLC_Colors.button("main"))
-        self.pblc_progress_bar.grid(row=1,column=0,pady=(15,5),padx=20)
+        self.pblc_progress_bar.grid(row=2,column=0,pady=(15,5),padx=20)
         self.pblc_progress_bar.set(0)
 
         self.pblc_progress_value = customtkinter.CTkLabel(self.current_download,text="0%",font=('IBM 3270',26))
-        self.pblc_progress_value.grid(row=2,column=0,pady=5,padx=10)
+        self.pblc_progress_value.grid(row=3,column=0,pady=5,padx=10)
 
         self.current_download_data = customtkinter.CTkFrame(self.update_frame,fg_color=PBLC_Colors.frame("update_ui"),corner_radius=15)
-        self.current_download_data.grid(row=1,column=0,sticky='nsew',padx=40,pady=(5,20))
+        self.current_download_data.grid(row=4,column=0,sticky='nsew',padx=40,pady=(5,20))
         self.current_download_data.grid_rowconfigure(0,weight=1)
         self.current_download_data.grid_rowconfigure(1,weight=1)
-        self.current_download_data.grid_rowconfigure(2,weight=1)
         self.current_download_data.grid_columnconfigure(0,weight=1)
 
-        self.pblc_progress_display = customtkinter.CTkLabel(self.current_download_data,text="Initializing Download",font=('IBM 3270',20))
-        self.pblc_progress_display.grid(row=0,column=0,padx=20,pady=(15,5),sticky='nsew')
+        self.bar_container = customtkinter.CTkFrame(self.current_download_data)
+        self.bar_container.grid_rowconfigure(0,weight=1)
+        self.bar_container.grid_columnconfigure(0,weight=1)
+        self.bar_container.grid(row=0,column=0,pady=(15,5))
+
+        self.pblc_progress_total_bar = customtkinter.CTkProgressBar(self.bar_container,width=230,height=15,progress_color=PBLC_Colors.button("main"))
+        self.pblc_progress_total_bar.grid(row=0,column=0,pady=(5,5),padx=10)
+        self.pblc_progress_total_bar.set(0)
 
         self.pblc_progress_int = 0
         self.pblc_progress_max = 0
-        self.pblc_progress_count = customtkinter.CTkLabel(self.current_download_data,text="0/0",font=('IBM 3270',20))
-        self.pblc_progress_count.grid(row=1,column=0,pady=(5,5),sticky='nsew')
+        self.pblc_progress_count = customtkinter.CTkLabel(self.bar_container,text="0/0",font=('IBM 3270',20))
+        self.pblc_progress_count.grid(row=0,column=1,pady=(5,5),padx=10)
 
         self.pblc_elapsed_time = customtkinter.CTkLabel(self.current_download_data,text="00:00:00",font=('IBM 3270',20))
-        self.pblc_elapsed_time.grid(row=2,column=0,pady=(5,15),sticky='nsew')
+        self.pblc_elapsed_time.grid(row=1,column=0,pady=(5,15),sticky='nsew')
         self.initClock()
     
-    def updateProgressBar(self,chunk_count,total,popup=False):
-        new_prog = round(chunk_count/total,2)
+    def updateProgressBar(self,cur_prog,total,popup=False):
+        new_prog = round(cur_prog/total,2)
 
         if popup:
             if not app.pblc_progress_bar_storage.get() == new_prog:
@@ -2152,17 +2278,25 @@ class PBLCApp(customtkinter.CTk):
             if not app.pblc_progress_bar.get() == new_prog:
                 app.pblc_progress_bar.set(new_prog)
                 app.pblc_progress_value.configure(text=f"{round(new_prog*100)}%")
-    
-    def updateProgressCount(self):
+           
+    def updateProgressCount(self,popup=False):
         app.pblc_progress_int += 1
-        app.pblc_progress_count.configure(text=f"{app.pblc_progress_int}/{app.pblc_progress_max}")
-        app.pblc_progress_bar.set(0)
-        app.pblc_progress_display.configure(text="Initializing Download")
-        app.pblc_progress_value.configure(text="0%")
+        if popup:
+            app.pblc_progress_bar_popup.update_progress(round(app.pblc_progress_int/app.pblc_progress_max,2))
+            app.pblc_progress_bar_popup.update_message(f"{app.pblc_progress_int}/{app.pblc_progress_max}")
+        else:
+            app.pblc_progress_count.configure(text=f"{app.pblc_progress_int}/{app.pblc_progress_max}")
+            app.pblc_progress_bar.set(0)
+            app.pblc_progress_total_bar.set(round(app.pblc_progress_int/app.pblc_progress_max,2))
+            app.pblc_progress_display.configure(text="Initializing Download")
+            app.pblc_progress_value.configure(text="0%")
     
-    def updateProgressMax(self,max):
+    def updateProgressMax(self,max,popup=False):
         app.pblc_progress_max = max
-        app.pblc_progress_count.configure(text=f"{app.pblc_progress_int}/{app.pblc_progress_max}")
+        if popup:
+            app.pblc_progress_bar_popup.update_message(f"{app.pblc_progress_int}/{app.pblc_progress_max}")
+        else:
+            app.pblc_progress_count.configure(text=f"{app.pblc_progress_int}/{app.pblc_progress_max}")
     
     def extendProgressMax(self):
         app.pblc_progress_max += 1
@@ -2186,7 +2320,7 @@ class PBLCApp(customtkinter.CTk):
     def redrawPBLCUI(self,default_frame="Home"):
         app.kill_clock = True
         app.update_frame.destroy()
-        app.drawPBLCUI(default_frame=default_frame)
+        app.drawPBLCUI(default_frame=default_frame,loader=True)
     
     def initClock(self):
         self.start_time = timeMan.now()
@@ -2272,33 +2406,26 @@ class PBLCApp(customtkinter.CTk):
 
     
     def import_thunderstore_url(self,mod_frame):
-        if not self.downloading_thunderstore_url:
+        if not self.pblc_app_is_busy:
             threading.Thread(target=lambda imp_url = self.import_url_box.get(), imp_box_url = self.import_url_vers_box.get() :thunderstore.url_import_entry(imp_url,imp_box_url,popup=True),daemon=True).start()
-            self.pblc_progress_bar_popup = ctk_progress_popup.CTkProgressPopup(app,"PBLC Update Manager","Initializing Download","0%",show_cancel_button=False,progress_color=PBLC_Colors.button("main"))
+            self.pblc_progress_bar_popup = ctkextensions.CTkProgressPopup(app,"PBLC Update Manager","Initializing Download","0%",show_cancel_button=False,progress_color=PBLC_Colors.button("main"))
             self.pblc_progress_bar_storage = customtkinter.DoubleVar(value=0.0)
-            self.downloading_thunderstore_url = True
+            self.pblc_app_is_busy = True
         #self.drawUpdateUI()
         #self.extendProgressMax()
     
     def check_for_updates_all(self):
-        thunderstore.check_for_updates_all(self)
-
-        for child in self.thunderstore_mod_frame.winfo_children():
-            for subchild in child.winfo_children():
-                if isinstance(subchild,thunderstoreModVersionLabel):
-                    subchild.refresh_version(subchild.mod)
+        threading.Thread(target=lambda self=self:thunderstore.check_for_updates_all_entry(self),daemon=True).start()
+        app.pblc_progress_bar_popup = ctkextensions.CTkProgressPopup(app,"PBLC Update Manager","Initializing Scan","0/0",show_cancel_button=False,progress_color=PBLC_Colors.button("main"))
+        app.pblc_progress_bar_storage = customtkinter.DoubleVar(value=0.0)
+        app.pblc_app_is_busy = True
     
     def redrawScrollFrame(self):
 
         print("Redrawing Scroll UI")
         for frame in self.thunderstore_mod_frame.winfo_children():
             frame.destroy()
-    
-        #self.thunderstore_mod_frame.destroy()
-#
-        #self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,fg_color=PBLC_Colors.frame("main"),width=960,height=450,parent=self)
-        #self.thunderstore_mod_frame.grid(row=2,column=0)
-    # click_methods
+
     def check_for_updates_main(self):
         checkForUpdates(self,"release")
     

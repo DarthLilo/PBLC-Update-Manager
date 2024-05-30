@@ -2,12 +2,13 @@ import customtkinter as ctk
 from PIL import Image
 import winreg
 
-#           CODE TAKEN FROM https://github.com/rudymohammadbali/ctk_components
+#           CODE SOURCED FROM
+#               https://github.com/rudymohammadbali/ctk_components
 #
 #
 #           MODIFIED BY DARTHLILO, ORIGINAL BY RUDYMOHAMMADBALI
 #
-#           Changes
+#           CTK Component Changes
 #               - Added a show cancel button argument
 #               - Added the ability to change the progress bar color
 #               - Added support for different windows DPI scaling options
