@@ -8,3 +8,5 @@ dist
 data
 .venv
 __pycache__
+exports
+build
