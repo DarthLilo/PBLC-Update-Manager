@@ -7,7 +7,7 @@ build_options = {'packages': [],
                  'bin_includes':["ctkextensions.py"],
                  'include_files': ["updater.py","assets"]}
 
-base = 'console'
+base = 'Win32GUI'
 
 executables = [
     Executable('main.py', base=base, target_name = 'PBLC Update Manager',icon='assets/pill_bottle.ico')

@@ -1,4 +1,4 @@
-import json, os, winreg, vdf, shutil, zipfile,gdown, sys, customtkinter, pyglet, subprocess, progressbar, webbrowser, requests, validators, threading, configobj, time, traceback, datetime, pywinstyles, hPyT, ctkextensions
+import json, os, winreg, vdf, shutil, zipfile,gdown, sys, customtkinter, pyglet, subprocess, webbrowser, requests, validators, threading, configobj, time, traceback, datetime, pywinstyles, hPyT, ctkextensions
 from PIL import Image,ImageDraw
 from urllib import request
 from urllib.error import HTTPError, URLError
@@ -6,8 +6,6 @@ from packaging import version
 from CTkMessagebox import CTkMessagebox
 from CTkToolTip import *
 from io import BytesIO
-
-pbar = None
 
 PBLC_Update_Manager_Version = "0.3.0"
 
@@ -60,19 +58,6 @@ def is_lethal_running():
         logMan.new("Lethal Company is running, please close it and try again!",'warning')
         return True
     return False
-
-def show_progress(block_num, block_size, total_size):
-    global pbar
-    if pbar is None:
-        pbar = progressbar.ProgressBar(maxval=total_size)
-        pbar.start()
-
-    downloaded = block_num * block_size
-    if downloaded < total_size:
-        pbar.update(downloaded)
-    else:
-        pbar.finish()
-        pbar = None
 
 def read_reg(ep, p = r"", k = ''):
     try:
@@ -667,6 +652,10 @@ def decodeDownloadCommand(input_command,bar=None,popup=False,record_deps=False):
 
         app.updateProgressDisplay(f"Updating version data")
 
+        if not os.path.exists(pblc_vers):
+            with open(pblc_vers, "w") as default_pblc:
+                default_pblc.write(json.dumps(default_pblc_vers)) 
+
         install_version = open_json(pblc_vers)
         mod_database_local = get_mod_database()
         new_patch_head = split_commnad[1]
@@ -774,7 +763,7 @@ def updateManager(github_api_manager):
     else:
         os.mkdir(temp_download_folder)
 
-    request.urlretrieve(zip_link,target_zip,show_progress)
+    request.urlretrieve(zip_link,target_zip)
 
     logMan.new("Finished downloading, extracting files")
 
@@ -932,7 +921,7 @@ def checkForUpdates(self,update_type):
 
             if not os.path.exists(bepinex_path) or not os.path.exists(doorstop_path) or not os.path.exists(winhttp_path) or installed_stable_version == version.Version("0.0.0"):
                 logMan.new("Vanilla or broken version found, prompting install")
-                prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Vanilla or broken version detected, would you like to install the latest mods?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"),sound=True)
+                prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Would you like to install the mods? (May removed currently installed mods)",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"),sound=True)
                 if prompt_answer.get() == "Yes":
                     draw_update_ui = True
                     callUpdateThread(github_repo_json,update_type)
@@ -967,7 +956,7 @@ def checkForUpdates(self,update_type):
 
         if not os.path.exists(bepinex_path) or not os.path.exists(doorstop_path) or not os.path.exists(winhttp_path) or (installed_beta_version == version.Version("0.0.0") and installed_stable_version == version.Version("0.0.0")):
             logMan.new("Vanilla or broken version found, prompting install")
-            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Vanilla or broken version detected, would you like to install the latest beta mods?",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"),sound=True)
+            prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Would you like to install the mods? (May removed currently installed mods)",option_2="Yes",option_1="No",icon=PBLC_Icons.download(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"),sound=True)
             if prompt_answer.get() == "Yes":
                 draw_update_ui = True
                 callUpdateThread(github_repo_json,update_type)
@@ -1080,14 +1069,11 @@ def downloadFromURL(download_link,download_loc,bar=None,popup=False):
         pack_req = requests.get(download_link,stream=True)
         
         total_size_in_bytes = int(pack_req.headers.get('content-length', 0))
-        widgets = [progressbar.Percentage(), ' ', progressbar.Bar()]
-        progress_bar = progressbar.ProgressBar(maxval=total_size_in_bytes, widgets=widgets).start()
 
         with open(download_loc,'wb') as dl_package:
             chunk_count = 0
             for chunk in pack_req.iter_content(chunk_size=1024):
                 dl_package.write(chunk)
-                progress_bar.update(dl_package.tell())
                 chunk_count += len(chunk)
                 if bar:
                     app.updateProgressBar(chunk_count,total_size_in_bytes,popup)
@@ -1438,16 +1424,11 @@ class thunderstore_ops():
         pack_req = requests.get(download_link,stream=True)
         
         total_size_in_bytes = int(pack_req.headers.get('content-length', 0))
-        widgets = [progressbar.Percentage(), ' ', progressbar.Bar()]
-        progress_bar = progressbar.ProgressBar(maxval=total_size_in_bytes, widgets=widgets).start()
 
         with open(download_loc,'wb') as dl_package:
             chunk_count = 0
             for chunk in pack_req.iter_content(chunk_size=1024):
-                current_progress = round(progress_bar.percentage())
-                
                 dl_package.write(chunk)
-                progress_bar.update(dl_package.tell())
                 chunk_count += len(chunk)
                 if bar:
                     bar(chunk_count, total_size_in_bytes)
@@ -2545,6 +2526,7 @@ class PBLCApp(customtkinter.CTk):
         self.update_button_main.configure(text="Install Mods")
         if settingsMan.readSettingsValue("program","show_beta_options") == "True":
             self.update_button_main_2.configure(text="Install Beta Mods")
+        ctkextensions.CTkNotification(master=app, message="Mods uninstalled successfully!", side="right_bottom")
 
     def gen_patch_change(self):
         if is_lethal_running():

@@ -41,6 +41,42 @@ def place_frame(master, frame, horizontal="right", vertical="bottom", padx=20, p
 
     frame.place(x=frame_x, y=frame_y)
 
+class CTkNotification(ctk.CTkFrame):
+    def __init__(self, master, message: str = "message", side: str = "right_bottom"):
+        self.root = master
+        self.width = 400
+        self.height = 60
+        super().__init__(self.root, width=self.width, height=self.height, corner_radius=5, border_width=1)
+        self.grid_propagate(False)
+
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+
+        self.horizontal, self.vertical = side.split("_")
+
+        self.icon = ctk.CTkImage(Image.open('assets/info.png'), Image.open('assets/info.png'), (24, 24))
+
+        self.close_icon = ctk.CTkImage(Image.open('assets/cross.png'), Image.open('assets/cross.png'), (20, 20))
+
+        self.message_label = ctk.CTkLabel(self, text=f"  {message}", font=("", 13), image=self.icon, compound="left")
+        self.message_label.grid(row=0, column=0, sticky="nsw", padx=15, pady=10)
+
+        self.close_btn = ctk.CTkButton(self, text="", image=self.close_icon, width=20, height=20, hover=False,
+                                       fg_color="transparent", command=self.close_notification)
+        self.close_btn.grid(row=0, column=1, sticky="nse", padx=10, pady=10)
+
+        place_frame(self.root, self, self.horizontal, self.vertical)
+        self.root.bind("<Configure>", self.update_position, add="+")
+
+    def update_position(self, event):
+        place_frame(self.root, self, self.horizontal, self.vertical)
+        self.update_idletasks()
+        self.root.update_idletasks()
+
+    def close_notification(self):
+        self.root.unbind("<Configure>")
+        self.destroy()
+
 class CTkProgressPopup(ctk.CTkFrame):
     def __init__(self, master, title: str = "Background Tasks", label: str = "Label...",
                  message: str = "Do something...", side: str = "right_bottom",show_cancel_button=True,progress_color="#1f6aa5"):
