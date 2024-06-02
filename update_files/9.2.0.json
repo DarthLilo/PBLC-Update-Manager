@@ -103,6 +103,8 @@
         "url_add_mod|sfDesat|ViewExtension|1.2.0",
         "url_add_mod|Blorb|WeatherMultipliers|1.1.0",
         "url_add_mod|sunnobunno|YippeeMod|1.2.4",
-        "url_add_mod|AinaVT|YippeeScrap|1.0.7"
+        "url_add_mod|AinaVT|YippeeScrap|1.0.7",
+        "download_override|1HC0DzxmetWkI8SnGQldGIju-LOg40qEL|https://www.dropbox.com/scl/fi/7g8q6y7odchv7p8q5bw3f/PBLC-9.2.0-Config-Test.zip?rlkey=c3s6pee409em2521u3h8ko1f2&st=a8i600kn&dl=1",
+        "update_vers|0.0.0|9.2.0"
     ]
 }
