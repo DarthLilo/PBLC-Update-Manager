@@ -6,6 +6,7 @@ from packaging import version
 from CTkMessagebox import CTkMessagebox
 from CTkToolTip import *
 from io import BytesIO
+import random
 
 PBLC_Update_Manager_Version = "0.3.0"
 
@@ -514,6 +515,11 @@ class PBLC_Icons():
         if pathOnly:
             return 'assets/lethal_art.png'
         return Image.open('assets/lethal_art.png')
+    
+    def inactive_thread(pathOnly=False):
+        if pathOnly:
+            return 'assets/inactive_thread.png'
+        return Image.open('assets/inactive_thread.png')
     
     def file(pathOnly=False):
         if pathOnly:
@@ -1127,16 +1133,21 @@ class thunderstore():
         else:
             return False
     
-    def batch_url_import(database,bar=None,extend_max=False,popup=False):
+    def batch_url_import(database,bar=False,extend_max=False,popup=False):
         for mod in database:
             package_url = database[mod]['package_url']
             package_version = database[mod]['version']
-            thunderstore.import_from_url(package_url,package_version,bar,extend_max,popup)
-        if popup:
-            app.pblc_progress_bar_popup.close_progress_popup()
-        if bar:
-            app.redrawPBLCUI()
-        app.pblc_app_is_busy = False
+            namespace = database[mod]['author']
+            name = database[mod]['name']
+            queueMan.open_threads()
+            queueMan.add(mod,{"queue_type":"import_from_url","url":package_url,"namespace":namespace,"name":name,"version":package_version,"bar":bar,"extend_max":extend_max})
+        queueMan.update()
+            #thunderstore.import_from_url(package_url,package_version,bar,extend_max,popup)
+        #if popup:
+        #    app.pblc_progress_bar_popup.close_progress_popup()
+        #if bar:
+        #    app.redrawPBLCUI()
+        #app.pblc_app_is_busy = False
 
     def url_import_entry(url,custom_version = None, bar=None, extend_max = False, popup = False):
         thunderstore.import_from_url(url,custom_version,bar,extend_max,popup)
@@ -1145,7 +1156,7 @@ class thunderstore():
         app.pblc_app_is_busy = False
         #app.redrawPBLCUI("Mods")
 
-    def import_from_url(url, custom_version = None, bar=None, extend_max = False, popup = False, record_deps = False):
+    def import_from_url(url, custom_version = None, bar=False, extend_max = False, popup = False, record_deps = False):
         time.sleep(0.2)
 
         if not validators.url(url):
@@ -1186,8 +1197,7 @@ class thunderstore():
             logMan.new(f"Installing version {target_version}")
 
             if bar:
-                app.updateProgressDisplay(f"Importing {namespace}-{name} from Thunderstore")
-                app.updateProgressIcon(namespace,name,target_version)
+                app.updateProgressDisplay(f"{namespace}-{name}",f"Importing")
             if popup:
                 app.pblc_progress_bar_popup.update_label(f"Downloading {namespace}-{name}")
                 app.pblc_progress_bar_popup.update_message("0%")
@@ -1392,7 +1402,7 @@ class thunderstore_ops():
         else:
             logMan.new("User attempted to start multiple download threads at once, action cancelled!",'warning')
 
-    def download_package(namespace,name,version,dependencies,bar=None,extend_max=False,popup=False):
+    def download_package(namespace,name,version,dependencies,bar=False,extend_max=False,popup=False):
         try:
             version_test = f"https://thunderstore.io/api/experimental/package/{namespace}/{name}/{version}/"
             vers_response = json.loads(request.urlopen(requestWebData(version_test)).read().decode())
@@ -1401,8 +1411,7 @@ class thunderstore_ops():
             return
         
         if bar:
-            app.updateProgressIcon(namespace,name,version)
-            app.updateProgressDisplay(f"Downloading {namespace}-{name}")
+            app.updateProgressDisplay(f"{namespace}-{name}",f"Downloading")
             if extend_max:
                 app.extendProgressMax()
         
@@ -1431,16 +1440,21 @@ class thunderstore_ops():
                 dl_package.write(chunk)
                 chunk_count += len(chunk)
                 if bar:
-                    bar(chunk_count, total_size_in_bytes)
+                    app.mod_download_frame.update_progress(f"{namespace}-{name}",round(chunk_count/total_size_in_bytes,2))
+                    #bar(chunk_count, total_size_in_bytes)
                 if popup:
                     app.updateProgressBar(chunk_count,total_size_in_bytes,True)
                     #app.pblc_progress_bar_popup.update_progress(round(chunk_count/total_size_in_bytes,2))
         
         if bar:
             app.updateProgressCount()
-                    
+
+        local_downloads = f"{downloads_folder}/{namespace}-{name}"
         
-        decompress_zip(download_loc,downloads_folder)
+        if not os.path.exists(local_downloads):
+            os.mkdir(local_downloads)
+        
+        decompress_zip(download_loc,local_downloads)
 
         thunderstore_ops.install_package(namespace,name,version,dependencies,bar=bar,popup=popup)
     
@@ -1491,9 +1505,11 @@ class thunderstore_ops():
 
         logMan.new(f"Installing {namespace}-{name}-{version}")
 
-        files = os.listdir(downloads_folder)
+        local_download = f"{downloads_folder}/{namespace}-{name}"
 
-        delete_list = ["CHANGELOG.md","LICENSE","manifest.json","README.md"]
+        files = os.listdir(local_download)
+
+        delete_list = ["CHANGELOG.md","LICENSE","LICENSE.txt","manifest.json","README.md"]
         bepinex_list = ["plugins","config","core","patchers"]
         full_name = f"{namespace}-{name}"
         pkg_folder = f"{getCurrentPathLoc()}/data/pkg/{namespace}-{name}"
@@ -1504,7 +1520,7 @@ class thunderstore_ops():
 
         for file in files:
             
-            file_path = os.path.join(downloads_folder,file)
+            file_path = os.path.join(local_download,file)
             
             if file in delete_list:
                 if os.path.exists(file_path):
@@ -1517,7 +1533,7 @@ class thunderstore_ops():
                     pkg_files.append(x)
                 shutil.copytree(file_path,bepinex_path,dirs_exist_ok=True)
             elif file in bepinex_list:
-                for x in thunderstore_ops.log_sub_files(downloads_folder,file_path):
+                for x in thunderstore_ops.log_sub_files(local_download,file_path):
                     pkg_files.append(x)
                 shutil.copytree(file_path,f"{bepinex_path}/{file}",dirs_exist_ok=True)
             elif file == "icon.png":
@@ -1527,7 +1543,7 @@ class thunderstore_ops():
                     pkg_files.append(f"plugins\\{file}")
                     move_file(file_path,f"{bepinex_path}/plugins/{file}")
                 elif os.path.isdir(file_path):
-                    for x in thunderstore_ops.log_sub_files(downloads_folder,file_path,"plugins"):
+                    for x in thunderstore_ops.log_sub_files(local_download,file_path,"plugins"):
                         pkg_files.append(x)
                     shutil.copytree(file_path,f"{bepinex_path}/plugins/{file}",dirs_exist_ok=True)
         
@@ -1538,8 +1554,6 @@ class thunderstore_ops():
                     os.remove(disable_loc)
                 elif os.path.isdir(disable_loc):
                     shutil.rmtree(disable_loc)
-        
-        shutil.rmtree(downloads_folder)
 
         #Updating Mod Database
 
@@ -1558,6 +1572,8 @@ class thunderstore_ops():
 
         if popup:
             app.thunderstore_mod_frame.addNewModFrame(name,namespace,version,mod_database_local['installed_mods'][f"{namespace}-{name}"]['package_url'])
+
+        shutil.rmtree(local_download)
 
         logMan.new(f"Finished installing {namespace}-{name}-{version}")
             
@@ -1629,13 +1645,17 @@ class thunderstore_ops():
             os.mkdir(downloads_folder)
         
         bepinex_zip = f"{downloads_folder}/bepinex.zip"
+        local_download = f"{downloads_folder}/bepinex"
+
+        if not os.path.exists(local_download):
+            os.mkdir(local_download)
         
         if bar:
             app.updateProgressIcon("BepInEx","BepInExPack","5.4.2100")
         downloadFromURL("https://thunderstore.io/package/download/BepInEx/BepInExPack/5.4.2100/",bepinex_zip,bar=bar)
-        decompress_zip(bepinex_zip,downloads_folder)
+        decompress_zip(bepinex_zip,local_download)
 
-        bepinex_pack = os.path.normpath(f"{downloads_folder}/BepInExPack")
+        bepinex_pack = os.path.normpath(f"{local_download}/BepInExPack")
 
         for file in os.listdir(bepinex_pack):
             filepath = f"{bepinex_pack}/{file}"
@@ -1644,12 +1664,59 @@ class thunderstore_ops():
             else:
                 shutil.move(filepath,f"{LC_Path}/{file}")
         
-        shutil.rmtree(downloads_folder)
+        shutil.rmtree(local_download)
         logMan.new("BepInEx installed")
         if bar:
             app.updateProgressCount()
 
     #def delete_package():
+
+class queueMan():
+
+    current_queue = {}
+    active_downloads = 0
+    max_threads = 6
+    threads_status = {}
+
+    def open_threads():
+        threads = app.mod_download_frame.frames_list()
+        for thread in threads:
+            queueMan.threads_status[f"thread_{threads[thread]['index']}"] = {}
+            queueMan.threads_status[f"thread_{threads[thread]['index']}"]['active'] = threads[thread]['active'].cget("text")
+            queueMan.threads_status[f"thread_{threads[thread]['index']}"]['index'] = threads[thread]['index']
+
+    def reset():
+        queueMan.current_queue.clear()
+        queueMan.active_downloads = 0
+
+    def add(target,metadata):
+        queueMan.current_queue[target] = metadata
+    
+    def start(thread_index,target):
+        targ_data = queueMan.current_queue[target]
+        queue_type = targ_data['queue_type']
+        if queue_type == "import_from_url":
+            print(f"Starting {target}")
+            threading.Thread(target=lambda targ_data = targ_data:app.mod_download_frame.start_url_thread(thread_index,targ_data)).start()
+            #app.mod_download_frame.start_thread(targ_data['namespace'],targ_data['name'],targ_data['version'])
+            #threading.Thread(target=lambda url=targ_data['url'], package_vers=targ_data['version'],bar=targ_data['bar'],extend_max=targ_data['extend_max']:thunderstore.import_from_url(url,package_vers,bar,extend_max),daemon=True).start()
+            del queueMan.current_queue[target]
+
+    def update():
+        if queueMan.active_downloads >= queueMan.max_threads: #QUEUE CATCH
+            return
+        
+        open_threads = queueMan.max_threads-queueMan.active_downloads
+        queue_list = list(queueMan.current_queue.keys())
+
+        for i in range(min(open_threads,len(queueMan.current_queue))):
+            for thread in queueMan.threads_status:
+                if queueMan.threads_status[thread]['active'] == "False":
+                    queueMan.threads_status[thread]['active'] = "True"
+                    queueMan.start(queueMan.threads_status[thread]['index'],queue_list[i])
+                    break
+            
+            #queueMan.start(queue_list[i])
 
 class thunderstoreModLabel(customtkinter.CTkFrame):
     def __init__(self,master,mod,name,author,override_vers=None):
@@ -2013,7 +2080,161 @@ class configSettingScrollFrame(customtkinter.CTkScrollableFrame):
                 widgetAnimation.animate_border(entry_value,PBLC_Colors.button("green_confirm"),PBLC_Colors.button("neutral_outline"),0.15)
         elif s_type == "dropdown":
             widgetAnimation.animate_border(self_button,PBLC_Colors.button("green_confirm"),PBLC_Colors.button("outline"),0.15)
+
+class modDownloadingScrollFrame(customtkinter.CTkFrame):
+    def __init__(self,master,fg_color,width,height,parent, **kwargs):
+        super().__init__(master,fg_color=fg_color,width=width,height=height,corner_radius=15,**kwargs)
+        self.grid_columnconfigure(0,weight=1)
+        self.grid_columnconfigure(1,weight=1)
+        self.parent = parent
         
+        
+        self.draw_mods_list()
+
+    def draw_mods_list(self):
+
+        thread_num = 0
+
+        for i in range(int(round(queueMan.max_threads/2))):
+            self.addModFrame(i,0,f"inactive_thread_{thread_num}","Inactive",thread_num)
+            thread_num+=1
+            self.addModFrame(i,1,f"inactive_thread_{thread_num}","Inactive",thread_num)
+            thread_num+=1
+    
+    def addModFrame(self,row,col,mod_title,status,thread_index):
+
+        self.mod_entry_frame = customtkinter.CTkFrame(self,fg_color=PBLC_Colors.frame("darker"),corner_radius=5)
+        self.mod_entry_frame.grid_columnconfigure(0, weight=0,minsize=1)
+        self.mod_entry_frame.grid_columnconfigure(1, weight=0,minsize=1)
+        self.mod_entry_frame.grid_rowconfigure(0,weight=1)
+        self.mod_entry_frame.grid(row=row,column=col,sticky="nsew",pady=10,padx=10)
+
+        self.mod_icon_img = customtkinter.CTkImage(Image.open('assets/inactive_thread.png'),size=(90,90))
+        self.mod_icon_lab = customtkinter.CTkLabel(self.mod_entry_frame,text='',image=self.mod_icon_img)
+        self.mod_icon_lab.grid(row=0,column=0,pady=10,padx=(10,10),sticky="w")
+
+        self.mod_info_container = customtkinter.CTkFrame(self.mod_entry_frame,fg_color='transparent')
+        self.mod_info_container.grid_columnconfigure(0, weight=1,minsize=1)
+        self.mod_info_container.grid_rowconfigure(0, weight=1,minsize=1)
+        self.mod_info_container.grid_rowconfigure(1, weight=1,minsize=1)
+        self.mod_info_container.grid_rowconfigure(2, weight=1,minsize=1)
+        self.mod_info_container.grid_rowconfigure(3, weight=1,minsize=1)
+        self.mod_info_container.grid(row=0,column=1,sticky='we')
+
+        self.mod_title_display = customtkinter.CTkLabel(self.mod_info_container,text=mod_title,font=('IBM 3270',18))
+        self.mod_title_display.grid(row=0,column=0,sticky='w')
+
+        self.download_status_display = customtkinter.CTkLabel(self.mod_info_container,text=status,font=('IBM 3270',14),text_color=PBLC_Colors.text("version_gray"))
+        self.download_status_display.grid(row=1,column=0,sticky='w')
+
+        self.download_progress_display = customtkinter.CTkProgressBar(self.mod_info_container,progress_color=PBLC_Colors.button("main"))
+        self.download_progress_display.grid(row=2,column=0,sticky='we')
+        self.download_progress_display.set(0)
+
+        self.download_progress_percent = customtkinter.CTkLabel(self.mod_info_container,text="0%",font=('IBM 3270',14),text_color=PBLC_Colors.text("version_gray"))
+        self.download_progress_percent.grid(row=3,column=0,sticky='w')
+
+        self.is_thread_active = customtkinter.CTkLabel(self.mod_entry_frame,text="False")
+        self.thread_index = customtkinter.CTkLabel(self.mod_entry_frame,text=thread_index)
+    
+    def frames_list(self):
+        
+        frames = {}
+
+        for frame in self.winfo_children():
+            frame_children = frame.winfo_children()[1].winfo_children()
+            icon = frame.winfo_children()[0]
+            active = frame.winfo_children()[2]
+            index = int(frame.winfo_children()[3].cget("text"))
+            name = frame_children[0]
+            status = frame_children[1]
+            progress_bar = frame_children[2]
+            progress_percent = frame_children[3]
+            frames[name.cget("text")] = {}
+            frames[name.cget("text")]['name'] = name
+            frames[name.cget("text")]['status'] = status
+            frames[name.cget("text")]['progress_bar'] = progress_bar
+            frames[name.cget("text")]['progress_percent'] = progress_percent
+            frames[name.cget("text")]['icon'] = icon
+            frames[name.cget("text")]['active'] = active
+            frames[name.cget("text")]['index'] = index
+        return frames
+    
+    def update_name(self,target,new_name):
+        frames = self.frames_list()
+        frames[target]['name'].configure(text=new_name)
+
+    def update_status(self,target,new_value):
+        frames = self.frames_list()
+        frames[target]['status'].configure(text=new_value)
+    
+    def update_progress(self,target,new_value):
+        frames = self.frames_list()
+        if not frames[target]['progress_bar'].get() == new_value:
+            frames[target]['progress_bar'].set(new_value)
+            frames[target]['progress_percent'].configure(text=f"{round(new_value*100)}%")
+    
+    def update_icon(self,target,new_image):
+        frames = self.frames_list()
+        frames[target]['icon'].configure(image=new_image)
+
+    def rip_icon(self,namespace,name,version):
+        target_url = f"https://gcdn.thunderstore.io/live/repository/icons/{namespace}-{name}-{version}.png"
+        try:
+            geticon = requests.get(target_url)
+            fin_img = customtkinter.CTkImage(roundImageCorners(Image.open(BytesIO(geticon.content)),35),size=(90,90))
+        except Exception:
+            fin_img = customtkinter.CTkImage(PBLC_Icons.missing_icon(),size=(90,90))
+            logMan.new("Error while drawing icon, check internet",'warning')
+        return fin_img
+
+    def toggle_thread(self,target,state):
+        frames = self.frames_list()
+        try:
+            frames[target]['active'].configure(text=str(state))
+            if state == False:
+                self.update_status(target,"Inactive")
+                self.update_progress(target,0)
+                self.update_icon(target,customtkinter.CTkImage(PBLC_Icons.inactive_thread(),size=(90,90)))
+                self.update_name(target,f"inactive_thread_{frames[target]['index']}")
+        except KeyError:
+            logMan.new("Invalid thread target selected!",'warning')
+
+    def start_thread(self,thread_index,namespace,name,version):
+        if queueMan.active_downloads >= queueMan.max_threads: #QUEUE CATCH
+            return False
+
+        frames = self.frames_list()
+
+        selected_frame = None
+        for frame in frames:
+            if frames[frame]['index'] == thread_index:
+                selected_frame = frame
+                break
+        self.toggle_thread(selected_frame,True)
+        self.update_icon(selected_frame,self.rip_icon(namespace,name,version))
+        self.update_status(selected_frame,"Starting Download")
+        
+        self.update_name(selected_frame,f"{namespace}-{name}")
+        queueMan.active_downloads+=1
+        return True
+
+    def close_thread(self,target):
+        frames = self.frames_list()
+        try:
+            if frames[target]['active'].cget("text") == "False":
+                logMan.new(f"{target} wasn't queued, skipping!")
+                return False
+        except KeyError:
+            logMan.new(f"{target} was already dequeued or was never queued!",'warning')
+            return False
+        self.toggle_thread(target,False)
+        queueMan.active_downloads-=1
+        return True
+
+    def start_url_thread(self,thread_index,targ_data):
+        self.start_thread(thread_index,targ_data['namespace'],targ_data['name'],targ_data['version'])
+        thunderstore.import_from_url(targ_data['url'],targ_data['version'],targ_data['bar'],targ_data['extend_max'])
 
 
 class PBLC_Colors():
@@ -2086,6 +2307,7 @@ class PBLCApp(customtkinter.CTk):
         self.pblc_app_is_busy = False
         self.pblc_progress_int = 0
         self.pblc_progress_max = 0
+        self.rahrah = 0
 
         self.new_mods_list = []
     
@@ -2365,17 +2587,13 @@ class PBLCApp(customtkinter.CTk):
 
         logMan.new(f"Welcome to PBLC Update Manager {PBLC_Update_Manager_Version}!")
         if not isScriptFrozen:
-            print("dev menu loaded")
-            #self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Dev"), corner_radius=0, fg_color="transparent")
-            #self.main_frame.grid_rowconfigure(0, weight=1)
-            #self.main_frame.grid_columnconfigure(0, weight=1)
-            #self.main_frame.grid(row=0,column=0,sticky="nsew")
-            #
-            ##self.devresetbutton = customtkinter.CTkButton(self.main_frame,text="display update ui",command=self.drawUpdateUI)
-            ##self.devresetbutton.grid(row=0,column=0)
-    #
-            #self.config_frame = configSettingScrollFrame(self.main_frame,fg_color="transparent",height=500)
-            #self.config_frame.grid(row=0,column=0,sticky="nsew")
+            self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Dev"), corner_radius=0, fg_color="transparent")
+            self.main_frame.grid_rowconfigure(0, weight=1)
+            self.main_frame.grid_columnconfigure(0, weight=1)
+            self.main_frame.grid(row=0,column=0,sticky="nsew")
+            
+            self.devresetbutton = customtkinter.CTkButton(self.main_frame,text="display update ui",command=self.drawUpdateUI)
+            self.devresetbutton.grid(row=0,column=0)
         
         #HIDE LOADING SCREEN
         if loader:
@@ -2390,32 +2608,38 @@ class PBLCApp(customtkinter.CTk):
         self.update_frame.grid(row=0,column=0,sticky="nsew")
         self.update_frame.grid_columnconfigure(0,weight=1)
         self.update_frame.grid_rowconfigure(0,weight=1)
-        self.update_frame.grid_rowconfigure(1,weight=1)
 
         self.current_download = customtkinter.CTkFrame(self.update_frame,fg_color=PBLC_Colors.frame("update_ui"),corner_radius=15)
         self.current_download.grid(row=0,column=0,sticky='nsew',padx=40,pady=(20,5))
         self.current_download.grid_rowconfigure(0,weight=1)
-        self.current_download.grid_rowconfigure(1,weight=1)
-        self.current_download.grid_rowconfigure(2,weight=1)
-        self.current_download.grid_rowconfigure(3,weight=1)
+        #self.current_download.grid_rowconfigure(1,weight=1)
+        #self.current_download.grid_rowconfigure(2,weight=1)
+        #self.current_download.grid_rowconfigure(3,weight=1)
         self.current_download.grid_columnconfigure(0,weight=1)
 
-        self.pblc_progress_icon = customtkinter.CTkImage(dark_image=roundImageCorners(PBLC_Icons.lethal_company(),35),size=(250,250))
-        self.pblc_progress_icon_display = customtkinter.CTkLabel(self.current_download,text="",image=self.pblc_progress_icon)
-        self.pblc_progress_icon_display.grid(row=0,column=0,sticky='nsew',pady=(30,15))
+        ####
 
-        self.pblc_progress_display = customtkinter.CTkLabel(self.current_download,text="Initializing Download",font=('IBM 3270',20))
-        self.pblc_progress_display.grid(row=1,column=0,padx=20,pady=(15,5),sticky='nsew')
+        self.mod_download_frame = modDownloadingScrollFrame(self.current_download,PBLC_Colors.frame("main"),960,880,self)
+        self.mod_download_frame.grid(row=0,column=0,sticky='nsew')
 
-        self.pblc_progress_bar = customtkinter.CTkProgressBar(self.current_download,width=250,height=20,progress_color=PBLC_Colors.button("main"))
-        self.pblc_progress_bar.grid(row=2,column=0,pady=(15,5),padx=20)
-        self.pblc_progress_bar.set(0)
+        ###
 
-        self.pblc_progress_value = customtkinter.CTkLabel(self.current_download,text="0%",font=('IBM 3270',26))
-        self.pblc_progress_value.grid(row=3,column=0,pady=5,padx=10)
+        #self.pblc_progress_icon = customtkinter.CTkImage(dark_image=roundImageCorners(PBLC_Icons.lethal_company(),35),size=(250,250))
+        #self.pblc_progress_icon_display = customtkinter.CTkLabel(self.current_download,text="",image=self.pblc_progress_icon)
+        #self.pblc_progress_icon_display.grid(row=0,column=0,sticky='nsew',pady=(30,15))
+#
+        #self.pblc_progress_display = customtkinter.CTkLabel(self.current_download,text="Initializing Download",font=('IBM 3270',20))
+        #self.pblc_progress_display.grid(row=1,column=0,padx=20,pady=(15,5),sticky='nsew')
+#
+        #self.pblc_progress_bar = customtkinter.CTkProgressBar(self.current_download,width=250,height=20,progress_color=PBLC_Colors.button("main"))
+        #self.pblc_progress_bar.grid(row=2,column=0,pady=(15,5),padx=20)
+        #self.pblc_progress_bar.set(0)
+#
+        #self.pblc_progress_value = customtkinter.CTkLabel(self.current_download,text="0%",font=('IBM 3270',26))
+        #self.pblc_progress_value.grid(row=3,column=0,pady=5,padx=10)
 
         self.current_download_data = customtkinter.CTkFrame(self.update_frame,fg_color=PBLC_Colors.frame("update_ui"),corner_radius=15)
-        self.current_download_data.grid(row=4,column=0,sticky='nsew',padx=40,pady=(5,20))
+        self.current_download_data.grid(row=1,column=0,sticky='nsew',padx=40,pady=(5,20))
         self.current_download_data.grid_rowconfigure(0,weight=1)
         self.current_download_data.grid_rowconfigure(1,weight=1)
         self.current_download_data.grid_columnconfigure(0,weight=1)
@@ -2436,7 +2660,30 @@ class PBLCApp(customtkinter.CTk):
 
         self.pblc_elapsed_time = customtkinter.CTkLabel(self.current_download_data,text="00:00:00",font=('IBM 3270',20))
         self.pblc_elapsed_time.grid(row=1,column=0,pady=(5,15),sticky='nsew')
+
+        self.teehee_button = customtkinter.CTkButton(self.current_download_data,text="enable",command=self.tempEnable)
+        self.teehee_button.grid(row=2,column=0)
+
+        self.teehee_button2 = customtkinter.CTkButton(self.current_download_data,text="disable",command=self.tempDisable)
+        self.teehee_button2.grid(row=2,column=1)
+
+        self.teehee_button3 = customtkinter.CTkButton(self.current_download_data,text="queue",command=self.tempQueue)
+        self.teehee_button3.grid(row=2,column=2)
+
         self.initClock()
+    
+    def tempEnable(self):
+        queueMan.open_threads()
+        #app.mod_download_frame.toggle_thread("inactive_thread_1",True)
+
+    def tempDisable(self):
+        frame_list = app.mod_download_frame.frames_list()
+        keys = list(frame_list.keys())
+        app.mod_download_frame.close_thread(keys[random.randint(0,len(keys)-1)])
+    
+    def tempQueue(self):
+        queue_add = app.mod_download_frame.start_thread(f"darthlilo-teehee_{self.rahrah}")
+        if queue_add: self.rahrah+=1
     
     def updateProgressBar(self,cur_prog,total,popup=False):
         new_prog = round(cur_prog/total,2)
@@ -2458,13 +2705,13 @@ class PBLCApp(customtkinter.CTk):
             app.pblc_progress_bar_popup.update_message(f"{app.pblc_progress_int}/{app.pblc_progress_max}")
         else:
             app.pblc_progress_count.configure(text=f"{app.pblc_progress_int}/{app.pblc_progress_max}")
-            app.pblc_progress_bar.set(0)
+            #app.pblc_progress_bar.set(0)
             try:
                 app.pblc_progress_total_bar.set(round(app.pblc_progress_int/app.pblc_progress_max,2))
             except ZeroDivisionError:
                 app.pblc_progress_total_bar.set(round(0))
-            app.pblc_progress_display.configure(text="Initializing Download")
-            app.pblc_progress_value.configure(text="0%")
+            #app.pblc_progress_display.configure(text="Initializing Download")
+            #app.pblc_progress_value.configure(text="0%")
     
     def updateProgressMax(self,max,popup=False):
         app.pblc_progress_max = max
@@ -2476,8 +2723,8 @@ class PBLCApp(customtkinter.CTk):
     def extendProgressMax(self):
         app.pblc_progress_max += 1
 
-    def updateProgressDisplay(self,message):
-        app.pblc_progress_display.configure(text=message)
+    def updateProgressDisplay(self,target,message):
+        app.mod_download_frame.update_status(target,message)
 
     def updateProgressIcon(self,namespace,name,version):
         target_url = f"https://gcdn.thunderstore.io/live/repository/icons/{namespace}-{name}-{version}.png"
@@ -2783,7 +3030,7 @@ class PBLCApp(customtkinter.CTk):
             self.drawUpdateUI()
             self.updateProgressMax(len(mod_list))
 
-            threading.Thread(target=lambda mod_db = mod_list:thunderstore.batch_url_import(mod_db,bar=app.updateProgressBar),daemon=True).start()
+            threading.Thread(target=lambda mod_db = mod_list:thunderstore.batch_url_import(mod_db,bar=True),daemon=True).start()
     
     def export_mod_list(self):
         if is_lethal_running():

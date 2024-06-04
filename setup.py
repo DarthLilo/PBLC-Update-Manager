@@ -15,7 +15,7 @@ executables = [
 
 setup(name='PBLC Update Manager',
       version = '0.3.0',
-      description = 'An simple mod manager for Lethal Company',
+      description = 'PBLC Update Manager',
       options = {'build_exe': build_options},
       executables = executables,
       author = "DarthLilo")
