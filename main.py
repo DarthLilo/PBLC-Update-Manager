@@ -43,7 +43,7 @@ if sys.platform.startswith('win'):
     import ctypes
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(u'DarthLilo.PBLC_Update_Manager') # Arbitrary string
 
-moddb_file = os.path.join(getCurrentPathLoc(),"data","mod_database.json")
+
 
 def check_for_process(process_name):
     cmd = 'tasklist /fi "imagename eq {}"'.format(process_name)
@@ -263,6 +263,41 @@ class logMan():
         
 logMan.start()
 
+class modDatabase():
+
+    path = os.path.join(getCurrentPathLoc(),"data","mod_database.json")
+    is_busy = False
+
+    def get():
+        db = open_json(modDatabase.path)
+        return db
+    
+    def lock(state):
+        modDatabase.is_busy = state
+    
+    def wait():
+        state = modDatabase.is_busy
+        if state:
+            logMan.new("Mod Database File in use, waiting")
+            time.sleep(0.1)
+            return modDatabase.wait()
+        else:
+            logMan.new("Writing to Mod Database File")
+            return False
+    
+    def write(data):
+        if not modDatabase.wait():
+            modDatabase.lock(True)
+            indent_value = 4
+
+            with open(modDatabase.path, "w") as mod_database_write:
+                mod_database_write.write(json.dumps(data,indent=indent_value))
+            modDatabase.lock(False)
+    
+    def reset():
+        default_database = {"installed_mods":{},"patch_version":"0.0.0"}
+        modDatabase.write(default_database)
+
 def locate_lethal_company():
 
     custom_lethal_path = settingsMan.readSettingsValue("paths","lethal_company_path")
@@ -404,10 +439,9 @@ def startupFunc():
     
     mod_pkg = os.path.join(cur_folder,"data","pkg")
 
-    if not os.path.exists(moddb_file):
+    if not os.path.exists(modDatabase.path):
         logMan.new("Creating mod database file")
-        with open(moddb_file, "w") as moddb_create:
-            moddb_create.write(json.dumps({"installed_mods":{},"patch_version":"0.0.0"},indent=4))
+        modDatabase.reset()
     else:
         logMan.new("Found mod database file")
     
@@ -415,10 +449,6 @@ def startupFunc():
         os.mkdir(mod_pkg)
 
 startupFunc()
-
-def get_mod_database():
-    mod_database = open_json(os.path.join(current_file_loc,"data","mod_database.json"))
-    return mod_database
 
 
 def get_current_version(int_only = False):
@@ -546,7 +576,7 @@ class version_man():
         return install_version
 
     def get_patch():
-        mod_db = get_mod_database()
+        mod_db = modDatabase.get()
         try:
             patch_version = mod_db['patch_version']
         except KeyError:
@@ -555,10 +585,9 @@ class version_man():
         return patch_version
     
     def set_patch(patch):
-        mod_db = get_mod_database()
+        mod_db = modDatabase.get()
         mod_db['patch_version'] = patch
-        with open(moddb_file,"w") as patch_set:
-            patch_set.write(json.dumps(mod_db,indent=4))
+        modDatabase.write(mod_db,True)
 
 def decompress_zip(zip_file,destination):
     logMan.new(f"Unzipping {os.path.basename(zip_file)}")
@@ -663,7 +692,7 @@ def decodeDownloadCommand(input_command,bar=None,popup=False,record_deps=False):
                 default_pblc.write(json.dumps(default_pblc_vers)) 
 
         install_version = open_json(pblc_vers)
-        mod_database_local = get_mod_database()
+        mod_database_local = modDatabase.get()
         new_patch_head = split_commnad[1]
 
         if len(split_commnad) == 2:
@@ -703,9 +732,7 @@ def decodeDownloadCommand(input_command,bar=None,popup=False,record_deps=False):
             with open(pblc_vers, "w") as patch_updater:
                 patch_updater.write(json.dumps(install_version))
             
-
-        with open(moddb_file, "w") as patch_db_updater:
-                patch_db_updater.write(json.dumps(mod_database_local,indent=4))
+        modDatabase.write(mod_database_local,True)
         if bar:
             app.updateProgressCount()
     elif command == "download_bepinex":
@@ -718,8 +745,7 @@ def decodeDownloadCommand(input_command,bar=None,popup=False,record_deps=False):
             shutil.rmtree(bepinex_path)
         os.makedirs(f"{bepinex_path}/plugins")
 
-        with open(moddb_file, "w") as moddb_reset:
-            moddb_reset.write(json.dumps({"installed_mods":{},"patch_version":"0.0.0"},indent=4))
+        modDatabase.reset()
         if bar:
             app.updateProgressCount()
 
@@ -1063,9 +1089,8 @@ def uninstallMods():
         os.remove(winhttp_path)
     if os.path.exists(doorstop_path):
         os.remove(doorstop_path)
-
-    with open(moddb_file, "w") as moddb_reset:
-        moddb_reset.write(json.dumps({"installed_mods":{},"patch_version":"0.0.0"},indent=4))
+    
+    modDatabase.reset()
     
     with open(pblc_vers, "w") as pblc_reset:
         pblc_reset.write(json.dumps({"version": "0.0.0", "beta_version": "0.0.0", "beta_goal": "0.0.0", "performance_mode": "off"}))
@@ -1210,7 +1235,7 @@ class thunderstore():
                     del dependencies[dep_count]
                 dep_count += 1
 
-            mod_database_local = get_mod_database()
+            mod_database_local = modDatabase.get()
             mod_list = mod_database_local["installed_mods"]
             date_updated = thunderstore.extract_package_json(namespace,name,target_version)['date_created'].split("T")[0]
             
@@ -1242,9 +1267,7 @@ class thunderstore():
             mod_database_local["installed_mods"] = sorted_mod_dict
 
             
-
-            with open(moddb_file, "w") as mod_installer:
-                mod_installer.write(json.dumps(mod_database_local,indent=4))
+            modDatabase.write(mod_database_local)
             
 
             #DOWNLOADING MOD
@@ -1265,7 +1288,7 @@ class thunderstore():
 
                     internal_name = f"{split_name[0]}-{split_name[1]}"
 
-                    if internal_name not in get_mod_database()['installed_mods']:
+                    if internal_name not in modDatabase.get()['installed_mods']:
                         thunderstore.import_from_url(f"https://thunderstore.io/c/lethal-company/p/{split_name[0]}/{split_name[1]}/","",bar, extend_max=True,popup=popup,record_deps=record_deps)
 
 
@@ -1275,7 +1298,7 @@ class thunderstore():
 
     def check_for_updates_all(self):
         time.sleep(0.2)
-        mod_database_local = get_mod_database()
+        mod_database_local = modDatabase.get()
 
         mods_updating = 0
 
@@ -1324,9 +1347,7 @@ class thunderstore():
                 continue
             
         
-
-        with open(moddb_file, "w") as update_checker_all:
-            update_checker_all.write(json.dumps(mod_database_local,indent=4))
+        modDatabase.write(mod_database_local)
         
         finish_message = CTkMessagebox(title="PBLC Update Manager",message=f"Finished checking for updates, {mods_updating} mod(s) have updates available!",option_1="Ok",icon=PBLC_Icons.info(True),sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
         logMan.new(f"Finished checking mods for updates, {mods_updating} mod(s) have updates available!")
@@ -1344,7 +1365,7 @@ class thunderstore():
                     subchild.refresh_version(subchild.mod)
 
     def is_installed(namespace,name,version):
-        mod_database_local = get_mod_database()["installed_mods"]
+        mod_database_local = modDatabase.get()["installed_mods"]
 
         if f"{namespace}-{name}" in mod_database_local:
             if mod_database_local[f"{namespace}-{name}"]['version'] == version:
@@ -1356,7 +1377,7 @@ class thunderstore_ops():
     def check_for_updates(url,mod,bar=None,popup=False):
         namespace, name = thunderstore.package_from_url(url)
         package_json = thunderstore.extract_package_json(namespace,name)
-        has_updates = thunderstore.compare_versions(package_json['latest']['version_number'],get_mod_database()["installed_mods"][mod]['version'])
+        has_updates = thunderstore.compare_versions(package_json['latest']['version_number'],modDatabase.get()["installed_mods"][mod]['version'])
         dependencies = package_json['latest']['dependencies']
         dep_count = 0
         for entry in dependencies:
@@ -1557,7 +1578,7 @@ class thunderstore_ops():
 
         #Updating Mod Database
 
-        mod_database_local = get_mod_database()
+        mod_database_local = modDatabase.get()
 
         package_db = mod_database_local['installed_mods'][f"{namespace}-{name}"]
         package_db['version'] = version
@@ -1565,10 +1586,7 @@ class thunderstore_ops():
         package_db['has_updates'] = ""
         package_db['dependencies'] = dependencies
 
-        
-
-        with open(moddb_file, "w") as package_updater:
-            package_updater.write(json.dumps(mod_database_local,indent=4))
+        modDatabase.write(mod_database_local)
 
         if popup:
             app.thunderstore_mod_frame.addNewModFrame(name,namespace,version,mod_database_local['installed_mods'][f"{namespace}-{name}"]['package_url'])
@@ -1579,7 +1597,7 @@ class thunderstore_ops():
             
     def uninstall_package(package):
         logMan.new(f"Uninstalling {package}")
-        mod_database_local = get_mod_database()
+        mod_database_local = modDatabase.get()
         try:
             files_remove = mod_database_local['installed_mods'][package]['files']
         except KeyError:
@@ -1606,14 +1624,12 @@ class thunderstore_ops():
         del mod_database_local['installed_mods'][package]
 
         
-
-        with open(moddb_file, "w") as mod_deleter:
-            mod_deleter.write(json.dumps(mod_database_local,indent=4))
+        modDatabase.write(mod_database_local)
 
         logMan.new(f"{package} uninstalled")
 
     def toggle_package(package):
-        mod_database_local = get_mod_database()
+        mod_database_local = modDatabase.get()
         package_data = mod_database_local["installed_mods"][package]
 
         if package_data['enabled'] == "true":
@@ -1634,9 +1650,7 @@ class thunderstore_ops():
             mod_database_local["installed_mods"][package]['enabled'] = "true"
         
         
-
-        with open(moddb_file, "w") as moddb_toggle:
-            moddb_toggle.write(json.dumps(mod_database_local,indent=4)) 
+        modDatabase.write(mod_database_local)
 
     def install_bepinex(bar=None, popup=False):
 
@@ -1747,7 +1761,7 @@ class thunderstoreModLabel(customtkinter.CTkFrame):
         
 
     def determine_version(self,mod):
-        json_db = get_mod_database()
+        json_db = modDatabase.get()
         try:
             mod_db = json_db["installed_mods"][mod]
             
@@ -1789,7 +1803,7 @@ class thunderstoreModIcon(customtkinter.CTkLabel):
         icon_png = customtkinter.CTkImage(Image.open(mod_icon_path),size=(90,90))
         self.configure(image=icon_png)
         try:
-            dependencies = get_mod_database()['installed_mods'][self.mod]['dependencies']
+            dependencies = modDatabase.get()['installed_mods'][self.mod]['dependencies']
             depend_stripped = []
             for item in dependencies:
                 split_item = item.split("-")
@@ -1813,7 +1827,7 @@ class thunderstoreModToggle(customtkinter.CTkSwitch):
     
     def load_toggle(self):
         try:
-            mod_database_local = get_mod_database()["installed_mods"][self.mod]['enabled']
+            mod_database_local = modDatabase.get()["installed_mods"][self.mod]['enabled']
         except KeyError:
             logMan.new(f"Unable to determine toggle value for {self.mod}")
             mod_database_local = "true"
@@ -1839,7 +1853,7 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
 
         i = 0
 
-        mod_database_local = get_mod_database()
+        mod_database_local = modDatabase.get()
 
         if settingsMan.readSettingsValue("program","enable_mods_menu") == "True":
 
@@ -2787,7 +2801,7 @@ class PBLCApp(customtkinter.CTk):
         logMan.new("Generating changes")
         
         patch_save_data = open_json(patch_save)["installed_mods"]
-        mod_database_local = get_mod_database()["installed_mods"]
+        mod_database_local = modDatabase.get()["installed_mods"]
 
         new_changes = {
             "new":[]
@@ -2816,7 +2830,7 @@ class PBLCApp(customtkinter.CTk):
         if prompt_answer.get() == "Yes":
             logMan.new("Updating patch save")
             patch_save = f"{current_file_loc}/data/patch_point.json"
-            shutil.copy(moddb_file,patch_save)
+            shutil.copy(modDatabase.path,patch_save)
     
     def export_modpack(self,zip_file):
         if is_lethal_running():
@@ -2829,7 +2843,7 @@ class PBLCApp(customtkinter.CTk):
             if not os.path.exists(export_folder):
                 os.mkdir(export_folder)
 
-            target_files = [doorstop_path,winhttp_path,moddb_file]
+            target_files = [doorstop_path,winhttp_path,modDatabase.path]
 
             result = compress_zip(zip_file_loc,target_files)
             if result == "CANCELLED":
@@ -2840,7 +2854,7 @@ class PBLCApp(customtkinter.CTk):
         else:
 
             json_file_loc = f"{getCurrentPathLoc()}/update_files/{self.pblc_pack_name.get()}.json"
-            mod_db_local = get_mod_database()["installed_mods"]
+            mod_db_local = modDatabase.get()["installed_mods"]
 
             update_data = {"instructions":[]}
 
@@ -3015,7 +3029,7 @@ class PBLCApp(customtkinter.CTk):
     def reinstall_all_mods(self):
         if is_lethal_running():
             return
-        mod_db_local = get_mod_database()
+        mod_db_local = modDatabase.get()
         mod_list = mod_db_local["installed_mods"]
         
         if len(mod_list) == 0:
@@ -3035,7 +3049,7 @@ class PBLCApp(customtkinter.CTk):
     def export_mod_list(self):
         if is_lethal_running():
             return
-        mod_db_local = get_mod_database()
+        mod_db_local = modDatabase.get()
         installed_mods_txt = os.path.join(getCurrentPathLoc(),"data","installed_mods.txt")
         installed_mod_data = []
         for mod in mod_db_local["installed_mods"]:
