@@ -1163,6 +1163,7 @@ class thunderstore():
             package_api_url = f"https://thunderstore.io/api/experimental/package/{namespace}/{name}"
 
         try:
+            logMan.new(f"Making API call to thunderstore package {namespace}-{name}")
             package_json = json.loads(request.urlopen(requestWebData(package_api_url)).read().decode())
         except Exception as e:
             logMan.new(traceback.format_exc(),'error')
@@ -1200,12 +1201,12 @@ class thunderstore():
     def url_import_entry(url,custom_version = None, package_queue = {}, bar=None, extend_max = False, popup = False):
         namespace, name = thunderstore.package_from_url(url)
         if not custom_version.strip():
-            custom_version == package_queue[f"{namespace}-{name}"]['version']
-        print(custom_version)
+            custom_version = package_queue[f"{namespace}-{name}"]['version']
         thunderstore.import_from_url(namespace,name,custom_version,package_queue[f"{namespace}-{name}"],bar,extend_max,popup,record_deps=False)
         del package_queue[f"{namespace}-{name}"]
         for package in package_queue:
-            print(package)
+            pkg_data = package_queue[package]
+            thunderstore.import_from_url(pkg_data['namespace'],pkg_data['name'],pkg_data['version'],pkg_data,bar,extend_max,popup,record_deps=False)
         if popup:
             app.pblc_progress_bar_popup.close_progress_popup()
         app.pblc_app_is_busy = False
@@ -1409,7 +1410,6 @@ class thunderstore_ops():
 
 
         download_link = f"https://thunderstore.io/package/download/{namespace}/{name}/{version}/"
-        print(download_link)
         zip_name = f"{namespace}-{name}-{version}.zip"
         download_loc = os.path.join(downloads_folder,zip_name)
 
@@ -1674,18 +1674,26 @@ class queueMan():
         queueMan.active_queue.put(package)
     
     def _execute():
+        active_threads = []
         for i in range(min(queueMan.max_threads,queueMan.package_len)):
             earliest_thread = queueMan.return_open_thread()
             queueMan.lock_thread(earliest_thread)
             thread = multithreadDownload(queueMan.active_queue,earliest_thread)
             thread.start()
+            active_threads.append(thread)
+        
+        for i in range(queueMan.max_threads):
+            queueMan.active_queue.put(None)
+
+        for thread in active_threads:
+            thread.join()
         
         queueMan.active_queue.join()
-        print("All threads finished")
+        logMan.new("All download threads have finished")
     
     def execute():
         threading.Thread(target=queueMan._execute,daemon=True).start()
-        print("Multithreaded download started")
+        logMan.new("Starting multithreaded download")
 
 class downloadQueueMan():
 
@@ -1699,8 +1707,6 @@ class downloadQueueMan():
         - bar (Is the progress screen visible)
         - extend_max (Should this progress increase the total count display)'''
         for package in packages:
-            print(f"Checking {package}")
-
             if package in downloadQueueMan.queue:
                 logMan.new(f"Package {package} was already queued, skipping")
                 continue
@@ -1712,7 +1718,6 @@ class downloadQueueMan():
             pkg_version = pkg['version']
             package_data = thunderstore.extract_package_json(namespace, name, pkg_version)
             if not pkg_version.strip():
-                print("using new thing")
                 package_data = package_data['latest']
                 pkg_version = package_data['version_number']
             
@@ -1751,11 +1756,16 @@ class multithreadDownload(threading.Thread):
     def run(self):
         while True:
             package_data = self.queue.get()
+
+            if package_data == None:
+                self.queue.task_done()
+                return
+            
             author = package_data['author'] if 'author' in package_data else package_data['namespace']
             app.mod_download_frame.start_thread(self.thread_index,author,package_data['name'],package_data['version'])
             name = package_data['name']
 
-            thunderstore.import_from_url(author,name,package_data['version'],package_data['bar'],package_data['extend_max'],dependencies=package_data['dependencies'],date_updated=package_data['date_updated'])
+            thunderstore.import_from_url(author,name,package_data['version'],package_data,package_data['bar'],package_data['extend_max'])
 
             queueMan.unlock_thread(self.thread_index)
             app.mod_download_frame.close_thread(self.thread_index)
@@ -2129,8 +2139,8 @@ class configSettingScrollFrame(customtkinter.CTkScrollableFrame):
 class modDownloadingScrollFrame(customtkinter.CTkFrame):
     def __init__(self,master,fg_color,width,height,parent, **kwargs):
         super().__init__(master,fg_color=fg_color,width=width,height=height,corner_radius=15,**kwargs)
-        self.grid_columnconfigure(0,weight=0,minsize=460)
-        self.grid_columnconfigure(1,weight=0,minsize=460)
+        self.grid_columnconfigure(0,weight=1)
+        self.grid_columnconfigure(1,weight=1)
         self.parent = parent
         
         
@@ -2148,11 +2158,12 @@ class modDownloadingScrollFrame(customtkinter.CTkFrame):
     
     def addModFrame(self,row,col,mod_title,status,thread_index):
 
-        self.mod_entry_frame = customtkinter.CTkFrame(self,fg_color=PBLC_Colors.frame("darker"),corner_radius=5)
+        self.mod_entry_frame = customtkinter.CTkFrame(self,fg_color=PBLC_Colors.frame("darker"),corner_radius=5,height=100)
         self.mod_entry_frame.grid_columnconfigure(0, weight=0,minsize=1)
         self.mod_entry_frame.grid_columnconfigure(1, weight=0,minsize=1)
         self.mod_entry_frame.grid_rowconfigure(0,weight=1)
         self.mod_entry_frame.grid(row=row,column=col,sticky="nsew",pady=10,padx=10)
+        self.mod_entry_frame.grid_propagate(False)
 
         self.mod_icon_img = customtkinter.CTkImage(Image.open('assets/inactive_thread.png'),size=(90,90))
         self.mod_icon_lab = customtkinter.CTkLabel(self.mod_entry_frame,text='',image=self.mod_icon_img)
@@ -2710,8 +2721,12 @@ class PBLCApp(customtkinter.CTk):
         app.mod_download_frame.close_thread(keys[random.randint(0,len(keys)-1)])
     
     def tempQueue(self):
-        queue_add = app.mod_download_frame.start_thread(f"darthlilo-teehee_{self.rahrah}")
-        if queue_add: self.rahrah+=1
+        for thread in threading.enumerate():
+            print("Thread name:", thread.name)
+            print("Thread ID:", thread.ident)
+            print("Thread is alive:", thread.is_alive())
+            print("Thread is daemon:", thread.daemon)
+            print("")
     
     def updateProgressBar(self,cur_prog,total,popup=False):
         new_prog = round(cur_prog/total,2)
