@@ -20,12 +20,10 @@ As of right now it isn't possible to easily change which modpack it will downloa
 * Toggle, update, and delete installed mods easily
 * Export modpacks with all required files with one button
 * Send out patches to modpacks so users won't have to redownload massive files
+* Easy mod management for pack creators
 
 # Future Plans (?)
-  * Set custom version files (Currently hardcoded)
-  * Redo "Extras" UI
-  * Auto updating
-  * Profiles
+  * Multiple Mod Profiles
 
 # Building
 First you will want to setup a local copy of the repository:
@@ -34,5 +32,5 @@ First you will want to setup a local copy of the repository:
 * Run this command to install all required libraries ``pip install -r requirements.txt``
   
 To actually build it into an executable, you will need to install [cx_Freeze](https://pypi.org/project/cx-Freeze/).
-* After installing cx_Freeze run this command ``cxfreeze -c main.py --target-dir dist --icon assets/pill_bottle.ico --include-files updater.py,assets --target-name "PBLC Update Manager"``
-* It will output the finished executable to the "dist" folder
+* After installing cx_Freeze run this command ``python setup.py build``
+* It will output the finished executable to the "build" folder

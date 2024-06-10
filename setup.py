@@ -20,4 +20,4 @@ setup(name='PBLC Update Manager',
       executables = executables,
       author = "DarthLilo")
 
-# python setup.py build
+# python setup.py build | pipdeptree | pip freeze > requirements.txt

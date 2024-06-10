@@ -1,12 +1,11 @@
 import json, os, winreg, vdf, shutil, zipfile,gdown, sys, customtkinter, pyglet, subprocess, webbrowser, requests, validators, threading, configobj, time, traceback, datetime, pywinstyles, hPyT, ctkextensions, queue
 from PIL import Image,ImageDraw
 from urllib import request
-from urllib.error import HTTPError, URLError
+from urllib.error import HTTPError
 from packaging import version
 from CTkMessagebox import CTkMessagebox
 from CTkToolTip import *
 from io import BytesIO
-import random
 
 PBLC_Update_Manager_Version = "0.3.0"
 
@@ -47,6 +46,7 @@ if sys.platform.startswith('win'):
 
 
 def check_for_process(process_name):
+    logMan.new(f"Checking for {process_name}")
     cmd = 'tasklist /fi "imagename eq {}"'.format(process_name)
     output = subprocess.check_output(cmd, shell=True).decode()
     if process_name.lower() in output.lower():
@@ -70,7 +70,6 @@ def read_reg(ep, p = r"", k = ''):
         return value[0]
     except Exception as e:
         return None
-    return None
 
 def open_json(path):
     with open(path, 'r') as json_opener:
@@ -79,17 +78,8 @@ def open_json(path):
 
     return json_data
 
-def clear_dir(dir = ""):
-    for folder in os.listdir(dir):
-        filepath = os.path.join(dir, folder)
-        filepath = os.path.normpath(filepath)
-        shutil.rmtree(filepath)
-
-def newEmptyRow(self,row_number,spacing):
-        self.empty_row = customtkinter.CTkLabel(self.main_frame, text="")
-        self.empty_row.grid(row=row_number, column=0, padx=20, pady=spacing)
-
 def roundImageCorners(source_image, rad):
+    logMan.new(f"Rounding image {source_image}")
     circle = Image.new('L', (rad * 2, rad * 2), 0)
     draw = ImageDraw.Draw(circle)
     draw.ellipse((0, 0, rad * 2 - 1, rad * 2 - 1), fill=255)
@@ -250,7 +240,10 @@ class logMan():
             "error":"[ERROR]"
         }
 
-        log_entry = f"[{timeMan.log_entry_time()}] {log_types[log_type]} {message}"
+        current_thread = threading.current_thread()
+        thread_name = current_thread.name
+
+        log_entry = f"[{timeMan.log_entry_time()}] {log_types[log_type]} [{thread_name}] {message}"
 
         with open(logMan.current_log,'a') as log_write:
             log_write.write(log_entry+"\n")
@@ -259,7 +252,9 @@ class logMan():
         return
 
     def close():
-        log_entry = f"[{timeMan.log_entry_time()}] [END] PBLC Update Manager - {PBLC_Update_Manager_Version} is closing!"
+        current_thread = threading.current_thread()
+        thread_name = current_thread.name
+        log_entry = f"[{timeMan.log_entry_time()}] [END] [{thread_name}] PBLC Update Manager - {PBLC_Update_Manager_Version} is closing!"
         with open(logMan.current_log,'a') as log_write:
             log_write.write(log_entry)
         return
@@ -270,7 +265,7 @@ class modDatabase():
 
     folder_path = os.path.normpath(f"{getCurrentPathLoc()}/data/mod_database")
 
-    def get(mod=None,detailed=False):
+    def get(mod=None,detailed=False,silent=False):
         if mod:
             if str(mod).startswith("DarthLilo-Mod"):
                 return {}
@@ -279,7 +274,8 @@ class modDatabase():
                 return open_json(os.path.join(modDatabase.folder_path,mod,"mod.json"))
             
             except FileNotFoundError:
-                logMan.new(f"{mod} data file could not be found!",'warning')
+                if not silent:
+                    logMan.new(f"{mod} data file could not be found!",'warning')
                 return {}
             
             except Exception as e:
@@ -293,6 +289,7 @@ class modDatabase():
                 mod_database_detailed[mod] = modDatabase.get(mod)
                 mod_database_detailed[mod]['bar'] = True
                 mod_database_detailed[mod]['extend_max'] = False
+                mod_database_detailed[mod]['popup'] = False
             return mod_database_detailed
         
         else:
@@ -307,6 +304,7 @@ class modDatabase():
         os.mkdir(os.path.join(modDatabase.folder_path,mod))
     
     def write(mod,data):
+        logMan.new(f"Writing new data to {mod}")
         indent_value = 4
         target_folder = os.path.join(modDatabase.folder_path,mod)
         if not os.path.exists(target_folder):
@@ -316,9 +314,11 @@ class modDatabase():
             mod_database_write.write(json.dumps(data,indent=indent_value))
     
     def remove(mod):
+        logMan.new(f"Deleted {mod} data folder")
         shutil.rmtree(os.path.join(modDatabase.folder_path,mod))
     
     def reset():
+        logMan.new(f"Resetting mod database")
         shutil.rmtree(modDatabase.folder_path)
         os.mkdir(modDatabase.folder_path)
 
@@ -347,7 +347,7 @@ def locate_lethal_company():
 def download_from_google_drive(source,destination,bar=None,popup=False):
     logMan.new(f"Beginning download of {source} from Google Drive")
     try:
-        gdown.download(id=source,output=destination,bar=app.updateProgressBar,popup=popup)
+        gdown.download(id=source,output=destination,quiet=True)
         if bar:
             app.updateProgressCount()
         return "finished"
@@ -380,13 +380,14 @@ isScriptFrozen = getattr(sys, "frozen", False)
 
 dev_mode = f"{current_file_loc}/data/pooworms"
 if not os.path.exists(dev_mode):
+    logMan.new(f"Developer mode disabled")
     dev_mode = None
 
 
 
 def grab_version_db():
     
-    default_version_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/update-rewrite/version_db.json"
+    default_version_db = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/version_db.json"
     local_version_db = settingsMan.readSettingsValue("paths","version_database")
     is_url = False
     if validators.url(local_version_db):
@@ -405,7 +406,7 @@ def grab_version_db():
         return json.loads(request.urlopen(default_version_db).read().decode())
 
 def grab_patch_instructions():
-    default_patch_instruct = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/update-rewrite/patch_instructions.json"
+    default_patch_instruct = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/patch_instructions.json"
     local_patch_instruct = settingsMan.readSettingsValue("paths","patch_instructions")
     is_url = False
     if validators.url(local_patch_instruct):
@@ -424,7 +425,7 @@ def grab_patch_instructions():
 
 def grab_update_instructions(version,beta=False):
     
-    default_update_instructions = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/update-rewrite/update_files"
+    default_update_instructions = "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/master/update_files"
     local_update_instructions = settingsMan.readSettingsValue("paths","update_instructions")
     is_url = False
     if validators.url(local_update_instructions):
@@ -642,6 +643,11 @@ def cacheInstructionLen(cache_type,target_version,update_type="release"):
         update_instructions = grab_update_instructions(target_version)
     else:
         update_instructions = grab_update_instructions(target_version,True)
+
+
+    if "url_add_mod|DarthLilo|!Developer_Mode|devmode" in update_instructions['instructions']:
+        del update_instructions['instructions'][update_instructions['instructions'].index("url_add_mod|DarthLilo|!Developer_Mode|devmode")]
+
     patch_instruct = grab_patch_instructions()
     current_patch = version_man.get_patch()
 
@@ -670,31 +676,39 @@ def cacheInstructionLen(cache_type,target_version,update_type="release"):
 
     return instruction_len
 
-def decodeDownloadCommand(input_command,bar=None,popup=False,record_deps=False):
+def decodeDownloadCommand(input_command,bar=False,popup=False,record_deps=False,ignore_add_mods=True):
     split_commnad = str(input_command).split("|")
+    logMan.new(f"Decoding command {input_command}")
 
     command=split_commnad[0]
     if command == "download_override":
         gdlink = split_commnad[1]
         dropbox = split_commnad[2]
         logMan.new("Downloading override file")
-        downloadOverridePatch(gdlink,dropbox,bar,popup)
+        downloadOverridePatch(gdlink,dropbox,False,False)
+        if bar:
+            app.updateProgressCount()
     elif command == "url_add_mod":
         namespace = split_commnad[1]
         name = split_commnad[2]
         target_vers = split_commnad[3]
-        if not thunderstore.is_installed(namespace,name,target_vers):
-            logMan.new(f"Downloading {namespace}-{name}-{target_vers} from Thunderstore")
-            thunderstore.import_from_url(namespace,name,target_vers,bar,popup=popup,record_deps=record_deps)
-        else:
-            logMan.new(f"{namespace}-{name}-{target_vers} is already installed, skipping")
+        if not ignore_add_mods:
+            
             if bar:
-                app.updateProgressCount()
+                app.updateDownloadStatus(f"Downloading {namespace}-{name}")
+            if not thunderstore.is_installed(namespace,name,target_vers):
+                logMan.new(f"Downloading {namespace}-{name}-{target_vers} from Thunderstore")
+                thunderstore.import_from_url(namespace,name,target_vers,bar,popup=popup,record_deps=record_deps)
+            else:
+                logMan.new(f"{namespace}-{name}-{target_vers} is already installed, skipping")
+                if bar:
+                    app.updateProgressCount()
+        
     elif command == "delete_mod":
         namespace = split_commnad[1]
         name = split_commnad[2]
         if bar:
-            app.updateProgressDisplay(f"Removing {namespace}-{name}")
+            app.updateDownloadStatus(f"Removing {namespace}-{name}")
         thunderstore_ops.uninstall_package(f"{namespace}-{name}")
         if bar:
             app.updateProgressCount()
@@ -705,7 +719,7 @@ def decodeDownloadCommand(input_command,bar=None,popup=False,record_deps=False):
                 pass
     elif command == "update_vers":
 
-        app.updateProgressDisplay(f"Updating version data")
+        app.updateDownloadStatus(f"Updating version data")
 
         if not os.path.exists(pblc_vers):
             with open(pblc_vers, "w") as default_pblc:
@@ -755,10 +769,10 @@ def decodeDownloadCommand(input_command,bar=None,popup=False,record_deps=False):
             app.updateProgressCount()
     elif command == "download_bepinex":
         if bar:
-            app.updateProgressDisplay(f"Downloading BepInEx")
-        thunderstore_ops.install_bepinex(bar=bar,popup=popup)
+            app.updateDownloadStatus(f"Downloading BepInEx")
+        thunderstore_ops.install_bepinex(bar=bar)
     elif command == "clean_install":
-        app.updateProgressDisplay(f"Cleaning old files")
+        app.updateDownloadStatus(f"Cleaning old files")
         if os.path.exists(bepinex_path):
             shutil.rmtree(bepinex_path)
         os.makedirs(f"{bepinex_path}/plugins")
@@ -767,35 +781,67 @@ def decodeDownloadCommand(input_command,bar=None,popup=False,record_deps=False):
         if bar:
             app.updateProgressCount()
 
-def installRelease(version,update_type):
-    if update_type == "beta":
-        update_instructions = grab_update_instructions(version,True)['instructions']
-    else:
-        update_instructions = grab_update_instructions(version)['instructions']
+class updateSystems():
+    update_data = None
+    update_type = None
+
+    def startUpdate(update_data,update_type):
+        time.sleep(0.5)
+        updateSystems.update_data = update_data
+        updateSystems.update_type = update_type
+
+        logMan.new(f"Updating modpack to version {update_data['version']}")
+
+        full_queue = updateSystems.queueInstructions(grab_update_instructions(update_data['version'])['instructions'])
+        updateSystems.installRelease(update_data['version'],update_type,full_queue)
+        queueMan.queuePackages(full_queue)
+        queueMan.execute()
+
+    def installRelease(version,update_type,full_queue):
+        if update_type == "beta":
+            update_instructions = grab_update_instructions(version,True)['instructions']
+        else:
+            update_instructions = grab_update_instructions(version)['instructions']
+
+        for command in update_instructions:
+            decodeDownloadCommand(command,app.updateProgressBar)
+
+    def queueInstructions(update_instructions):
+        #update_instructions = grab_update_instructions(version)['instructions']
+        downloadQueueMan.clear_queue()
+        new_database = {}
+        for instruction in update_instructions:
+            split_command = instruction.split("|")
+            command = split_command[0]
+            if command == "url_add_mod":
+                author = split_command[1]
+                name = split_command[2]
+                version_num = split_command[3]
+                new_database[f"{author}-{name}"] = {"name":name,"author":author,"version":version_num,"bar":True,"extend_max":False,"popup":False}
+
+        full_queue = downloadQueueMan.queue_packages(new_database,True,True)
+        return full_queue
     
-    for command in update_instructions:
-        decodeDownloadCommand(command,app.updateProgressBar)
+    def finishUpdate():
+        update_data = updateSystems.update_data
+        update_type = updateSystems.update_type
 
-def startUpdate(update_data,update_type):
-    time.sleep(0.5)
+        patch_db = grab_patch_instructions()
+        if patch_db == None: return
+        cur_patch_ver = version_man.get_patch()
 
-    logMan.new(f"Updating modpack to version {update_data['version']}")
+        if update_data['version'] in patch_db and update_type == "release":
+            for patch in patch_db[update_data['version']][update_type]:
+                if version.Version(patch) > version.Version(cur_patch_ver):
+                        instructions_queue = updateSystems.queueInstructions(patch_db[update_data['version']][update_type][patch])
+                        applyNewPatches(patch_db,update_type,update_data['version'],app.updateProgressBar)
+                        queueMan.clearQueue()
+                        queueMan.queuePackages(instructions_queue)
+                        queueMan._execute(False)
 
-    installRelease(update_data['version'],update_type)
-
-    patch_db = grab_patch_instructions()
-    if patch_db == None: return
-    cur_patch_ver = version_man.get_patch()
-
-    if update_data['version'] in patch_db and update_type == "release":
-        for patch in patch_db[update_data['version']][update_type]:
-            if version.Version(patch) > version.Version(cur_patch_ver):
-                    applyNewPatches(patch_db,update_type,update_data['version'],app.updateProgressBar)
-    
-
-    update_finished = CTkMessagebox(title="PBLC Update Manager",message=f"Succsessfully installed update!\nElapsed Time: {app.pblc_elapsed_time.cget('text')}",sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"),icon=PBLC_Icons.checkmark(True))
-    logMan.new("Finished installing update")
-    app.redrawPBLCUI()
+        update_finished = CTkMessagebox(title="PBLC Update Manager",message=f"Succsessfully installed update!\nElapsed Time: {app.pblc_elapsed_time.cget('text')}",sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"),icon=PBLC_Icons.checkmark(True))
+        logMan.new("Finished installing update")
+        app.redrawPBLCUI()
 
 def updateManager(github_api_manager):
     logMan.new("Updating PBLC Update Manager")
@@ -827,13 +873,13 @@ def updateManager(github_api_manager):
     sys.exit()
 
 def downloadOverridePatch(gdlink,dropbox,bar,popup):
+    overrides_folder = os.path.join(downloads_folder,"overrides")
+    if not os.path.exists(overrides_folder):
+        os.makedirs(overrides_folder,exist_ok=True)
 
-    if not os.path.exists(downloads_folder):
-        os.mkdir(downloads_folder)
-
-    zip_down_loc = f"{downloads_folder}/pblc_patch.zip"
+    zip_down_loc = f"{overrides_folder}/pblc_patch.zip"
     if bar:
-        app.updateProgressDisplay(f"Downloading {gdlink}")
+        app.updateDownloadStatus(f"Downloading {gdlink}")
     elif popup:
         app.pblc_progress_bar_popup.update_label(f"Downloading {gdlink}")
 
@@ -843,14 +889,13 @@ def downloadOverridePatch(gdlink,dropbox,bar,popup):
         if str(dropbox).endswith("&dl=0"):
             dropbox = str(dropbox).replace("&dl=0","&dl=1")
         if bar:
-            app.updateProgressDisplay(f"Downloading {dropbox}")
+            app.updateDownloadStatus(f"Downloading {dropbox}")
         elif popup:
             app.pblc_progress_bar_popup.update_label(f"Downloading {dropbox}")
 
         downloadFromURL(dropbox,zip_down_loc,bar,popup)
-        app.updateProgressCount()
     decompress_zip(zip_down_loc,LC_Path)
-    shutil.rmtree(downloads_folder)
+    shutil.rmtree(overrides_folder)
 
 def applyNewPatches(patch_db,update_type,cur_version,bar=None):
     time.sleep(0.5)
@@ -881,6 +926,7 @@ def applyNewPatchesEntry(patch_db,update_type,cur_version,bar=None):
     CTkMessagebox(title="PBLC Update Manager",message="Finished installing patches!",icon=PBLC_Icons.checkmark(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
 
 def checkForPatches(update_type,cur_version):
+    logMan.new(f"Requesting latest patches")
     cur_version = str(cur_version)
     patch_db = grab_patch_instructions()
     if patch_db == None: return
@@ -923,7 +969,7 @@ def patchesPrompt(self,update_type,install_version,github_repo_json,auto=False):
         return "finished_installing"
 
 def callUpdateThread(github_repo_json,update_type):
-    threading.Thread(target=lambda update_data = github_repo_json[update_type], update_type = update_type: startUpdate(update_data,update_type),daemon=True).start()
+    threading.Thread(target=lambda update_data = github_repo_json[update_type], update_type = update_type: updateSystems.startUpdate(update_data,update_type),daemon=True).start()
 
 def checkForUpdates(self,update_type):
 
@@ -1029,7 +1075,6 @@ def checkForUpdates(self,update_type):
 
             logMan.new("No updates found!")
             CTkMessagebox(title="PBLC Update Manager",message="No updates available.",icon=PBLC_Icons.checkmark(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"),sound=True)
-            #ctypes.windll.user32.MessageBoxW(0, "No updates available.", "PBLC Update Manager")
     
     #Drawing Update UI
 
@@ -1101,6 +1146,7 @@ def requestWebData(url):
     return req
 
 def uninstallMods():
+    logMan.new(f"Uninstalling all mods")
     if os.path.exists(bepinex_path):
         shutil.rmtree(bepinex_path)
     if os.path.exists(winhttp_path):
@@ -1114,6 +1160,8 @@ def uninstallMods():
         pblc_reset.write(json.dumps({"version": "0.0.0", "beta_version": "0.0.0", "beta_goal": "0.0.0", "performance_mode": "off"}))
 
 def downloadFromURL(download_link,download_loc,bar=None,popup=False):
+        
+        logMan.new(f"Downloading from {download_link}")
 
         pack_req = requests.get(download_link,stream=True)
         
@@ -1151,6 +1199,7 @@ class widgetAnimation():
 class thunderstore():
 
     def package_from_url(url):
+        logMan.new(f"Getting package data from URL")
         package_url = url.replace("https://","").split("/")
         package_namespace = package_url[4]
         package_name = package_url[5]
@@ -1161,13 +1210,22 @@ class thunderstore():
             package_api_url = f"https://thunderstore.io/api/experimental/package/{namespace}/{name}/{version}"
         else:
             package_api_url = f"https://thunderstore.io/api/experimental/package/{namespace}/{name}"
-
         try:
             logMan.new(f"Making API call to thunderstore package {namespace}-{name}")
             package_json = json.loads(request.urlopen(requestWebData(package_api_url)).read().decode())
+        except HTTPError as e:
+            logMan.new(traceback.format_exc(),'error')
+            logMan.new("Invalid package or version number!",'error')
+            if e.code == 404:
+                ctkextensions.CTkNotification(master=app, message="Invalid package or version number!", side="right_bottom")
+                return "Invalid"
+            if e.code == 520:
+                time.sleep(5)
+                return thunderstore.extract_package_json(namespace,name,version)
+
         except Exception as e:
             logMan.new(traceback.format_exc(),'error')
-            logMan.new("Connection terminated.")
+            logMan.new("Connection terminated.",'error')
             return None
         
         return package_json
@@ -1178,25 +1236,13 @@ class thunderstore():
         else:
             return False
     
-    def batch_url_import(database,bar=False,extend_max=False,popup=False):
-
-        #for mod in database:
-        #    mod_data = modDatabase.get(mod)
-        #    package_url = mod_data['package_url']
-        #    package_version = mod_data['version']
-        #    namespace = mod_data['author']
-        #    name = mod_data['name']
-        package_queue = downloadQueueMan.queue_packages(database,True)
+    def batch_url_import(database,bar=False):
+        downloadQueueMan.clear_queue()
+        package_queue = downloadQueueMan.queue_packages(database,True,True)
+        if bar:
+            app.updateProgressMax(len(package_queue))
         queueMan.queuePackages(package_queue)
-        queueMan.execute()
-            #queueMan.open_threads()
-            #queueMan.add(mod,{"queue_type":"import_from_url","url":package_url,"namespace":namespace,"name":name,"version":package_version,"bar":bar,"extend_max":extend_max})
-            #thunderstore.import_from_url(package_url,package_version,bar,extend_max,popup)
-        #if popup:
-        #    app.pblc_progress_bar_popup.close_progress_popup()
-        #if bar:
-        #    app.redrawPBLCUI()
-        #app.pblc_app_is_busy = False
+        queueMan.execute(False,simple_redraw=True)
 
     def url_import_entry(url,custom_version = None, package_queue = {}, bar=None, extend_max = False, popup = False):
         namespace, name = thunderstore.package_from_url(url)
@@ -1204,17 +1250,18 @@ class thunderstore():
             custom_version = package_queue[f"{namespace}-{name}"]['version']
         thunderstore.import_from_url(namespace,name,custom_version,package_queue[f"{namespace}-{name}"],bar,extend_max,popup,record_deps=False)
         del package_queue[f"{namespace}-{name}"]
+
         for package in package_queue:
             pkg_data = package_queue[package]
             thunderstore.import_from_url(pkg_data['namespace'],pkg_data['name'],pkg_data['version'],pkg_data,bar,extend_max,popup,record_deps=False)
         if popup:
-            app.pblc_progress_bar_popup.close_progress_popup()
+            app.pblc_progress_bar_popup.close()
+            if app.performance_switch.cget("state") == "disabled" and modDatabase.get("Sligili-HDLethalCompany",silent=True):
+                app.performance_switch.configure(state="normal")
         app.pblc_app_is_busy = False
-        #app.redrawPBLCUI("Mods")
 
-    def import_from_url(namespace, name, target_version, package_data, bar=False, extend_max = False, popup = False, record_deps = False, _dependencies = [], _date_updated=""):
+    def import_from_url(namespace, name, target_version, package_data, bar=False, extend_max = False, popup = False, record_deps = False, thread_index=0):
         time.sleep(0.2)
-
         dependencies = package_data['dependencies']
         date_updated = package_data['date_updated']
 
@@ -1223,7 +1270,7 @@ class thunderstore():
         logMan.new(f"Installing version {target_version}")
 
         if bar:
-            app.updateProgressDisplay(f"{namespace}-{name}",f"Importing")
+            app.updateProgressDisplay(thread_index,f"Importing")
         if popup:
             app.pblc_progress_bar_popup.update_label(f"Downloading {namespace}-{name}")
             app.pblc_progress_bar_popup.update_message("0%")
@@ -1257,26 +1304,10 @@ class thunderstore():
         if record_deps and extend_max:
             app.new_mods_list.append(f"url_add_mod|{namespace}|{name}|{target_version}")
 
-        thunderstore_ops.download_package(namespace,name,target_version,dependencies,bar,extend_max,popup)
-
-        #Dependencies
-        #for req_mod in dependencies:
-#
-        #    split_name = req_mod.split("-")
-#
-        #    internal_name = f"{split_name[0]}-{split_name[1]}"
-#
-        #    if internal_name not in modDatabase.get():
-        #        
-        #        import_url = f"https://thunderstore.io/c/lethal-company/p/{split_name[0]}/{split_name[1]}/"
-#
-        #        if not bar:
-        #            thunderstore.import_from_url(import_url,"",bar, extend_max=True,popup=popup,record_deps=record_deps)
-        #        else:
-        #            print("uh oh")
-        #            #queueMan.add(internal_name,{"queue_type":"import_from_url","url":import_url,"namespace":split_name[0],"name":split_name[1],"version":"","bar":bar,"extend_max":True})
+        thunderstore_ops.download_package(namespace,name,target_version,dependencies,bar,extend_max,popup,thread_index)
 
     def check_for_updates_all(self):
+        logMan.new(f"Checking all mods for updates, this might take a while")
         time.sleep(0.2)
         mod_database_local = modDatabase.get()
 
@@ -1327,8 +1358,7 @@ class thunderstore():
     def check_for_updates_all_entry(self):
         thunderstore.check_for_updates_all(self)
 
-        app.pblc_progress_bar_popup.close_progress_popup()
-        app.pblc_app_is_busy = False
+        app.pblc_progress_bar_popup.close()
         app.pblc_progress_int, app.pblc_progress_max = 0,0
         
         for child in self.thunderstore_mod_frame.winfo_children():
@@ -1351,12 +1381,6 @@ class thunderstore_ops():
         namespace, name = thunderstore.package_from_url(url)
         package_json = thunderstore.extract_package_json(namespace,name)
         has_updates = thunderstore.compare_versions(package_json['latest']['version_number'],modDatabase.get(mod)['version'])
-        dependencies = package_json['latest']['dependencies']
-        dep_count = 0
-        for entry in dependencies:
-            if str(entry).startswith("BepInEx"):
-                del dependencies[dep_count]
-            dep_count += 1
 
         if has_updates:
             
@@ -1365,48 +1389,54 @@ class thunderstore_ops():
             prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"Updates found for {name}, do you want to update?",option_2="Update",option_3="Specific Version",option_1="Cancel",icon=PBLC_Icons.download(True),sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
             
             if prompt_answer.get() == "Update": #Downloads latest version
-                thunderstore_ops.call_download_thread(namespace,name,package_json['latest']['version_number'],dependencies,bar=bar,popup=popup)
+                thunderstore_ops.call_download_thread(namespace,name,package_json['latest']['version_number'],bar=bar,popup=popup)
             if prompt_answer.get() == "Specific Version":
                 dialog = customtkinter.CTkInputDialog(text="Enter Version:", title="PBLC Update Manager",button_fg_color=PBLC_Colors.button("main")).get_input()
                 logMan.new(f"User selected version {dialog}")
-                thunderstore_ops.call_download_thread(namespace,name,dialog,dependencies,bar=bar,popup=popup)
+                thunderstore_ops.call_download_thread(namespace,name,dialog,bar=bar,popup=popup)
         else:
             logMan.new(f"No updates found for {name}")
 
             prompt_answer = CTkMessagebox(title="PBLC Update Manager",message=f"No new updates for {name}, would you like to reinstall it or downgrade?",option_3="Downgrade",option_2="Yes",option_1="No",icon=PBLC_Icons.checkmark(True),sound=True,button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
 
             if prompt_answer.get() == "Yes":
-                thunderstore_ops.call_download_thread(namespace,name,package_json['latest']['version_number'],dependencies,bar=bar,popup=popup)
+                thunderstore_ops.call_download_thread(namespace,name,package_json['latest']['version_number'],bar=bar,popup=popup)
             elif prompt_answer.get() == "Downgrade":
                 dialog = customtkinter.CTkInputDialog(text="Enter Version:", title="PBLC Update Manager",button_fg_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover")).get_input()
                 if not dialog == None:
                     logMan.new(f"User selected version {dialog}")
-                    thunderstore_ops.call_download_thread(namespace,name,dialog,dependencies,bar=bar,popup=popup)
+                    thunderstore_ops.call_download_thread(namespace,name,dialog,bar=bar,popup=popup)
     
-    def call_download_thread(namespace,name,version,dependencies,bar=None,extend_max=False,popup=False):
-        if not app.pblc_app_is_busy:
-            target_url = f"{thunderstore_pkg_url}/{namespace}/{name}/"
-            threading.Thread(target=lambda download_url = target_url, version = version, bar=bar,extend_max=extend_max,popup=popup: thunderstore.url_import_entry(download_url,version,bar,extend_max,popup),daemon=True).start()
-            if popup:
-                app.pblc_progress_bar_popup = ctkextensions.CTkProgressPopup(app,"PBLC Update Manager","Initializing Download","0%",show_cancel_button=False,progress_color=PBLC_Colors.button("main"))
-                app.pblc_progress_bar_storage = customtkinter.DoubleVar(value=0.0)
-                app.pblc_app_is_busy = True
-            else:
-                app.drawUpdateUI()
-        else:
-            logMan.new("User attempted to start multiple download threads at once, action cancelled!",'warning')
+    def call_download_thread(namespace,name,version,bar=False,extend_max=False,popup=False,ignore_popup_req=False):
+        if not ignore_popup_req:
+            if app.pblc_app_is_busy:
+                logMan.new("User attempted to start multiple download threads at once, action cancelled!",'warning')
+                return
+        
+        target_url = f"{thunderstore_pkg_url}/{namespace}/{name}/{version}" if version else f"{thunderstore_pkg_url}/{namespace}/{name}/"
 
-    def download_package(namespace,name,version,dependencies,bar=False,extend_max=False,popup=False):
+        downloadQueueMan.clear_queue()
+
+        if popup and not ignore_popup_req:
+            app.pblc_progress_bar_popup = modDownloadPopup(app)
+
+        package_queue = downloadQueueMan.queue_packages({f"{namespace}-{name}":{"name":name,"author":namespace,"version":version,"bar":bar,"extend_max":extend_max,"popup":popup}},True)
+        if package_queue == "Invalid":
+            app.pblc_progress_bar_popup.close()
+            return
+        threading.Thread(target=lambda imp_url = target_url, imp_box_url = version, package_queue = package_queue :thunderstore.url_import_entry(imp_url,imp_box_url,package_queue,popup=True),daemon=True).start()
+
+    def download_package(namespace,name,version,dependencies,bar=False,extend_max=False,popup=False,thread_index=0):
         if bar:
-            app.updateProgressDisplay(f"{namespace}-{name}",f"Downloading")
+            app.updateProgressDisplay(thread_index,f"Downloading")
             if extend_max:
+                logMan.new(f"Extend progress max (download package) {namespace}-{name}-{version}")
                 app.extendProgressMax()
         
         if popup:
             app.pblc_progress_bar_popup.update_label(f"Downloading {namespace}-{name}")
             app.pblc_progress_bar_popup.update_message("0%")
             app.pblc_progress_bar_popup.update_progress(0)
-
 
 
         download_link = f"https://thunderstore.io/package/download/{namespace}/{name}/{version}/"
@@ -1427,8 +1457,7 @@ class thunderstore_ops():
                 dl_package.write(chunk)
                 chunk_count += len(chunk)
                 if bar:
-                    app.mod_download_frame.update_progress(f"{namespace}-{name}",round(chunk_count/total_size_in_bytes,2))
-                    #bar(chunk_count, total_size_in_bytes)
+                    app.mod_download_frame.threads[thread_index].progress(round(chunk_count/total_size_in_bytes,2))
                 if popup:
                     app.updateProgressBar(chunk_count,total_size_in_bytes,True)
                     #app.pblc_progress_bar_popup.update_progress(round(chunk_count/total_size_in_bytes,2))
@@ -1439,16 +1468,22 @@ class thunderstore_ops():
         local_downloads = f"{downloads_folder}/{namespace}-{name}"
         
         if not os.path.exists(local_downloads):
-            os.mkdir(local_downloads)
+            os.makedirs(local_downloads)
         
-        decompress_zip(download_loc,local_downloads)
-
-        thunderstore_ops.install_package(namespace,name,version,dependencies,bar=bar,popup=popup)
-    
-    #def update_progress_bar()
-    
+        try:
+            decompress_zip(download_loc,local_downloads)
+            thunderstore_ops.install_package(namespace,name,version,dependencies,bar=bar,popup=popup)
+        except zipfile.BadZipFile as e:
+            logMan.new("Invalid zipfile, possibly due to download corruption? Requeuing and attempting again","error")
+            logMan.new(traceback.format_exc(),'error')
+            queueMan.queueSinglePackage({"name":name,"author":namespace,"version":version,"bar":bar,"extend_max":extend_max})
+            shutil.rmtree(local_downloads)
+            os.remove(download_loc)
+            return  
 
     def copy_icon(cur_path,full_name):
+
+        logMan.new(f"Copied icon {full_name}")
         
         install_path = os.path.join(modDatabase.folder_path,full_name)
         fin_path = os.path.join(install_path,"icon.png")
@@ -1586,6 +1621,8 @@ class thunderstore_ops():
     def toggle_package(package):
         package_data = modDatabase.get(package)
 
+        logMan.new(f"Toggled {package}")
+
         if package_data['enabled'] == "true":
             for file in package_data['files']:
                 file_path = os.path.join(bepinex_path,file)
@@ -1606,7 +1643,7 @@ class thunderstore_ops():
         
         modDatabase.write(package,package_data)
 
-    def install_bepinex(bar=None, popup=False):
+    def install_bepinex(bar=None):
 
         logMan.new("Installing BepInEx")
         if not os.path.exists(downloads_folder):
@@ -1619,8 +1656,8 @@ class thunderstore_ops():
             os.mkdir(local_download)
         
         if bar:
-            app.updateProgressIcon("BepInEx","BepInExPack","5.4.2100")
-        downloadFromURL("https://thunderstore.io/package/download/BepInEx/BepInExPack/5.4.2100/",bepinex_zip,bar=bar)
+            app.updateDownloadStatus("Downloading BepInEx")
+        downloadFromURL("https://thunderstore.io/package/download/BepInEx/BepInExPack/5.4.2100/",bepinex_zip)
         decompress_zip(bepinex_zip,local_download)
 
         bepinex_pack = os.path.normpath(f"{local_download}/BepInExPack")
@@ -1637,11 +1674,9 @@ class thunderstore_ops():
         if bar:
             app.updateProgressCount()
 
-    #def delete_package():
-
 class queueMan():
     active_downloads = 0
-    max_threads = 6
+    max_threads = 6 
     threads_status = {x:"open" for x in range(max_threads)}
     active_queue = queue.Queue()
     package_len = 0
@@ -1669,37 +1704,52 @@ class queueMan():
         - author (Author/Namespace of the mod)
         - version (Targeted version of the mod)
         - bar (Is the progress screen visible)
-        - extend_max (Should this progress increase the total count display)'''
+        - extend_max (Should this progress increase the total count display)
+        - popup (Whether the UI is using a popup progress bar)'''
         queueMan.package_len += 1
         queueMan.active_queue.put(package)
+        logMan.new(f"Queued {package['name']}-{package['author']}-{package['version']}")
     
-    def _execute():
+    def clearQueue():
+        for tasks in range(queueMan.active_queue.qsize()):
+            task = queueMan.active_queue.get()
+            logMan.new(f"Removed {task} from queue")
+    
+    def _execute(finish_update=True,threads=max_threads,close_popup=False,simple_redraw=False):
         active_threads = []
-        for i in range(min(queueMan.max_threads,queueMan.package_len)):
+        for i in range(min(threads,queueMan.package_len)):
             earliest_thread = queueMan.return_open_thread()
             queueMan.lock_thread(earliest_thread)
             thread = multithreadDownload(queueMan.active_queue,earliest_thread)
             thread.start()
             active_threads.append(thread)
         
-        for i in range(queueMan.max_threads):
+        for i in range(threads):
             queueMan.active_queue.put(None)
 
         for thread in active_threads:
+            logMan.new(f"{thread.name} joined into main thread")
             thread.join()
         
-        queueMan.active_queue.join()
         logMan.new("All download threads have finished")
-    
-    def execute():
-        threading.Thread(target=queueMan._execute,daemon=True).start()
+        if finish_update:
+            updateSystems.finishUpdate()
+        if close_popup:
+            app.finish_patch_install()
+        if simple_redraw:
+            app.redrawPBLCUI()
+  
+    def execute(finish_update=True,threads=max_threads,close_popup=False,simple_redraw=False):
+        threading.Thread(target=lambda finish_update = finish_update, threads = threads,close_popup = close_popup, simple_redraw=simple_redraw:queueMan._execute(finish_update,threads,close_popup,simple_redraw),daemon=True).start()
         logMan.new("Starting multithreaded download")
+        if app.update_screen_displayed:
+            app.updateDownloadStatus(f"Downloading Mods")
 
 class downloadQueueMan():
 
     queue = {} #should look like this {"namespace":"","name":"","version":"","bar":True,"extend_max":False}
 
-    def queue_packages(packages,start=False):
+    def queue_packages(packages,start=False,update_count=False):
         '''Queues a database of packages to the list, each containing required data:
         - name (Mod name)
         - author (Author/Namespace of the mod)
@@ -1710,42 +1760,81 @@ class downloadQueueMan():
             if package in downloadQueueMan.queue:
                 logMan.new(f"Package {package} was already queued, skipping")
                 continue
+            
+            if str(package).startswith("DarthLilo-!Developer_Mode"):
+                continue
 
             pkg = packages[package]
-
-            namespace = pkg['namespace'] if 'namespace' in pkg else pkg['author']
-            name = pkg['name']
-            pkg_version = pkg['version']
-            package_data = thunderstore.extract_package_json(namespace, name, pkg_version)
-            if not pkg_version.strip():
-                package_data = package_data['latest']
-                pkg_version = package_data['version_number']
+            package_type = "mod"
+            if "type" in pkg:
+                package_type = pkg['type']
             
-            dependencies = package_data['dependencies']
-            date_updated = package_data['date_created'].split("T")[0]
+            if package_type == "mod":
 
-            downloadQueueMan.queue[package] = {"namespace":namespace,"name":name,"version":pkg_version,"bar":True,"extend_max":False,"dependencies":dependencies,"date_updated":date_updated}
+                if app.update_screen_displayed:
+                    app.updateDownloadStatus(f"Caching {package}")
+                
+                namespace = pkg['namespace'] if 'namespace' in pkg else pkg['author']
+                name = pkg['name']
+                pkg_version = pkg['version']
 
-            
-            dependencies_to_check = {}
-            for dependency in dependencies:
-                if str(dependency).startswith("BepInEx-BepInExPack"):
-                    continue
-                if dependency in downloadQueueMan.queue:
-                    logMan.new(f"Package {package} was already queued, skipping")
-                    continue
+                if (not start and update_count):
+                    logMan.new(f"Extended progress max {namespace}-{name}-{pkg_version}")
+                    app.extendProgressMax(update=True)
+                package_data = thunderstore.extract_package_json(namespace, name, pkg_version)
+                if package_data == "Invalid":
+                    return "Invalid"
+                if not pkg_version.strip():
+                    package_data = package_data['latest']
+                    pkg_version = package_data['version_number']
+                dependencies = package_data['dependencies']
+                date_updated = package_data['date_created'].split("T")[0]
+                downloadQueueMan.queue[package] = {"namespace":namespace,"name":name,"version":pkg_version,"bar":pkg['bar'],"extend_max":False,"popup":pkg['popup'],"dependencies":dependencies,"date_updated":date_updated}
 
-                split_name = dependency.split("-")
-                dependency_namespace = split_name[0]
-                dependency_name = split_name[1]
-                dependency_version = split_name[2]
 
-                dependencies_to_check[f"{dependency_namespace}-{dependency_name}"] = {"namespace":dependency_namespace,"name":dependency_name,"version":dependency_version}
-            
-            downloadQueueMan.queue_packages(dependencies_to_check)
+                dependencies_to_check = {}
+                for dependency in dependencies:
+                    if str(dependency).startswith("BepInEx-BepInExPack"):
+                        continue
+                    split_pkg = dependency.split("-")
+                    if f"{split_pkg[0]}-{split_pkg[1]}" in packages:
+                        logMan.new(f"Package {split_pkg[0]}-{split_pkg[1]} is already in update data, skipping to avoid requeue")
+                        continue
+                    if dependency in downloadQueueMan.queue:
+                        logMan.new(f"Package {package} was already queued, skipping")
+                        continue
+                    
+                    
+                    dependency_check = modDatabase.get(f"{split_pkg[0]}-{split_pkg[1]}")
+                    if dependency_check:    #0.16.1                             #0.15.1
+                        if version.Version(dependency_check['version']) > version.Version(split_pkg[2]):
+                            logMan.new(f"Package {f"{split_pkg[0]}-{split_pkg[1]}"} with version {dependency_check['version']} was found which is newer than what {package} requires. ({split_pkg[2]}) Keeping newer version")
+                            continue
+                        
+                        elif version.Version(dependency_check['version']) == version.Version(split_pkg[2]):
+                            logMan.new(f"Package {dependency} is already installed, skipping")
+                            continue
+                        
+                        else:
+                            logMan.new(f"Package {f"{split_pkg[0]}-{split_pkg[1]}"} is already installed but is running {dependency_check['version']} while {package} requires at least version {split_pkg[2]}, installing new version")
+
+                    split_name = dependency.split("-")
+                    dependency_namespace = split_name[0]
+                    dependency_name = split_name[1]
+                    dependency_version = split_name[2]
+
+                    dependencies_to_check[f"{dependency_namespace}-{dependency_name}"] = {"namespace":dependency_namespace,"name":dependency_name,"version":dependency_version,"bar":pkg['bar'],"popup":pkg['popup']}
+
+                downloadQueueMan.queue_packages(dependencies_to_check,update_count=update_count)
+            else:
+                downloadQueueMan.queue[package] = pkg
 
         if start:
             return downloadQueueMan.queue
+
+    def clear_queue():
+        downloadQueueMan.queue.clear()
+        logMan.new("Cleared download queue")
 
 class multithreadDownload(threading.Thread):
     def __init__(self, queue,thread_index):
@@ -1762,15 +1851,16 @@ class multithreadDownload(threading.Thread):
                 return
             
             author = package_data['author'] if 'author' in package_data else package_data['namespace']
-            app.mod_download_frame.start_thread(self.thread_index,author,package_data['name'],package_data['version'])
             name = package_data['name']
+            if package_data['bar'] == True:
+                app.mod_download_frame.start_thread(self.thread_index,author,package_data['name'],package_data['version'])
 
-            thunderstore.import_from_url(author,name,package_data['version'],package_data,package_data['bar'],package_data['extend_max'])
+            thunderstore.import_from_url(author,name,package_data['version'],package_data,package_data['bar'],package_data['extend_max'],thread_index=self.thread_index,popup=package_data['popup'])
 
             queueMan.unlock_thread(self.thread_index)
-            app.mod_download_frame.close_thread(self.thread_index)
+            if package_data['bar']:
+                app.mod_download_frame.close_thread(self.thread_index)
             self.queue.task_done()
-
 
 class thunderstoreModLabel(customtkinter.CTkFrame):
     def __init__(self,master,mod,name,author,override_vers=None):
@@ -1836,7 +1926,7 @@ class thunderstoreModIcon(customtkinter.CTkLabel):
 
         mod_icon_path = modDatabase.icon(self.mod)
         if not os.path.exists(mod_icon_path):
-            logMan.new(f"Unable to find icon for {self.mod}, using missing icon")
+            logMan.new(f"Unable to find icon for {self.mod}, using missing icon",'warning')
             mod_icon_path = f"{getCurrentPathLoc()}/assets/missing_icon.png"
         icon_png = customtkinter.CTkImage(Image.open(mod_icon_path),size=(90,90))
         self.configure(image=icon_png)
@@ -1852,7 +1942,7 @@ class thunderstoreModIcon(customtkinter.CTkLabel):
             if depend_string.strip():
                 tooltip_thing = CTkToolTip(self,message=depend_string,delay=0)
         except (KeyError,FileNotFoundError):
-            logMan.new(f"Unable to find dependencies for {self.mod}")
+            logMan.new(f"Unable to find dependencies for {self.mod}",'warning')
 
         except Exception as e:
             logMan.new(traceback.format_exc(),'error')
@@ -1897,10 +1987,13 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
         mod_database_local = modDatabase.get()
 
         if settingsMan.readSettingsValue("program","enable_mods_menu") == "True":
+            sorted_mod_list = sorted(mod_database_local,key=lambda x: x.split("-")[1].lower())
 
-            for mod in mod_database_local:
-
+            for mod in sorted_mod_list:
                     moddb = modDatabase.get(mod)
+                    if not moddb:
+                        logMan.new(f"{mod} did not have a proper mod.json file, this could be due to a corrupted download or an extra folder in the [./data/mod_database] folder!",'warning')
+                        continue
 
                     logMan.new(f"Loading {mod} into mods UI")
 
@@ -1983,7 +2076,9 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
         frame_refs = {}
 
         for frame in frames:
-            root_frame = frame.winfo_children()[1]
+            root_children = frame.winfo_children()
+            root_icon = root_children[0]
+            root_frame = root_children[1]
             frame_children = root_frame.winfo_children()
             mod_name = str(frame_children[0].cget("text"))
             mod_author = str(frame_children[2].cget("text"))
@@ -1991,9 +2086,11 @@ class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
             frame_refs[f"{mod_name}-{mod_author}"] = {}
             frame_refs[f"{mod_name}-{mod_author}"]['frame'] = frame
             frame_refs[f"{mod_name}-{mod_author}"]['version'] = root_frame
-        
+            frame_refs[f"{mod_name}-{mod_author}"]['icon'] = root_icon
+
         if new_mod in new_frames:
             frame_refs[new_mod]['version'].refresh_version(f"{new_author}-{new_name}")
+            frame_refs[new_mod]['icon'].refresh_icon()
             return
         add_mod_loader = ctkextensions.CTkLoader(app,opacity=0.4)
         
@@ -2136,40 +2233,22 @@ class configSettingScrollFrame(customtkinter.CTkScrollableFrame):
         elif s_type == "dropdown":
             widgetAnimation.animate_border(self_button,PBLC_Colors.button("green_confirm"),PBLC_Colors.button("outline"),0.15)
 
-class modDownloadingScrollFrame(customtkinter.CTkFrame):
-    def __init__(self,master,fg_color,width,height,parent, **kwargs):
-        super().__init__(master,fg_color=fg_color,width=width,height=height,corner_radius=15,**kwargs)
-        self.grid_columnconfigure(0,weight=1)
-        self.grid_columnconfigure(1,weight=1)
-        self.parent = parent
+class modDownloadEntry(customtkinter.CTkFrame):
+    def __init__(self,master,row,col,mod_title,status,thread_index,**kwargs):
+        super().__init__(master,fg_color=PBLC_Colors.frame("darker"),height=110,corner_radius=5,**kwargs)
+        self.grid_columnconfigure(0, weight=0,minsize=1)
+        self.grid_columnconfigure(1, weight=1,minsize=1)
+        self.grid_rowconfigure(0,weight=1)
+        self.grid(row=row,column=col,sticky="nsew",pady=10,padx=10)
+        self.grid_propagate(False)
         
-        
-        self.draw_mods_list()
-
-    def draw_mods_list(self):
-
-        thread_num = 0
-
-        for i in range(int(round(queueMan.max_threads/2))):
-            self.addModFrame(i,0,f"inactive_thread_{thread_num}","Inactive",thread_num)
-            thread_num+=1
-            self.addModFrame(i,1,f"inactive_thread_{thread_num}","Inactive",thread_num)
-            thread_num+=1
-    
-    def addModFrame(self,row,col,mod_title,status,thread_index):
-
-        self.mod_entry_frame = customtkinter.CTkFrame(self,fg_color=PBLC_Colors.frame("darker"),corner_radius=5,height=100)
-        self.mod_entry_frame.grid_columnconfigure(0, weight=0,minsize=1)
-        self.mod_entry_frame.grid_columnconfigure(1, weight=0,minsize=1)
-        self.mod_entry_frame.grid_rowconfigure(0,weight=1)
-        self.mod_entry_frame.grid(row=row,column=col,sticky="nsew",pady=10,padx=10)
-        self.mod_entry_frame.grid_propagate(False)
+        self.thread_index = thread_index
 
         self.mod_icon_img = customtkinter.CTkImage(Image.open('assets/inactive_thread.png'),size=(90,90))
-        self.mod_icon_lab = customtkinter.CTkLabel(self.mod_entry_frame,text='',image=self.mod_icon_img)
+        self.mod_icon_lab = customtkinter.CTkLabel(self,text='',image=self.mod_icon_img)
         self.mod_icon_lab.grid(row=0,column=0,pady=10,padx=(10,10),sticky="w")
 
-        self.mod_info_container = customtkinter.CTkFrame(self.mod_entry_frame,fg_color='transparent')
+        self.mod_info_container = customtkinter.CTkFrame(self,fg_color='transparent')
         self.mod_info_container.grid_columnconfigure(0, weight=1,minsize=1)
         self.mod_info_container.grid_rowconfigure(0, weight=1,minsize=1)
         self.mod_info_container.grid_rowconfigure(1, weight=1,minsize=1)
@@ -2184,52 +2263,54 @@ class modDownloadingScrollFrame(customtkinter.CTkFrame):
         self.download_status_display.grid(row=1,column=0,sticky='w')
 
         self.download_progress_display = customtkinter.CTkProgressBar(self.mod_info_container,progress_color=PBLC_Colors.button("main"))
-        self.download_progress_display.grid(row=2,column=0,sticky='we')
+        self.download_progress_display.grid(row=2,column=0,sticky='we',padx=(0,20))
         self.download_progress_display.set(0)
 
         self.download_progress_percent = customtkinter.CTkLabel(self.mod_info_container,text="0%",font=('IBM 3270',14),text_color=PBLC_Colors.text("version_gray"))
         self.download_progress_percent.grid(row=3,column=0,sticky='w')
-
-        self.thread_index = customtkinter.CTkLabel(self.mod_entry_frame,text=thread_index)
     
-    def frames_list(self):
+    def name(self,new_value):
+        self.mod_title_display.configure(text=new_value)
+    
+    def status(self,new_value):
+        self.download_status_display.configure(text=new_value)
+    
+    def progress(self,new_value):
+        if not self.download_progress_display.get() == new_value:
+            self.download_progress_display.set(new_value)
+            self.download_progress_percent.configure(text=f"{round(new_value*100)}%")
+    
+    def icon(self,new_image):
+        self.mod_icon_lab.configure(image=new_image)
+
+class modDownloadingScrollFrame(customtkinter.CTkFrame):
+    def __init__(self,master,fg_color,width,height,parent, **kwargs):
+        super().__init__(master,fg_color=fg_color,width=width,height=height,corner_radius=15,**kwargs)
+        self.grid_columnconfigure(0,weight=1)
+        self.grid_columnconfigure(1,weight=1)
+        self.parent = parent
+        self.threads = []
         
-        frames = {}
+        
+        self.draw_mods_list()
 
-        for frame in self.winfo_children():
-            frame_children = frame.winfo_children()[1].winfo_children()
-            icon = frame.winfo_children()[0]
-            index = int(frame.winfo_children()[2].cget("text"))
-            name = frame_children[0]
-            status = frame_children[1]
-            progress_bar = frame_children[2]
-            progress_percent = frame_children[3]
-            frames[name.cget("text")] = {}
-            frames[name.cget("text")]['name'] = name
-            frames[name.cget("text")]['status'] = status
-            frames[name.cget("text")]['progress_bar'] = progress_bar
-            frames[name.cget("text")]['progress_percent'] = progress_percent
-            frames[name.cget("text")]['icon'] = icon
-            frames[name.cget("text")]['index'] = index
-        return frames
-    
-    def update_name(self,target,new_name):
-        frames = self.frames_list()
-        frames[target]['name'].configure(text=new_name)
+    def draw_mods_list(self):
+        self.threads.clear()
 
-    def update_status(self,target,new_value):
-        frames = self.frames_list()
-        frames[target]['status'].configure(text=new_value)
-    
-    def update_progress(self,target,new_value):
-        frames = self.frames_list()
-        if not frames[target]['progress_bar'].get() == new_value:
-            frames[target]['progress_bar'].set(new_value)
-            frames[target]['progress_percent'].configure(text=f"{round(new_value*100)}%")
-    
-    def update_icon(self,target,new_image):
-        frames = self.frames_list()
-        frames[target]['icon'].configure(image=new_image)
+        logMan.new(f"Rendering threads UI")
+
+        mod_thread_0 = modDownloadEntry(self,0,0,f"inactive_thread_{0}","Inactive",0)
+        mod_thread_1 = modDownloadEntry(self,0,1,f"inactive_thread_{1}","Inactive",1)
+        mod_thread_2 = modDownloadEntry(self,1,0,f"inactive_thread_{2}","Inactive",2)
+        mod_thread_3 = modDownloadEntry(self,1,1,f"inactive_thread_{3}","Inactive",3)
+        mod_thread_4 = modDownloadEntry(self,2,0,f"inactive_thread_{4}","Inactive",4)
+        mod_thread_5 = modDownloadEntry(self,2,1,f"inactive_thread_{5}","Inactive",5)
+        self.threads.append(mod_thread_0)
+        self.threads.append(mod_thread_1)
+        self.threads.append(mod_thread_2)
+        self.threads.append(mod_thread_3)
+        self.threads.append(mod_thread_4)
+        self.threads.append(mod_thread_5)
 
     def rip_icon(self,namespace,name,version):
         target_url = f"https://gcdn.thunderstore.io/live/repository/icons/{namespace}-{name}-{version}.png"
@@ -2243,35 +2324,41 @@ class modDownloadingScrollFrame(customtkinter.CTkFrame):
 
     def start_thread(self,thread_index,namespace,name,version):
 
-        frames = self.frames_list()
-        selected_frame = None
-        for frame in frames:
-            if frames[frame]['index'] == thread_index:
-                selected_frame = frame
-                break
-        self.update_icon(selected_frame,self.rip_icon(namespace,name,version))
-        self.update_status(selected_frame,"Starting Download")
-        self.update_name(selected_frame,f"{namespace}-{name}")
+        self.threads[thread_index].icon(self.rip_icon(namespace,name,version))
+        self.threads[thread_index].status("Starting Download")
+        self.threads[thread_index].name(f"{namespace}-{name}")
+
+        #self.update_icon(selected_frame,self.rip_icon(namespace,name,version))
+        #self.update_status(selected_frame,"Starting Download")
+        #self.update_name(selected_frame,f"{namespace}-{name}")
         return True
 
     def close_thread(self,thread_index):
-        frames = self.frames_list()
-        selected_frame = None
-        for frame in frames:
-            if frames[frame]['index'] == thread_index:
-                selected_frame = frame
-                break
         
-        self.update_status(selected_frame,"Inactive")
-        self.update_progress(selected_frame,0)
-        self.update_icon(selected_frame,customtkinter.CTkImage(PBLC_Icons.inactive_thread(),size=(90,90)))
-        self.update_name(selected_frame,f"inactive_thread_{frames[selected_frame]['index']}")
+        self.threads[thread_index].status("Inactive")
+        self.threads[thread_index].progress(0)
+        self.threads[thread_index].icon(customtkinter.CTkImage(PBLC_Icons.inactive_thread(),size=(90,90)))
+        self.threads[thread_index].name(f"inactive_thread_{thread_index}")
+
         return True
 
-    def start_url_thread(self,thread_index,targ_data):
-        self.start_thread(thread_index,targ_data['namespace'],targ_data['name'],targ_data['version'])
-        thunderstore.import_from_url(targ_data['name'],targ_data['namespace'],targ_data['version'],targ_data['bar'],targ_data['extend_max'])
-
+class modDownloadPopup(ctkextensions.CTkProgressPopup):
+    def __init__(self,master,popup_type="download",**kwargs):
+        if popup_type == "download":
+            title = "PBLC Update Manager"
+            label = "Initializing Download"
+            message = "0%"
+        elif popup_type == "scan":
+            title = "PBLC Update Manager"
+            label = "Initializing Scan"
+            message = "0/0"
+        super().__init__(master,title,label,message,show_cancel_button=False,progress_color=PBLC_Colors.button("main"),**kwargs)
+        app.pblc_progress_bar_storage = customtkinter.DoubleVar(value=0.0)
+        app.pblc_app_is_busy = True
+    
+    def close(self):
+        self.close_progress_popup()
+        app.pblc_app_is_busy = False
 
 class PBLC_Colors():
     def button(selection):
@@ -2329,13 +2416,14 @@ class PBLCApp(customtkinter.CTk):
         self.minsize(1000,580)
         #self.resizable(False,False)
         self.iconbitmap(resource_path("assets/pill_bottle.ico"))
+        logMan.new(f"Drawing app")
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
         self.start_time = None
 
         try:
-            self.drawPBLCUI()
+            threading.Thread(target=self.drawPBLCUI,daemon=True).start()
         except Exception as e:
             logMan.new(traceback.format_exc(),'error')
         self.kill_clock = False
@@ -2343,11 +2431,14 @@ class PBLCApp(customtkinter.CTk):
         self.pblc_app_is_busy = False
         self.pblc_progress_int = 0
         self.pblc_progress_max = 0
-        self.rahrah = 0
+        self.update_screen_displayed = False
+        self.pblc_progress_bar_storage = customtkinter.DoubleVar(value=0.0)
 
         self.new_mods_list = []
     
-    def drawPBLCUI(self,default_frame="Home",loader=False):
+    def drawPBLCUI(self,default_frame="Home",loader=True):
+
+        self.update_screen_displayed = False
 
         self.pblc_progress_int = 0
         self.pblc_progress_max = 0
@@ -2447,10 +2538,6 @@ class PBLCApp(customtkinter.CTk):
 
         if not installed_version > 0 and not installed_beta_version > 0:
             self.performance_switch.configure(state="disabled")
-        
-
-        newEmptyRow(self,2,10)
-        newEmptyRow(self,3,30)
 
         self.update_manager = customtkinter.CTkFrame(self.main_frame,width=100,height=100,fg_color=PBLC_Colors.frame("main"),bg_color="transparent",corner_radius=15)
         self.update_manager.grid_columnconfigure(0, weight=1)
@@ -2479,7 +2566,9 @@ class PBLCApp(customtkinter.CTk):
         self.update_manager_credits = customtkinter.CTkLabel(self.version_data_frame,text=f"Version: {PBLC_Update_Manager_Version}\n\nDeveloped by DarthLilo  |  Testing by ExoticBuilder",font=('IBM 3270',16))
         self.update_manager_credits.grid(row=0, column=0,pady=(10,5),padx=10)
         self.update_manager_version = customtkinter.CTkLabel(self.version_data_frame,text=f"\nCurrently Running: {display_text}",font=('IBM 3270',15))
-        self.update_manager_version.grid(row=1, column=0,pady=(5,10))
+        self.update_manager_version.grid(row=1, column=0,pady=(5,5))
+        self.installed_mod_count = customtkinter.CTkLabel(self.version_data_frame,text=f"({len(os.listdir(modDatabase.folder_path))} Mods)",font=('IBM 3270',15))
+        self.installed_mod_count.grid(row=2, column=0,pady=(5,10))
 
         #Extras 
 
@@ -2643,6 +2732,8 @@ class PBLCApp(customtkinter.CTk):
         self.destroyPBLCUI()
         logMan.new("Drawing Update UI")
 
+        self.update_screen_displayed = True
+
         self.update_frame = customtkinter.CTkFrame(self,fg_color="black")
         self.update_frame.grid(row=0,column=0,sticky="nsew")
         self.update_frame.grid_columnconfigure(0,weight=1)
@@ -2651,42 +2742,26 @@ class PBLCApp(customtkinter.CTk):
         self.current_download = customtkinter.CTkFrame(self.update_frame,fg_color=PBLC_Colors.frame("update_ui"),corner_radius=15)
         self.current_download.grid(row=0,column=0,sticky='nsew',padx=40,pady=(20,5))
         self.current_download.grid_rowconfigure(0,weight=1)
-        #self.current_download.grid_rowconfigure(1,weight=1)
-        #self.current_download.grid_rowconfigure(2,weight=1)
-        #self.current_download.grid_rowconfigure(3,weight=1)
         self.current_download.grid_columnconfigure(0,weight=1)
-
-        ####
 
         self.mod_download_frame = modDownloadingScrollFrame(self.current_download,PBLC_Colors.frame("main"),960,880,self)
         self.mod_download_frame.grid(row=0,column=0,sticky='nsew')
-
-        ###
-
-        #self.pblc_progress_icon = customtkinter.CTkImage(dark_image=roundImageCorners(PBLC_Icons.lethal_company(),35),size=(250,250))
-        #self.pblc_progress_icon_display = customtkinter.CTkLabel(self.current_download,text="",image=self.pblc_progress_icon)
-        #self.pblc_progress_icon_display.grid(row=0,column=0,sticky='nsew',pady=(30,15))
-#
-        #self.pblc_progress_display = customtkinter.CTkLabel(self.current_download,text="Initializing Download",font=('IBM 3270',20))
-        #self.pblc_progress_display.grid(row=1,column=0,padx=20,pady=(15,5),sticky='nsew')
-#
-        #self.pblc_progress_bar = customtkinter.CTkProgressBar(self.current_download,width=250,height=20,progress_color=PBLC_Colors.button("main"))
-        #self.pblc_progress_bar.grid(row=2,column=0,pady=(15,5),padx=20)
-        #self.pblc_progress_bar.set(0)
-#
-        #self.pblc_progress_value = customtkinter.CTkLabel(self.current_download,text="0%",font=('IBM 3270',26))
-        #self.pblc_progress_value.grid(row=3,column=0,pady=5,padx=10)
 
         self.current_download_data = customtkinter.CTkFrame(self.update_frame,fg_color=PBLC_Colors.frame("update_ui"),corner_radius=15)
         self.current_download_data.grid(row=1,column=0,sticky='nsew',padx=40,pady=(5,20))
         self.current_download_data.grid_rowconfigure(0,weight=1)
         self.current_download_data.grid_rowconfigure(1,weight=1)
+        self.current_download_data.grid_rowconfigure(2,weight=1)
         self.current_download_data.grid_columnconfigure(0,weight=1)
+        self.current_download_data.grid_columnconfigure(1,weight=0)
+        
+        self.pblc_main_status = customtkinter.CTkLabel(self.current_download_data,text="Initializing Download",font=('IBM 3270',20))
+        self.pblc_main_status.grid(row=0,column=0,pady=(15,5),padx=10)
 
         self.bar_container = customtkinter.CTkFrame(self.current_download_data)
         self.bar_container.grid_rowconfigure(0,weight=1)
         self.bar_container.grid_columnconfigure(0,weight=1)
-        self.bar_container.grid(row=0,column=0,pady=(15,5))
+        self.bar_container.grid(row=1,column=0,pady=(5,5))
 
         self.pblc_progress_total_bar = customtkinter.CTkProgressBar(self.bar_container,width=230,height=15,progress_color=PBLC_Colors.button("main"))
         self.pblc_progress_total_bar.grid(row=0,column=0,pady=(5,5),padx=10)
@@ -2698,35 +2773,13 @@ class PBLCApp(customtkinter.CTk):
         self.pblc_progress_count.grid(row=0,column=1,pady=(5,5),padx=10)
 
         self.pblc_elapsed_time = customtkinter.CTkLabel(self.current_download_data,text="00:00:00",font=('IBM 3270',20))
-        self.pblc_elapsed_time.grid(row=1,column=0,pady=(5,15),sticky='nsew')
-
-        self.teehee_button = customtkinter.CTkButton(self.current_download_data,text="enable",command=self.tempEnable)
-        self.teehee_button.grid(row=2,column=0)
-
-        self.teehee_button2 = customtkinter.CTkButton(self.current_download_data,text="disable",command=self.tempDisable)
-        self.teehee_button2.grid(row=2,column=1)
-
-        self.teehee_button3 = customtkinter.CTkButton(self.current_download_data,text="queue",command=self.tempQueue)
-        self.teehee_button3.grid(row=2,column=2)
+        self.pblc_elapsed_time.grid(row=2,column=0,pady=(5,15),sticky='nsew')
 
         self.initClock()
     
     def tempEnable(self):
         print('rah')
         #app.mod_download_frame.toggle_thread("inactive_thread_1",True)
-
-    def tempDisable(self):
-        frame_list = app.mod_download_frame.frames_list()
-        keys = list(frame_list.keys())
-        app.mod_download_frame.close_thread(keys[random.randint(0,len(keys)-1)])
-    
-    def tempQueue(self):
-        for thread in threading.enumerate():
-            print("Thread name:", thread.name)
-            print("Thread ID:", thread.ident)
-            print("Thread is alive:", thread.is_alive())
-            print("Thread is daemon:", thread.daemon)
-            print("")
     
     def updateProgressBar(self,cur_prog,total,popup=False):
         new_prog = round(cur_prog/total,2)
@@ -2737,9 +2790,10 @@ class PBLCApp(customtkinter.CTk):
                 app.pblc_progress_bar_popup.update_message(f"{round(new_prog*100)}%")
                 app.pblc_progress_bar_storage.set(new_prog)
         else:
-            if not app.pblc_progress_bar.get() == new_prog:
-                app.pblc_progress_bar.set(new_prog)
-                app.pblc_progress_value.configure(text=f"{round(new_prog*100)}%")
+            logMan.new("This is a deprecated setting, modify the command used to avoid this!",'error')
+            #if not app.pblc_progress_bar.get() == new_prog:
+            #    app.pblc_progress_bar.set(new_prog)
+            #    app.pblc_progress_value.configure(text=f"{round(new_prog*100)}%")
            
     def updateProgressCount(self,popup=False):
         app.pblc_progress_int += 1
@@ -2748,13 +2802,10 @@ class PBLCApp(customtkinter.CTk):
             app.pblc_progress_bar_popup.update_message(f"{app.pblc_progress_int}/{app.pblc_progress_max}")
         else:
             app.pblc_progress_count.configure(text=f"{app.pblc_progress_int}/{app.pblc_progress_max}")
-            #app.pblc_progress_bar.set(0)
             try:
                 app.pblc_progress_total_bar.set(round(app.pblc_progress_int/app.pblc_progress_max,2))
             except ZeroDivisionError:
                 app.pblc_progress_total_bar.set(round(0))
-            #app.pblc_progress_display.configure(text="Initializing Download")
-            #app.pblc_progress_value.configure(text="0%")
     
     def updateProgressMax(self,max,popup=False):
         app.pblc_progress_max = max
@@ -2762,12 +2813,19 @@ class PBLCApp(customtkinter.CTk):
             app.pblc_progress_bar_popup.update_message(f"{app.pblc_progress_int}/{app.pblc_progress_max}")
         else:
             app.pblc_progress_count.configure(text=f"{app.pblc_progress_int}/{app.pblc_progress_max}")
-    
-    def extendProgressMax(self):
-        app.pblc_progress_max += 1
+
+    def extendProgressMax(self,amount=1, update=False):
+        app.pblc_progress_max += amount
+        if update:
+            app.pblc_progress_count.configure(text=f"{app.pblc_progress_int}/{app.pblc_progress_max}")
+            try:
+                app.pblc_progress_total_bar.set(round(app.pblc_progress_int/app.pblc_progress_max,2))
+            except ZeroDivisionError:
+                app.pblc_progress_total_bar.set(round(0))
 
     def updateProgressDisplay(self,target,message):
-        app.mod_download_frame.update_status(target,message)
+        app.mod_download_frame.threads[target].status(message)
+        #app.mod_download_frame.update_status(target,message)
 
     def updateProgressIcon(self,namespace,name,version):
         target_url = f"https://gcdn.thunderstore.io/live/repository/icons/{namespace}-{name}-{version}.png"
@@ -2778,6 +2836,9 @@ class PBLCApp(customtkinter.CTk):
             fin_img = PBLC_Icons.missing_icon()
             logMan.new("Error while drawing icon, check internet",'warning')
         app.pblc_progress_icon.configure(dark_image=fin_img)
+
+    def updateDownloadStatus(self,newstatus):
+        self.pblc_main_status.configure(text=newstatus)
 
     def destroyPBLCUI(self):
         self.tabview.destroy()
@@ -2811,6 +2872,7 @@ class PBLCApp(customtkinter.CTk):
             return
         logMan.new("Uninstalling all mods!")
         uninstallMods()
+        version_man.set_patch("0.0.0")
         extra_patches = os.path.join(getCurrentPathLoc(),"data","extra_patches")
         for patch in os.listdir(extra_patches):
             os.remove(f"{extra_patches}/{patch}")
@@ -2818,6 +2880,7 @@ class PBLCApp(customtkinter.CTk):
         self.redrawScrollFrame()
         self.update_manager_version.configure(text=f"\n\nCurrently Running: Vanilla Lethal Company")
         self.update_button_main.configure(text="Install Mods")
+        self.installed_mod_count.configure(text="(0 Mods)")
         if settingsMan.readSettingsValue("program","show_beta_options") == "True":
             self.update_button_main_2.configure(text="Install Beta Mods")
         ctkextensions.CTkNotification(master=app, message="Mods uninstalled successfully!", side="right_bottom")
@@ -2896,9 +2959,11 @@ class PBLCApp(customtkinter.CTk):
             compress_zip_dir(zip_file_loc,bepinex_path)
             compress_zip_dir(zip_file_loc,modDatabase.folder_path)
         else:
-
-            json_file_loc = f"{getCurrentPathLoc()}/update_files/{self.pblc_pack_name.get()}.json"
+            update_files_path = f"{getCurrentPathLoc()}/update_files"
+            json_file_loc = f"{update_files_path}/{self.pblc_pack_name.get()}.json"
             mod_db_local = modDatabase.get()
+            if not os.path.exists(update_files_path):
+                os.mkdir(update_files_path)
 
             update_data = {"instructions":[]}
 
@@ -2916,25 +2981,20 @@ class PBLCApp(customtkinter.CTk):
         if is_lethal_running():
             return
         if not self.pblc_app_is_busy:
+            self.pblc_progress_bar_popup = modDownloadPopup(app)
             url_box_input = self.import_url_box.get()
             namespace,name = thunderstore.package_from_url(url_box_input)
-            package_queue = downloadQueueMan.queue_packages({f"{namespace}-{name}":{"name":name,"author":namespace,"version":"","bar":False,"extend_max":False}},True)
+            downloadQueueMan.clear_queue()
+            package_queue = downloadQueueMan.queue_packages({f"{namespace}-{name}":{"name":name,"author":namespace,"version":"","bar":False,"extend_max":False,"popup":True}},True)
             threading.Thread(target=lambda imp_url = url_box_input, imp_box_url = self.import_url_vers_box.get(), package_queue = package_queue :thunderstore.url_import_entry(imp_url,imp_box_url,package_queue,popup=True),daemon=True).start()
-            self.pblc_progress_bar_popup = ctkextensions.CTkProgressPopup(app,"PBLC Update Manager","Initializing Download","0%",show_cancel_button=False,progress_color=PBLC_Colors.button("main"))
-            self.pblc_progress_bar_storage = customtkinter.DoubleVar(value=0.0)
-            self.pblc_app_is_busy = True
             self.import_url_box.delete(0,len(self.import_url_box.get()))
             self.import_url_vers_box.delete(0,len(self.import_url_vers_box.get()))
-        #self.drawUpdateUI()
-        #self.extendProgressMax()
     
     def check_for_updates_all(self):
         if is_lethal_running():
             return
         threading.Thread(target=lambda self=self:thunderstore.check_for_updates_all_entry(self),daemon=True).start()
-        app.pblc_progress_bar_popup = ctkextensions.CTkProgressPopup(app,"PBLC Update Manager","Initializing Scan","0/0",show_cancel_button=False,progress_color=PBLC_Colors.button("main"))
-        app.pblc_progress_bar_storage = customtkinter.DoubleVar(value=0.0)
-        app.pblc_app_is_busy = True
+        app.pblc_progress_bar_popup = modDownloadPopup(app,"scan")
     
     def redrawScrollFrame(self):
         logMan.new("Cleaning scroll frame UI")
@@ -2966,20 +3026,18 @@ class PBLCApp(customtkinter.CTk):
         for command in commands[state]:
             decodeDownloadCommand(command,popup=True)
         
-        app.pblc_progress_bar_popup.close_progress_popup()
-        app.pblc_app_is_busy = False
-        self.performance_switch.configure(state="normal")
-
+        if state == "on":
+            thunderstore_ops.call_download_thread("Sligili","HDLethalCompany","1.5.6",False,False,True,True)
+        else:
+            self.performance_switch.configure(state="normal")
+    
     def performance_switch_event(self):
         if is_lethal_running():
             return
         toggle_state = self.performance_mode_var.get()
         self.performance_switch.configure(state="disabled")
-
-        app.pblc_progress_bar_popup = ctkextensions.CTkProgressPopup(app,"PBLC Update Manager","Initializing Download","0%",show_cancel_button=False,progress_color=PBLC_Colors.button("main"))
-        app.pblc_progress_bar_storage = customtkinter.DoubleVar(value=0.0)
-        app.pblc_app_is_busy = True
-
+        if toggle_state == "on":
+            app.pblc_progress_bar_popup = modDownloadPopup(app)
         threading.Thread(target=lambda toggle_state=toggle_state:self.performance_switch_thread(toggle_state),daemon=True).start()
 
         value_upd = open_json(pblc_vers)
@@ -3023,35 +3081,45 @@ class PBLCApp(customtkinter.CTk):
         new_location = f"{extra_patches}/{os.path.basename(target_file)}"
         shutil.copy(target_file,new_location)
 
-        app.pblc_progress_bar_popup = ctkextensions.CTkProgressPopup(app,"PBLC Update Manager","Initializing Download","0%",show_cancel_button=False,progress_color=PBLC_Colors.button("main"))
-        app.pblc_progress_bar_storage = customtkinter.DoubleVar(value=0.0)
-        app.pblc_app_is_busy = True
+        app.pblc_progress_bar_popup = modDownloadPopup(app)
 
         threading.Thread(target=lambda patches = patch_data["instructions"],target_file=new_location:self.install_patches(patches,target_file),daemon=True).start()
-
-        #for patch in patch_data["instructions"]:
-        #    decodeDownloadCommand(patch)
-
-        #decodeDownloadCommand
     
     def install_patches(self,patches,target_file):
         time.sleep(0.2)
+
+        self.fpi_patches = patches
+        self.fpi_target_file = target_file
+
+        queueMan.clearQueue()
+        
+        custom_patches_queue = {}
+
         for patch in patches:
             decodeDownloadCommand(patch,popup=True,record_deps=True)
+            if str(patch).startswith("url_add_mod"):
+                split_patch = str(patch).split("|")
+                custom_patches_queue[f"{split_patch[1]}-{split_patch[2]}"] = {"name":split_patch[2],"author":split_patch[1],"version":split_patch[3],"bar":False,"extend_max":False,"popup":True}
+        downloadQueueMan.clear_queue()
+        package_queue = downloadQueueMan.queue_packages(custom_patches_queue,True)
+        self.fpi_full_patches = package_queue
+        queueMan.queuePackages(package_queue)
+        queueMan.execute(False,1,True)
+        
+    def finish_patch_install(self):
+        target_file = self.fpi_target_file
+        all_patches = self.fpi_full_patches
+
         internal_patch_file = open_json(target_file)
         if "removal_instructions" not in internal_patch_file:
             internal_patch_file["removal_instructions"] = []
-
-        for patch in patches:
-            internal_patch_file["removal_instructions"].append(str(patch).replace("url_add_mod","delete_mod"))
-        for patch in self.new_mods_list:
-            internal_patch_file["removal_instructions"].append(str(patch).replace("url_add_mod","delete_mod"))
+        for patch in all_patches:
+            internal_patch_file["removal_instructions"].append(f"delete_mod|{all_patches[patch]['namespace']}|{all_patches[patch]['name']}")
         
         with open(target_file, "w") as patch_change:
             patch_change.write(json.dumps(internal_patch_file,indent=4))
         
-        app.pblc_progress_bar_popup.close_progress_popup()
-        app.pblc_app_is_busy = False
+        app.pblc_progress_bar_popup.close()
         app.new_mods_list = []
         self.get_extra_patches()
     
@@ -3063,7 +3131,14 @@ class PBLCApp(customtkinter.CTk):
         if not os.path.exists(target_file):
             return
         
-        removal_patches = open_json(target_file)["removal_instructions"]
+        try:
+            removal_patches = open_json(target_file)["removal_instructions"]
+        except Exception as e:
+            logMan.new(f"Error when trying to remove {target_file}, this is most likely due to a corrupted patch file or invalid json formatting",'error')
+            logMan.new(traceback.format_exc(),'error')
+            ctkextensions.CTkNotification(master=app, message="Error when removing patch!", side="right_bottom")
+            return
+
         for patch in removal_patches:
             try:
                 decodeDownloadCommand(patch)
@@ -3089,7 +3164,6 @@ class PBLCApp(customtkinter.CTk):
 
             self.drawUpdateUI()
             self.updateProgressMax(len(mod_list))
-
             threading.Thread(target=lambda mod_db = mod_list:thunderstore.batch_url_import(mod_db,bar=True),daemon=True).start()
     
     def export_mod_list(self):
@@ -3119,4 +3193,7 @@ def on_pblc_close():
 app = PBLCApp()
 hPyT.maximize_minimize_button.hide(app)
 app.protocol("WM_DELETE_WINDOW",on_pblc_close)
-app.mainloop()
+try:
+    app.mainloop()
+except Exception as e:
+    logMan.new(traceback.format_exc(),'error')
