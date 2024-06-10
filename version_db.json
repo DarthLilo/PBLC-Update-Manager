@@ -1,8 +1,8 @@
 {
     "release" : {
-        "name":"PBLC","description":"New lethal company pack for v50, currently in beta don't use for main gameplay","version": "9.2.0","release_date":"6-01-2024", "needs_reinstall":true, "starting_version":"9.2.0", "pblc_min":"0.3.0"
+        "name":"PBLC","description":"Version 10 of our Lethal Company modpack with multiple new moons and a massive launcher update!","version": "10.0.0","release_date":"6-09-2024", "needs_reinstall":true, "starting_version":"10.0.0", "pblc_min":"0.3.0"
     },
     "beta" : {
-        "name":"PBLC BETA","description":"beta temp","version": "9.2.0","beta_version":"0.1.2","release_date":"5-24-2024", "needs_reinstall":true, "starting_version":"9.2.0", "pblc_min":"0.3.0"
+        "name":"PBLC","description":"Version 10 of our Lethal Company modpack with multiple new moons and a massive launcher update!","version": "10.0.0","release_date":"6-09-2024", "needs_reinstall":true, "starting_version":"10.0.0", "pblc_min":"0.3.0"
     }
 }
