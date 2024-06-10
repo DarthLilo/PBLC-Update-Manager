@@ -1,9 +1,0 @@
-{
-    "instructions": [
-        "clean_install",
-        "download_bepinex",
-        "url_add_mod|notnotnotswipez|MoreCompany|1.9.1",
-        "url_add_mod|FlipMods|TooManyEmotes|2.1.18",
-        "update_vers|0.0.0|9.2.0|0.1.2"
-    ]
-}
