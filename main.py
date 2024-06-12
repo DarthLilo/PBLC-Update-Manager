@@ -7,7 +7,7 @@ from CTkMessagebox import CTkMessagebox
 from CTkToolTip import *
 from io import BytesIO
 
-PBLC_Update_Manager_Version = "0.3.0"
+PBLC_Update_Manager_Version = "0.3.1"
 
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
 thunderstore_pkg_url = "https://thunderstore.io/c/lethal-company/p"
@@ -92,6 +92,18 @@ def roundImageCorners(source_image, rad):
     source_image.putalpha(alpha)
     return source_image
 
+def is_python_installed():
+    try:
+        result = subprocess.run(['python','--version'],capture_output=True,text=True)
+        if result.returncode == 0:
+            logMan.new(f"Python is installed running version {result.stdout.strip()}")
+            return True
+        else:
+            logMan.new("Python is not installed",'error')
+            return False
+    except FileNotFoundError:
+        logMan.new("Python is not installed",'error')
+        return False
 
 class timeMan():
     def now():
@@ -583,8 +595,7 @@ class PBLC_Icons():
     def plus(pathOnly=False):
         if pathOnly:
             return 'assets/plus.png'
-        return Image.open('assets/plus.png')
-    
+        return Image.open('assets/plus.png')  
 
 class version_man():
 
@@ -1221,6 +1232,13 @@ class thunderstore():
                 return "Invalid"
             if e.code == 520:
                 time.sleep(5)
+                return thunderstore.extract_package_json(namespace,name,version)
+            if e.code == 429:
+                logMan.new(f"Error retrieving package {namespace}-{name}-{version} from thunderstore, waiting and attempting again.",'error')
+                logMan.new(traceback.format_exc(),'error')
+                if app.update_screen_displayed:
+                    app.updateDownloadStatus(f"Waiting for thunderstore response [{namespace}-{name}-{version}]")
+                time.sleep(10)
                 return thunderstore.extract_package_json(namespace,name,version)
 
         except Exception as e:
@@ -2417,6 +2435,16 @@ class PBLCApp(customtkinter.CTk):
         #self.resizable(False,False)
         self.iconbitmap(resource_path("assets/pill_bottle.ico"))
         logMan.new(f"Drawing app")
+
+        if not is_python_installed():
+            logMan.new("Python isn't installed, please install it to continue!")
+            user_response = CTkMessagebox(title="PBLC Update Manager",message="Python isn't installed, would you like to download the install exe?",option_1="No",option_2="Yes",option_3="Open Webpage",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"),icon=PBLC_Icons.info(True))
+            if user_response.get() == "Yes":
+                webbrowser.open_new("https://www.python.org/ftp/python/3.12.4/python-3.12.4-amd64.exe")
+            elif user_response.get() == "Open Webpage":
+                webbrowser.open_new("https://www.python.org/downloads/release/python-3124/")
+            
+            sys.exit()
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
