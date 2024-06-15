@@ -7,7 +7,7 @@ from CTkMessagebox import CTkMessagebox
 from CTkToolTip import *
 from io import BytesIO
 
-PBLC_Update_Manager_Version = "0.3.1"
+PBLC_Update_Manager_Version = "0.3.2"
 
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
 thunderstore_pkg_url = "https://thunderstore.io/c/lethal-company/p"
@@ -671,7 +671,14 @@ def cacheInstructionLen(cache_type,target_version,update_type="release"):
         if target_version in patch_instruct:
             for patch in patch_instruct[target_version]['release']:
                 if version.Version(patch) > version.Version(current_patch):
-                    patch_instruction_len = len(patch_instruct[target_version]['release'][patch])
+                    if cache_type == "patches":
+                        patch_instruction_len = 0
+                        for instruction in patch_instruct[target_version]['release'][patch]:
+                            if str(instruction).startswith("url_add_mod"):
+                                patch_instruction_len += 1
+                    else:
+                        patch_instruction_len = len(patch_instruct[target_version]['release'][patch])
+                    
                     logMan.new(f"Found {patch_instruction_len} instructions")
                     instruction_len += patch_instruction_len
 
@@ -907,6 +914,7 @@ def downloadOverridePatch(gdlink,dropbox,bar,popup):
         downloadFromURL(dropbox,zip_down_loc,bar,popup)
     decompress_zip(zip_down_loc,LC_Path)
     shutil.rmtree(overrides_folder)
+    
 
 def applyNewPatches(patch_db,update_type,cur_version,bar=None):
     time.sleep(0.5)
@@ -932,9 +940,20 @@ def applyNewPatches(patch_db,update_type,cur_version,bar=None):
         applyNewPatches(patch_db,update_type,new_version)
 
 def applyNewPatchesEntry(patch_db,update_type,cur_version,bar=None):
-    applyNewPatches(patch_db,update_type,cur_version,bar)
+    patches_queue = []
+    for patch in patch_db[cur_version][update_type]:
+        if version.Version(patch) > version.Version(version_man.get_patch()):
+            patches_queue.append(patch)
+    
+    for patch in patches_queue:
+        instructions_queue = updateSystems.queueInstructions(patch_db[cur_version][update_type][patch])
+        applyNewPatches(patch_db,update_type,cur_version,bar)
+        queueMan.clearQueue()
+        queueMan.queuePackages(instructions_queue)
+        queueMan._execute(False)
+    
     app.redrawPBLCUI()
-    CTkMessagebox(title="PBLC Update Manager",message="Finished installing patches!",icon=PBLC_Icons.checkmark(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+    CTkMessagebox(title="PBLC Update Manager",message="Finished installing patches!",icon=PBLC_Icons.checkmark(True),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"),sound=True)
 
 def checkForPatches(update_type,cur_version):
     logMan.new(f"Requesting latest patches")
@@ -1567,7 +1586,7 @@ class thunderstore_ops():
                     continue
             
             #Special Files
-            if file == "BepInEx":
+            if file.lower() == "bepinex":
                 for x in thunderstore_ops.log_sub_files(file_path,file_path):
                     pkg_files.append(x)
                 shutil.copytree(file_path,bepinex_path,dirs_exist_ok=True)
@@ -1799,6 +1818,7 @@ class downloadQueueMan():
                 if (not start and update_count):
                     logMan.new(f"Extended progress max {namespace}-{name}-{pkg_version}")
                     app.extendProgressMax(update=True)
+
                 package_data = thunderstore.extract_package_json(namespace, name, pkg_version)
                 if package_data == "Invalid":
                     return "Invalid"
