@@ -1,6 +1,22 @@
 {
     "10.0.0": {
         "release": {
+            "0.0.1" : [
+                "url_add_mod|Magic_Wesley|Atlantica|3.0.6",
+                "url_add_mod|Magic_Wesley|Desolation|2.0.6",
+                "url_add_mod|Magic_Wesley|Oldred|2.0.9",
+                "url_add_mod|Magic_Wesley|WesleysInteriors|1.1.17",
+                "url_add_mod|sfDesat|Aquatis|2.2.3",
+                "url_add_mod|sfDesat|Celest|1.1.4",
+                "url_add_mod|sfDesat|Celestial_Tint|1.5.1",
+                "url_add_mod|stayhydrated|SillycoreVids|1.1.1",
+                "url_add_mod|TestAccount666|ShipWindows|1.3.6",
+                "url_add_mod|Verity|TooManySuits|1.1.0",
+                "url_add_mod|xilophor|LethalNetworkAPI|2.2.0",
+                "url_add_mod|Yorimor|CustomStoryLogs|1.4.4",
+                "delete_mod|SelfKick|SelfKick",
+                "update_vers|0.0.1"
+            ]
         }
     }
 }
