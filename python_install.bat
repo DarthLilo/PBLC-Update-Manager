@@ -19,6 +19,9 @@ del python-%PYTHON_VERSION%-amd64.exe
 
 python --version
 
-timeout /t 5 /nobreak >nul
+echo ^G > "%temp%\sounder"
+del "%temp%\sounder"
 
 @echo Finished installing python, reboot PBLC Update Manager.
+
+timeout /t 5 /nobreak >nul

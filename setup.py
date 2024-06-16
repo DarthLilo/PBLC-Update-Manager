@@ -5,7 +5,7 @@ from cx_Freeze import setup, Executable
 build_options = {'packages': [], 
                  'excludes': ["numpy"],
                  'bin_includes':["ctkextensions.py"],
-                 'include_files': ["updater.py","assets","python_install.bat"]}
+                 'include_files': ["updater.py","assets",("python_install.bat","lib/python_install.bat")]}
 
 base = 'Win32GUI'
 

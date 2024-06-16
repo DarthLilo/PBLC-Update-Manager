@@ -2465,7 +2465,7 @@ class PBLCApp(customtkinter.CTk):
             logMan.new("Python isn't installed, please install it to continue!")
             user_response = CTkMessagebox(title="PBLC Update Manager",message="Python isn't installed, would you like to install it?",option_1="No",option_2="Yes",option_3="Open Webpage",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"),icon=PBLC_Icons.info(True))
             if user_response.get() == "Yes":
-                subprocess.Popen("python_install.bat")
+                subprocess.Popen(os.path.join(getCurrentPathLoc(),"lib","python_install.bat"))
             elif user_response.get() == "Open Webpage":
                 webbrowser.open_new("https://www.python.org/downloads/release/python-3124/")
             
