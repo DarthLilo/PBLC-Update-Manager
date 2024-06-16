@@ -7,7 +7,7 @@ from CTkMessagebox import CTkMessagebox
 from CTkToolTip import *
 from io import BytesIO
 
-PBLC_Update_Manager_Version = "0.3.2"
+PBLC_Update_Manager_Version = "0.3.3"
 
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
 thunderstore_pkg_url = "https://thunderstore.io/c/lethal-company/p"
@@ -48,10 +48,15 @@ if sys.platform.startswith('win'):
 def check_for_process(process_name):
     logMan.new(f"Checking for {process_name}")
     cmd = 'tasklist /fi "imagename eq {}"'.format(process_name)
-    output = subprocess.check_output(cmd, shell=True).decode()
-    if process_name.lower() in output.lower():
-        return True
-    else:
+    try:
+        output = subprocess.check_output(cmd, shell=True).decode('utf-8')
+        if process_name.lower() in output.lower():
+            return True
+        else:
+            return False
+    except Exception as e:
+        logMan.new(traceback.format_exc(),'error')
+        logMan.new(f"Error when performing process check",'error')
         return False
 
 def is_lethal_running():
@@ -2458,9 +2463,9 @@ class PBLCApp(customtkinter.CTk):
 
         if not is_python_installed():
             logMan.new("Python isn't installed, please install it to continue!")
-            user_response = CTkMessagebox(title="PBLC Update Manager",message="Python isn't installed, would you like to download the install exe?",option_1="No",option_2="Yes",option_3="Open Webpage",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"),icon=PBLC_Icons.info(True))
+            user_response = CTkMessagebox(title="PBLC Update Manager",message="Python isn't installed, would you like to install it?",option_1="No",option_2="Yes",option_3="Open Webpage",button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"),icon=PBLC_Icons.info(True))
             if user_response.get() == "Yes":
-                webbrowser.open_new("https://www.python.org/ftp/python/3.12.4/python-3.12.4-amd64.exe")
+                subprocess.Popen("python_install.bat")
             elif user_response.get() == "Open Webpage":
                 webbrowser.open_new("https://www.python.org/downloads/release/python-3124/")
             

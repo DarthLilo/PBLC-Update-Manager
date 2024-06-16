@@ -76,6 +76,8 @@ shutil.rmtree(temp_download_folder)
 relaunch_location = os.path.normpath(os.path.join(getCurrentPathLoc(),"PBLC Update Manager.exe"))
 
 if os.path.exists(relaunch_location):
-    subprocess.run(relaunch_location)
+    subprocess.Popen(relaunch_location)
 else:
     print("Couldn't run EXE")
+
+sys.exit()
