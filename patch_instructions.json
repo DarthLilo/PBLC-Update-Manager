@@ -25,6 +25,11 @@
                 "url_add_mod|XuXiaolan|TheGiantSpecimens|2.1.5",
                 "download_override|18m19IWHFzkhSRRQwI7Y8-9cfdhGbqetj|https://www.dropbox.com/scl/fi/ywhw23zd4gh7o8sfewsp0/PBLC-v10-patch-2.zip?rlkey=77a0wvurndi7c55efqoz9kt7w&st=gkrhmpmd&dl=1",
                 "update_vers|0.0.2"
+            ],
+            "0.0.3": [
+                "url_add_mod|DiFFoZ|BepInEx_Faster_Load_AssetBundles_Patcher|0.6.3",
+                "url_add_mod|Magic_Wesley|WesleysInteriors|1.1.18",
+                "update_vers|0.0.3"
             ]
         }
     }
