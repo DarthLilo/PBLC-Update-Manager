@@ -30,6 +30,24 @@
                 "url_add_mod|DiFFoZ|BepInEx_Faster_Load_AssetBundles_Patcher|0.6.3",
                 "url_add_mod|Magic_Wesley|WesleysInteriors|1.1.18",
                 "update_vers|0.0.3"
+            ],
+            "0.0.4": [
+                "url_add_mod|BunyaPineTree|ModelReplacementAPI|2.4.6",
+                "url_add_mod|ButteryStancakes|AccurateStaminaDisplay|2.1.3",
+                "url_add_mod|DiFFoZ|BepInEx_Faster_Load_AssetBundles_Patcher|0.6.4",
+                "url_add_mod|Generic_GMD|Generic_Moons|5.0.0",
+                "url_add_mod|Magic_Wesley|WesleysInteriors|1.1.19",
+                "url_add_mod|MasterAli2|TeleportDecline|0.1.0",
+                "url_add_mod|NomnomAB|RollingGiant|2.6.0",
+                "url_add_mod|Quixler|DeadAndBored|1.2.0",
+                "url_add_mod|qwbarch|Mirage|1.7.3",
+                "url_add_mod|Tolian|PsychSanctum|1.0.0",
+                "download_override|1QomCWAggPpuAqy6szqlz-tQlIASuwIvq|https://www.dropbox.com/scl/fi/rpzunicx786dsiiojf4dj/PBLC-v10-patch-4.zip?rlkey=k2eb2oziz3xv862uozfczz83o&st=hkg9wvza&dl=1",
+                "update_vers|0.0.4"
+            ],
+            "0.0.5": [
+                "download_override|1axp_QRYunzEwdNihu9URGg0qiyXxf0I5|https://www.dropbox.com/scl/fi/v2mm52w1xchjdrsmgsomh/PBLC-v10-patch-5.zip?rlkey=ukpg9ys8akq2roq6hieaz2163&st=9ctd875c&dl=1",
+                "update_vers|0.0.5"
             ]
         }
     }
