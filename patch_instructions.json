@@ -57,6 +57,13 @@
                 "delete_mod|Kesomannen|KeepItDown",
                 "download_override|1k9k-X9allfbNijQVq04N2HVP-IPbRMJc|https://www.dropbox.com/scl/fi/rrdkilhr9gtf1l80ytehk/PBLC-v10-patch-6.zip?rlkey=de6fnwxomq6col56et7mz1c2m&st=emba7xqp&dl=1",
                 "update_vers|0.0.6"
+            ],
+            "0.0.7": [
+                "url_add_mod|Generic_GMD|Generic_Moons|5.1.0",
+                "url_add_mod|necrowing|StopBeesOpeningDoors|1.1.0",
+                "delete_mod|MasterAli2|TeleportDecline",
+                "download_override|1IzjgHMn2oxBpserYCCLZGJVgmHG84X4n|https://www.dropbox.com/scl/fi/t2lpczb0ga5i880x4ak68/PBLC-v10-patch-7.zip?rlkey=u8kv89pk9yb9pkuybmycnuxq7&st=ib4nf5pb&dl=1",
+                "update_vers|0.0.7"
             ]
         }
     }
