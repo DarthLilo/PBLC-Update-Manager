@@ -64,6 +64,23 @@
                 "delete_mod|MasterAli2|TeleportDecline",
                 "download_override|1IzjgHMn2oxBpserYCCLZGJVgmHG84X4n|https://www.dropbox.com/scl/fi/t2lpczb0ga5i880x4ak68/PBLC-v10-patch-7.zip?rlkey=u8kv89pk9yb9pkuybmycnuxq7&st=ib4nf5pb&dl=1",
                 "update_vers|0.0.7"
+            ],
+            "0.0.8": [
+                "url_add_mod|Gemumoddo|LethalEmotesAPI|1.12.8",
+                "url_add_mod|malco|Lategame_Upgrades|3.8.1",
+                "url_add_mod|TestAccount666|ShipWindows|1.3.7",
+                "url_add_mod|WhiteSpike|Interactive_Terminal_API|1.1.2",
+                "url_add_mod|Zaggy1024|OpenBodyCams|2.2.1",
+                "url_add_mod|ButteryStancakes|MeleeFixes|1.2.0",
+                "delete_mod|MasterAli2|TeleportDecline",
+                "delete_mod|RosiePies|Sector0_Interior",
+                "download_override|1SXj_2Ih-_awf1SMXE2nqvDxwOkHsHn9c|https://www.dropbox.com/scl/fi/7dtcxuqmxd392qov0bz08/PBLC-v10-patch-8.zip?rlkey=eiwibf6271sgug1xtwnmo4vyh&st=n4npre1r&dl=1",
+                "update_vers|0.0.8"
+            ],
+            "0.0.9": [
+                "url_add_mod|RosiePies|Rosies_Moons|2.0.2",
+                "url_add_mod|RosiePies|Sector0_Interior|2.0.1",
+                "update_vers|0.0.9"
             ]
         }
     }
