@@ -81,6 +81,11 @@
                 "url_add_mod|RosiePies|Rosies_Moons|2.0.2",
                 "url_add_mod|RosiePies|Sector0_Interior|2.0.1",
                 "update_vers|0.0.9"
+            ],
+            "0.1.0": [
+                "delete_mod|malco|Lategame_Upgrades",
+                "download_override|1NlCkdTG1GOE90bh9vMKeqf3YajJyh9lU|https://www.dropbox.com/scl/fi/bnboeyg5t739qgfqiso8g/PBLV-v10-patch-10.zip?rlkey=0mms0qdqlik0qmiphk6hjt5kp&st=0n1ptw2y&dl=1",
+                "update_vers|0.1.0"
             ]
         }
     }
