@@ -775,10 +775,11 @@ def decodeDownloadCommand(input_command,bar=False,popup=False,record_deps=False,
                 patch_updater.write(json.dumps(install_version))
         
         elif len(split_commnad) == 4:
-            logMan.new(f"Updating beta version to {beta_version}")
 
             beta_goal = split_commnad[2]
             beta_version = split_commnad[3]
+
+            logMan.new(f"Updating beta version to {beta_version}")
 
             install_version["version"] = "0.0.0"
             install_version["beta_version"] = beta_version
