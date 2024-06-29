@@ -7,7 +7,7 @@ from CTkMessagebox import CTkMessagebox
 from CTkToolTip import *
 from io import BytesIO
 
-PBLC_Update_Manager_Version = "0.3.3"
+PBLC_Update_Manager_Version = "0.3.4"
 
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
 thunderstore_pkg_url = "https://thunderstore.io/c/lethal-company/p"
@@ -815,7 +815,7 @@ class updateSystems():
 
         logMan.new(f"Updating modpack to version {update_data['version']}")
 
-        full_queue = updateSystems.queueInstructions(grab_update_instructions(update_data['version'])['instructions'])
+        full_queue = updateSystems.queueInstructions(grab_update_instructions(update_data['version'],update_type)['instructions'])
         updateSystems.installRelease(update_data['version'],update_type,full_queue)
         queueMan.queuePackages(full_queue)
         queueMan.execute()
