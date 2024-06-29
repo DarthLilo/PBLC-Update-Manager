@@ -7,7 +7,7 @@ from CTkMessagebox import CTkMessagebox
 from CTkToolTip import *
 from io import BytesIO
 
-PBLC_Update_Manager_Version = "0.3.4"
+PBLC_Update_Manager_Version = "0.3.5"
 
 github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
 thunderstore_pkg_url = "https://thunderstore.io/c/lethal-company/p"
@@ -451,14 +451,14 @@ def grab_update_instructions(version,beta=False):
     if local_update_instructions and local_update_instructions.strip(): #Custom Path
         try:
             if is_url:
-                return json.loads(request.urlopen(f"{local_update_instructions}/{version}.json").read().decode())
+                return json.loads(request.urlopen(f"{local_update_instructions}/{version}.json").read().decode()) if not beta else json.loads(request.urlopen(f"{local_update_instructions}/{version}_beta.json").read().decode())
             else:
                 return open_json(f"{local_update_instructions}/{version}.json") if not beta else open_json(f"{local_update_instructions}/{version}_beta.json")
         except:
             logMan.new("Config specifies invalid update instructions!",'warning')
             return None
     else: #default
-        return json.loads(request.urlopen(f"{default_update_instructions}/{version}.json").read().decode())
+        return json.loads(request.urlopen(f"{default_update_instructions}/{version}.json").read().decode()) if not beta else json.loads(request.urlopen(f"{default_update_instructions}/{version}_beta.json").read().decode())
 
 def startupFunc():
     cur_folder = getCurrentPathLoc()
