@@ -22,8 +22,10 @@ As of right now it isn't possible to easily change which modpack it will downloa
 * Send out patches to modpacks so users won't have to redownload massive files
 * Easy mod management for pack creators
 
-# Future Plans (?)
-  * Multiple Mod Profiles
+# Currently Developing
+  * Runtime based mod loading
+  * Multiple profiles
+  * Support for multiple games (Longterm)
 
 # Building
 First you will want to setup a local copy of the repository:
