@@ -150,7 +150,8 @@ class settingsMan():
             "version_database": {"value":"","description":"Determines where the program checks for updates. URL or a FILEPATH","default":"","type":"string"},
             "update_instructions" : {"value":"","description":"Folder location of version update files. DIRPATH","default":"","type":"string"},
             "patch_instructions": {"value":"","description":"Determines where the program checks for patches. URL or a FILEPATH","default":"","type":"string"},
-            "lethal_company_path": {"value":"","description":"Location of your Lethal Company root folder. DIRPATH","default":"","type":"string"}
+            "lethal_company_path": {"value":"","description":"Location of your Lethal Company root folder. DIRPATH","default":"","type":"string"},
+            "profiles_path": {"value":"","description":"The location where your mod profiles will be saved. DIRPATH","default":f"{getCurrentPathLoc()}/data/profiles","type":"string"}
             },
 
             "program" : {
@@ -338,6 +339,97 @@ class modDatabase():
         logMan.new(f"Resetting mod database")
         shutil.rmtree(modDatabase.folder_path)
         os.mkdir(modDatabase.folder_path)
+
+class profilesMan():
+
+    profiles_path = ""
+
+    def grab_profiles_path():
+        default_profiles_path = f"{getCurrentPathLoc()}/data/profiles"
+        local_profiles_path = settingsMan.readSettingsValue("paths","profile_path")
+        if local_profiles_path:
+            if os.path.exists(local_profiles_path):
+                return local_profiles_path
+
+        if not os.path.exists(default_profiles_path):
+            os.mkdir(default_profiles_path)
+
+        return default_profiles_path
+    
+    def init_profiles():
+        profilesMan.profiles_path = profilesMan.grab_profiles_path()
+
+    def get(modpack=None):
+        if modpack:
+            try:
+                return open_json(os.path.join(profilesMan.profiles_path,modpack,"modpack.json"))
+            except FileNotFoundError:
+                logMan.new(f"{modpack} data file could not be found!",'warning')
+                return {}
+            except Exception as e:
+                logMan.new(traceback.format_exc(),'error')
+                return None
+        return os.listdir(profilesMan.profiles_path)
+    
+    def path(modpack):
+        return os.path.join(profilesMan.profiles_path,modpack)
+
+    def icon(modpack):
+        return Image.open(profilesMan.icon_path(modpack))
+    
+    def icon_path(modpack):
+        return os.path.join(profilesMan.profiles_path,modpack,"icon.png")
+    
+    def folder_instance(modpack):
+        modpack_path = os.path.join(profilesMan.profiles_path,modpack)
+        if os.path.exists(modpack_path):
+            return modpack_path
+        os.mkdir(modpack_path)
+        return modpack_path
+    
+    def write(modpack,data):
+        logMan.new(f"Writing new data to {modpack}")
+        target_folder = profilesMan.folder_instance(modpack)
+
+        with open(os.path.join(target_folder,"modpack.json"),"w") as modpack_data_write:
+            modpack_data_write.write(json.dumps(data,indent=4))
+        
+        return
+    
+    def remove(modpack):
+        logMan.new(f"Deleting {modpack} data folder")
+        shutil.rmtree(os.path.join(profilesMan.profiles_path,modpack))
+    
+    def launch(modpack):
+        logMan.new(f"Launching {modpack}")
+
+        modpack_path = profilesMan.path(modpack)
+
+        lethal_company_executable = "E:\\Program Files (x86)\\Steam\\steamapps\\common\\Lethal Company\\Lethal Company.exe"
+
+        launch_arguments = [
+            '--doorstop-enable', 'true',
+            '--doorstop-target', 'E:\\Lilos Coding\\PBML\\data\\profiles\\TestModpack\\BepInEx\\core\\BepInEx.Preloader.dll"'
+        ]
+
+        #launch_command = [lethal_company_executable,'--screen-fullscreen','0','--doorstop-enable','true','--doorstop-target', '\"E:\\Lilos Coding\\PBML\\data\\profiles\\TestModpack\\BepInEx\\core\\BepInEx.Preloader.dll\"']
+
+        launch_command = [
+            'C:\\Program Files (x86)\\Steam\\steam.exe',
+            '-applaunch', '1966720',
+            '--doorstop-enable', 'true',
+            '--doorstop-target', "E:/Lilos Coding/PBML/data/profiles/TestModpack/BepInEx/core/BepInEx.Preloader.dll"
+        ]
+
+        logMan.new(launch_command)
+
+        process = subprocess.Popen(launch_command,shell=True)
+
+        return
+
+
+
+profilesMan.init_profiles() #Generate Profiles
 
 def locate_lethal_company():
 
@@ -601,6 +693,16 @@ class PBLC_Icons():
         if pathOnly:
             return 'assets/plus.png'
         return Image.open('assets/plus.png')  
+
+    def folder(pathOnly=False):
+        if pathOnly:
+            return 'assets/folder.png'
+        return Image.open('assets/folder.png')
+    
+    def play(pathOnly=False):
+        if pathOnly:
+            return 'assets/play.png'
+        return Image.open('assets/play.png')
 
 class version_man():
 
@@ -2017,6 +2119,114 @@ class thunderstoreModToggle(customtkinter.CTkSwitch):
             return
         thunderstore_ops.toggle_package(mod)
 
+class modpackDataLabel(customtkinter.CTkFrame):
+    def __init__(self,master,name,author,version):
+        customtkinter.CTkFrame.__init__(self,master,fg_color="transparent")
+        self.name = name
+        self.author = author
+        self.version = version
+        self.update_date = "0000-00-00"
+        self.render_modpack_label()
+        self.grid_columnconfigure(0,weight=1)
+        self.grid_columnconfigure(1,weight=1)
+        self.grid_rowconfigure(0,weight=1)
+        self.grid_rowconfigure(1,weight=1)
+    
+    def render_modpack_label(self):
+        self.modpack_name_label = customtkinter.CTkLabel(self,text=self.name,justify='left',font=('IBM 3270',23))
+        self.modpack_name_label.grid(row=0,column=0,sticky='w')
+
+        self.modpack_version_label = customtkinter.CTkLabel(self,text=f"({self.version})",justify='left',font=('IBM 3270',14),text_color=PBLC_Colors.text("version_gray"))
+        self.modpack_version_label.grid(row=0,column=1,sticky='w',padx=10)
+        tooltip_thing = CTkToolTip(self.modpack_version_label,message=self.update_date,delay=0)
+
+        self.modpack_author_label = customtkinter.CTkLabel(self,text=self.author,justify='left',font=('IBM 3270',17),text_color=PBLC_Colors.text("version_gray"))
+        self.modpack_author_label.grid(row=1,column=0,sticky='w')
+
+class modpackIconLabel(customtkinter.CTkLabel):
+    def __init__(self,master,modpack):
+        customtkinter.CTkLabel.__init__(self,master,text="")
+        self.modpack = modpack
+        self.load_image()
+    
+    def load_image(self):
+        self.configure(image=customtkinter.CTkImage(profilesMan.icon(self.modpack),size=(90,90)))
+
+class modpackScrollFrame(customtkinter.CTkScrollableFrame):
+    def __init__(self,master,**kwargs):
+        super().__init__(master,fg_color="#150606",scrollbar_button_color="#3d1212",scrollbar_button_hover_color="#581b1b",**kwargs)
+        self.grid_columnconfigure(0,weight=1)
+
+        self.button_color = PBLC_Colors.themed("banner_red","lethal_company")
+        self.hover_color = PBLC_Colors.themed("banner_red_lighter","lethal_company")
+
+        self.draw_modpack_list()
+
+        
+    
+    def draw_modpack_list(self):
+        logMan.new("Drawing profiles list")
+
+        modpack_database_local = profilesMan.get()
+
+        sorted_modpack_list = sorted(modpack_database_local,key=lambda x: x.lower())
+
+        i = 0
+
+        for modpack in sorted_modpack_list:
+            datafile = profilesMan.get(modpack)
+            if not datafile:
+                logMan.new(f"{modpack} did not have a proper modpack.json file, this could be due to a corrupted modpack or an extra folder in the [{profilesMan.profiles_path}] folder!")
+                continue
+
+            logMan.new(f"Loading {modpack} into mods UI")
+
+            self.add_modpack_frame(i,datafile['name'],datafile['author'],datafile['version'],selected=datafile['selected'])
+            i+=1
+
+        return
+
+    def add_modpack_frame(self,row,name,author,version,selected=False):
+        self.modpack_entry_frame = customtkinter.CTkFrame(self,fg_color="#2c0e0e",corner_radius=5)
+        self.modpack_entry_frame.grid_columnconfigure(0, weight=0,minsize=1)
+        self.modpack_entry_frame.grid_columnconfigure(1, weight=0,minsize=1)
+        self.modpack_entry_frame.grid_columnconfigure(2, weight=1,minsize=1)
+        self.modpack_entry_frame.grid_columnconfigure(3, weight=0,minsize=1)
+        self.modpack_entry_frame.grid_columnconfigure(4, weight=0,minsize=1)
+        self.modpack_entry_frame.grid_columnconfigure(5, weight=0,minsize=1)
+        self.modpack_entry_frame.grid_columnconfigure(6, weight=0,minsize=1)
+        self.modpack_entry_frame.grid_rowconfigure(0)
+        self.modpack_entry_frame.grid(row=row,column=0,sticky='we',pady=6)
+
+        self.modpack_icon = modpackIconLabel(self.modpack_entry_frame,name)
+        self.modpack_icon.grid(row=0,column=0,pady=10,padx=(10,10),sticky='w')
+
+        self.modpack_data = modpackDataLabel(self.modpack_entry_frame,name,author,version)
+        self.modpack_data.grid(row=0,column=1,pady=2,padx=10)
+
+        select_text = "Select" if not selected else "Open"
+
+        self.modpack_select_button = customtkinter.CTkButton(self.modpack_entry_frame,text=select_text,width=90,height=45,fg_color=self.button_color,hover_color=self.hover_color,command=lambda cur = f"{name}_{version}": print(f"Modpack {cur} selected!"))
+        self.modpack_select_button.grid(row=0,column=2,pady=2,padx=4,sticky='e')
+
+        self.modpack_quickplay_icon = customtkinter.CTkImage(PBLC_Icons.play(),size=(30,30))
+        self.modpack_quickplay_button = customtkinter.CTkButton(self.modpack_entry_frame,text="",width=45,height=45,image=self.modpack_quickplay_icon,fg_color=self.button_color,hover_color=self.hover_color,command=lambda modpack = name: profilesMan.launch(modpack))
+        self.modpack_quickplay_button.grid(row=0,column=3,pady=2,padx=4,sticky='e')
+
+        self.modpack_update_icon = customtkinter.CTkImage(PBLC_Icons.refresh(),size=(30,30))
+        self.modpack_update_button = customtkinter.CTkButton(self.modpack_entry_frame,text="",width=45,height=45,image=self.modpack_update_icon,fg_color=self.button_color,hover_color=self.hover_color,command=lambda cur = f"{name}_{version}": print(f"Checking for updates on {cur}!"))
+        self.modpack_update_button.grid(row=0,column=4,pady=2,padx=4,sticky='e')
+
+        self.modpack_open_icon = customtkinter.CTkImage(PBLC_Icons.folder(),size=(30,30))
+        self.modpack_open_button = customtkinter.CTkButton(self.modpack_entry_frame,text="",width=45,height=45,image=self.modpack_open_icon,fg_color=self.button_color,hover_color=self.hover_color,command=lambda cur = f"{name}_{version}": print(f"Opening {cur}!"))
+        self.modpack_open_button.grid(row=0,column=5,pady=2,padx=4,sticky='e')
+
+        self.modpack_delete_icon = customtkinter.CTkImage(PBLC_Icons.trash_can(),size=(30,30))
+        self.modpack_delete_button = customtkinter.CTkButton(self.modpack_entry_frame,text="",width=45,height=45,image=self.modpack_delete_icon,fg_color=self.button_color,hover_color=self.hover_color,command=lambda cur = f"{name}_{version}": print(f"Deleting {cur}!"))
+        self.modpack_delete_button.grid(row=0,column=6,pady=2,padx=4,sticky='e')
+
+        
+
 class thunderstoreModScrollFrame(customtkinter.CTkScrollableFrame):
     def __init__(self,master,fg_color,width,height,parent, **kwargs):
         super().__init__(master,label_anchor="w",label_font=('IBM 3270',16),fg_color=fg_color,width=width,height=height,corner_radius=5,**kwargs)
@@ -2450,6 +2660,25 @@ class PBLC_Colors():
 
     def invalid():
         return "#ff00ea"
+    
+    def themed(selection,game):
+        games = {
+            "lethal_company": {
+                "banner_red": "#b02826",
+                "banner_red_lighter": "#ca3c39",
+                "banner_red_lighter2": "#e55451",
+                "banner_red_lighter3": "#f87472",
+                "banner_red_darker": "#822725"
+            }
+        }
+
+        if game not in games:
+            return PBLC_Colors.invalid()
+        
+        if selection not in games[game]:
+            return PBLC_Colors.invalid()
+        
+        return games[game][selection]
 
 #UI
 class PBLCApp(customtkinter.CTk):
@@ -2461,6 +2690,8 @@ class PBLCApp(customtkinter.CTk):
         #self.resizable(False,False)
         self.iconbitmap(resource_path("assets/pill_bottle.ico"))
         logMan.new(f"Drawing app")
+
+        #Python Check
 
         if not is_python_installed():
             logMan.new("Python isn't installed, please install it to continue!")
@@ -2476,10 +2707,22 @@ class PBLCApp(customtkinter.CTk):
         self.grid_columnconfigure(0, weight=1)
         self.start_time = None
 
+        ### LOAD UI PROFILE SELECTION SCREEN
+
         try:
-            threading.Thread(target=self.drawPBLCUI,daemon=True).start()
+            threading.Thread(target=self.drawProfileSelectionScren,daemon=True).start()
         except Exception as e:
             logMan.new(traceback.format_exc(),'error')
+
+        ### UI LOADING, DO NOT DELETE ###
+
+        #try:
+        #    threading.Thread(target=self.drawPBLCUI,daemon=True).start()
+        #except Exception as e:
+        #    logMan.new(traceback.format_exc(),'error')
+
+        ### UI LOADING, DO NOT DELETE ###
+
         self.kill_clock = False
 
         self.pblc_app_is_busy = False
@@ -2489,6 +2732,56 @@ class PBLCApp(customtkinter.CTk):
         self.pblc_progress_bar_storage = customtkinter.DoubleVar(value=0.0)
 
         self.new_mods_list = []
+    
+    def drawProfileSelectionScren(self,loader=True):
+
+        # Start loading screen
+        if loader:
+            self.loader_menu = ctkextensions.CTkLoader(self,opacity=1)
+
+
+        ## UI LOADING CODE
+
+        self.main_frame = customtkinter.CTkFrame(self,corner_radius=0,fg_color="#2c0e0d")
+        self.main_frame.grid(row=0, column=0,sticky='nsew')
+        self.main_frame.grid_columnconfigure(0, weight=1)
+        self.main_frame.grid_rowconfigure(0, weight=0)
+        self.main_frame.grid_rowconfigure(1, weight=1)
+
+
+
+        ### TOP BANNER v
+
+        self.top_banner = customtkinter.CTkFrame(self.main_frame,corner_radius=0,fg_color="#b02826",height=150)
+        self.top_banner.grid(row=0,column=0,sticky='new')
+        self.top_banner.grid_columnconfigure(0, weight=1)
+        self.top_banner.grid_rowconfigure(0, weight=1)
+
+        self.top_banner_text = customtkinter.CTkLabel(self.top_banner,text="Select Mod Profile",font=('IBM 3270',26))
+        self.top_banner_text.grid(row=0,column=0,sticky='w',padx=40,pady=40)
+
+        self.top_banner_new_profile_icon = customtkinter.CTkImage(PBLC_Icons.plus(),size=(30,30))
+        self.top_banner_new_profile = customtkinter.CTkButton(self.top_banner,text="",font=('IBM 3270',16),width=45,height=45,image=self.top_banner_new_profile_icon,fg_color=PBLC_Colors.themed("banner_red_lighter2","lethal_company"),hover_color=PBLC_Colors.themed("banner_red_lighter3","lethal_company"))
+        self.top_banner_new_profile.grid(row=0,column=1,sticky='e',padx=25)
+
+        ### TOP BANNER ^
+
+
+
+        self.modpack_scroll_frame = modpackScrollFrame(self.main_frame,corner_radius=20)
+        self.modpack_scroll_frame.grid(row=1,column=0,sticky='nsew',padx=20,pady=20)
+
+        #self.profiles_scroll
+        
+
+
+        # Stop loading screen
+        if loader:
+            self.loader_menu.stop_loader()
+        
+        logMan.new("Finished initializing profile selection, waiting for user input")
+
+        return
     
     def drawPBLCUI(self,default_frame="Home",loader=True):
 
