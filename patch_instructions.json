@@ -101,7 +101,7 @@
                 "update_vers|0.0.2"
             ],
             "0.0.3": [
-                "url_add_mod|akronman1|Niko|0.2.1",
+                "download_override|1CMjmc65oSXVulnIVDTuG_7AeApXCRif0|https://www.dropbox.com/scl/fi/qnc7h3x5vh7vlxaecpjvg/PBLC-v11-patch-3.zip?rlkey=jkd7hi8ni83vzuwtcg0i00syy&st=k8lug5no&dl=1",
                 "update_vers|0.0.3"
             ]
         }
