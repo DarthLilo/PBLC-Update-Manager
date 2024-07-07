@@ -158,4 +158,4 @@ def compare_update_files(old_update="",new_update="",old_update_is_beta=False,ne
 
     return
 
-compare_update_files("10.0.0","11.0.0",new_update_is_beta=True)
+compare_update_files("10.0.0","11.0.0")

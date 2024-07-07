@@ -374,6 +374,20 @@ class profilesMan():
     def path(modpack):
         return os.path.join(profilesMan.profiles_path,modpack)
 
+    def copy_mod_files(modpack):
+        modpack_path = profilesMan.path(modpack)
+        
+        doorstop_file = os.path.join(modpack_path,"doorstop_config.ini")
+        winhttp_file = os.path.join(modpack_path,"winhttp.dll")
+
+        if not os.path.exists(doorstop_file) or not os.path.exists(winhttp_file):
+            logMan.new("Modpack does not contain proper launch files, please verify installation and try again!",'error')
+            return False
+        
+        shutil.copy(doorstop_file,doorstop_path)
+        shutil.copy(winhttp_file,winhttp_path)
+        return True
+
     def icon(modpack):
         return Image.open(profilesMan.icon_path(modpack))
     
@@ -401,29 +415,31 @@ class profilesMan():
         shutil.rmtree(os.path.join(profilesMan.profiles_path,modpack))
     
     def launch(modpack):
-        logMan.new(f"Launching {modpack}")
+        logMan.new(f"Preparing to launch {modpack}")
 
+        # Variables
         modpack_path = profilesMan.path(modpack)
 
-        lethal_company_executable = "E:\\Program Files (x86)\\Steam\\steamapps\\common\\Lethal Company\\Lethal Company.exe"
-
-        launch_arguments = [
-            '--doorstop-enable', 'true',
-            '--doorstop-target', 'E:\\Lilos Coding\\PBML\\data\\profiles\\TestModpack\\BepInEx\\core\\BepInEx.Preloader.dll"'
-        ]
-
-        #launch_command = [lethal_company_executable,'--screen-fullscreen','0','--doorstop-enable','true','--doorstop-target', '\"E:\\Lilos Coding\\PBML\\data\\profiles\\TestModpack\\BepInEx\\core\\BepInEx.Preloader.dll\"']
-
+        lethal_company_executable = f"{LC_Path}\\Lethal Company.exe"
+        
         launch_command = [
-            'C:\\Program Files (x86)\\Steam\\steam.exe',
-            '-applaunch', '1966720',
+            lethal_company_executable,
             '--doorstop-enable', 'true',
-            '--doorstop-target', "E:/Lilos Coding/PBML/data/profiles/TestModpack/BepInEx/core/BepInEx.Preloader.dll"
+            '--doorstop-target', f"{modpack_path}/BepInEx/core/BepInEx.Preloader.dll"
         ]
 
-        logMan.new(launch_command)
+        # Checks
 
-        process = subprocess.Popen(launch_command,shell=True)
+        if not os.path.exists(doorstop_path) or not os.path.exists(winhttp_path):
+            copy_files = profilesMan.copy_mod_files(modpack)
+            
+            if not copy_files:
+                return
+
+
+        # Launching
+        logMan.new(f"Final launch command: {launch_command}")
+        subprocess.Popen(launch_command,shell=True)
 
         return
 
@@ -1666,7 +1682,6 @@ class thunderstore_ops():
                         pkg_files.append(x)
         return pkg_files
 
-
     def install_package(namespace,name,version,dependencies,bar=None,popup=False):
 
         logMan.new(f"Installing {namespace}-{name}-{version}")
@@ -2206,7 +2221,7 @@ class modpackScrollFrame(customtkinter.CTkScrollableFrame):
 
         select_text = "Select" if not selected else "Open"
 
-        self.modpack_select_button = customtkinter.CTkButton(self.modpack_entry_frame,text=select_text,width=90,height=45,fg_color=self.button_color,hover_color=self.hover_color,command=lambda cur = f"{name}_{version}": print(f"Modpack {cur} selected!"))
+        self.modpack_select_button = customtkinter.CTkButton(self.modpack_entry_frame,text=select_text,width=90,height=45,fg_color=self.button_color,hover_color=self.hover_color,command=lambda modpack = name: app.drawPBLCUI(modpack=modpack))
         self.modpack_select_button.grid(row=0,column=2,pady=2,padx=4,sticky='e')
 
         self.modpack_quickplay_icon = customtkinter.CTkImage(PBLC_Icons.play(),size=(30,30))
@@ -2783,7 +2798,13 @@ class PBLCApp(customtkinter.CTk):
 
         return
     
-    def drawPBLCUI(self,default_frame="Home",loader=True):
+    def drawPBLCUI(self,default_frame="Home",loader=True,modpack=None):
+        ## Cleaning menu
+        logMan.new(f"Loading {modpack}")
+        self.main_frame.destroy()
+
+
+        #Drawing new menu
 
         self.update_screen_displayed = False
 
