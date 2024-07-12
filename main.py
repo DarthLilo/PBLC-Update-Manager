@@ -2221,7 +2221,7 @@ class modpackScrollFrame(customtkinter.CTkScrollableFrame):
 
         select_text = "Select" if not selected else "Open"
 
-        self.modpack_select_button = customtkinter.CTkButton(self.modpack_entry_frame,text=select_text,width=90,height=45,fg_color=self.button_color,hover_color=self.hover_color,command=lambda modpack = name: app.drawPBLCUI(modpack=modpack))
+        self.modpack_select_button = customtkinter.CTkButton(self.modpack_entry_frame,text=select_text,width=90,height=45,fg_color=self.button_color,hover_color=self.hover_color,command=lambda modpack = name: app.drawModpackUI(modpack=modpack))
         self.modpack_select_button.grid(row=0,column=2,pady=2,padx=4,sticky='e')
 
         self.modpack_quickplay_icon = customtkinter.CTkImage(PBLC_Icons.play(),size=(30,30))
@@ -2775,9 +2775,13 @@ class PBLCApp(customtkinter.CTk):
         self.top_banner_text = customtkinter.CTkLabel(self.top_banner,text="Select Mod Profile",font=('IBM 3270',26))
         self.top_banner_text.grid(row=0,column=0,sticky='w',padx=40,pady=40)
 
+        self.tbul_icon = customtkinter.CTkImage(PBLC_Icons.arrow_up_right(),size=(30,30))
+        self.top_banner_update_launcher = customtkinter.CTkButton(self.top_banner,text="Update Launcher",image=self.tbul_icon,font=('IBM 3270',16),width=90,height=45,fg_color=PBLC_Colors.themed("banner_red_lighter2","lethal_company"),hover_color=PBLC_Colors.themed("banner_red_lighter3","lethal_company"),text_color="#ffffff")
+        self.top_banner_update_launcher.grid(row=0,column=1,sticky='e',padx=(25,5))
+    
         self.top_banner_new_profile_icon = customtkinter.CTkImage(PBLC_Icons.plus(),size=(30,30))
         self.top_banner_new_profile = customtkinter.CTkButton(self.top_banner,text="",font=('IBM 3270',16),width=45,height=45,image=self.top_banner_new_profile_icon,fg_color=PBLC_Colors.themed("banner_red_lighter2","lethal_company"),hover_color=PBLC_Colors.themed("banner_red_lighter3","lethal_company"))
-        self.top_banner_new_profile.grid(row=0,column=1,sticky='e',padx=25)
+        self.top_banner_new_profile.grid(row=0,column=2,sticky='e',padx=(5,25))
 
         ### TOP BANNER ^
 
@@ -2798,6 +2802,153 @@ class PBLCApp(customtkinter.CTk):
 
         return
     
+    def drawModpackUI(self,modpack):
+        # Cleaning old UI
+        self.main_frame.destroy()
+
+        logMan.new(f"Drawing UI for {modpack}")
+
+
+        self.tabview = customtkinter.CTkTabview(self,segmented_button_selected_color=PBLC_Colors.button("main"),segmented_button_selected_hover_color=PBLC_Colors.button("hover"))
+        self.tabview.grid(row=0, column=0,sticky='nsew')
+
+        tabs = ["Mods","Extras"]
+
+        for tab in tabs:
+            self.tabview.add(tab)
+            self.tabview.tab(tab).grid_columnconfigure(0, weight=1)
+            self.tabview.tab(tab).grid_rowconfigure(0, weight=1)
+
+        self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Extras"), corner_radius=5, fg_color=PBLC_Colors.frame("main"))
+        self.main_frame.grid_columnconfigure(0, weight=1)
+        self.main_frame.grid_rowconfigure(0, weight=1)
+        self.main_frame.grid_rowconfigure(1, weight=1)
+        self.main_frame.grid(row=0, column=0,sticky='nsew')
+
+        
+
+
+        self.extras_frame_main = customtkinter.CTkFrame(self.main_frame,fg_color=PBLC_Colors.frame("darker"),corner_radius=5)
+        self.extras_frame_main.grid_columnconfigure(0, weight=1)
+        self.extras_frame_main.grid_columnconfigure(1, weight=1)
+        self.extras_frame_main.grid_columnconfigure(2, weight=1)
+        self.extras_frame_main.grid_rowconfigure(0, weight=1)
+        self.extras_frame_main.grid_rowconfigure(1, weight=1)
+        self.extras_frame_main.grid_rowconfigure(2, weight=1)
+        self.extras_frame_main.grid(row=0, column=0)
+
+        self.pblc_pack_name = customtkinter.CTkEntry(self.extras_frame_main,placeholder_text="PBLC Version",width=400)
+        self.pblc_pack_name.grid(row=0,column=0,padx=(10,5),pady=10)
+
+        self.archive_img = customtkinter.CTkImage(PBLC_Icons.archive(),size=(15,15))
+        self.pblc_pack_trigger = customtkinter.CTkButton(self.extras_frame_main,image=self.archive_img,text="",fg_color=PBLC_Colors.button("main"),
+                                                         hover_color=PBLC_Colors.button("hover"),border_color=PBLC_Colors.button("outline"),
+                                                         border_width=PBLC_Colors.button("outline_size"),width=30,command=lambda:self.export_modpack(True))
+        self.pblc_pack_trigger.grid(row=0,column=1,padx=(5,5),pady=10)
+
+        self.file_icon_thing = customtkinter.CTkImage(PBLC_Icons.file(),size=(15,15))
+        self.new_version_save = customtkinter.CTkButton(self.extras_frame_main,image=self.file_icon_thing,text="",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),
+                                                        border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"),width=30,command=lambda:self.export_modpack(False))
+        self.new_version_save.grid(row=0,column=2,padx=(5,10),pady=10)
+
+        self.pblc_patch_save_list = customtkinter.CTkButton(self.extras_frame_main,width=400,text="Generate Patch Point",command=self.create_patch_point,fg_color=PBLC_Colors.button("main"),
+                                                         hover_color=PBLC_Colors.button("hover"),border_color=PBLC_Colors.button("outline"),
+                                                         border_width=PBLC_Colors.button("outline_size"))
+        self.pblc_patch_save_list.grid(row=1,column=0,padx=(10,5),pady=10)
+
+        self.patch_save_del = customtkinter.CTkImage(PBLC_Icons.trash_can(),size=(15,15))
+
+        self.add_new_file_icon = customtkinter.CTkImage(PBLC_Icons.plus(),size=(15,15))
+        self.pblc_patch_save_new = customtkinter.CTkButton(self.extras_frame_main,text="",image=self.add_new_file_icon,width=30,command=self.gen_patch_change,fg_color=PBLC_Colors.button("main"),
+                                                         hover_color=PBLC_Colors.button("hover"),border_color=PBLC_Colors.button("outline"),
+                                                         border_width=PBLC_Colors.button("outline_size"))
+        self.pblc_patch_save_new.grid(row=1,column=2,padx=(5,10),pady=10)
+
+        self.installed_patches = []
+        
+
+        self.pblc_special_patch_list = customtkinter.CTkOptionMenu(self.extras_frame_main,width=400,values=self.installed_patches,fg_color=PBLC_Colors.button("main"),button_color=PBLC_Colors.button("main"),button_hover_color=PBLC_Colors.button("hover"))
+        self.pblc_special_patch_list.grid(row=2,column=0,padx=(10,5),pady=10)
+        if len(self.installed_patches) == 0:
+            self.pblc_special_patch_list.set("No extra patches installed!")
+        
+        self.get_extra_patches()
+
+        self.pblc_special_patch_uninstall = customtkinter.CTkButton(self.extras_frame_main,text="",image=self.patch_save_del,width=30,command=self.uninstall_patches,fg_color=PBLC_Colors.button("main"),
+                                                         hover_color=PBLC_Colors.button("hover"),border_color=PBLC_Colors.button("outline"),
+                                                         border_width=PBLC_Colors.button("outline_size"))
+        self.pblc_special_patch_uninstall.grid(row=2,column=1,padx=(5,5),pady=10)
+
+        self.pblc_special_patch_install = customtkinter.CTkButton(self.extras_frame_main,text="",image=self.add_new_file_icon,width=30,command=self.load_new_patch,fg_color=PBLC_Colors.button("main"),
+                                                         hover_color=PBLC_Colors.button("hover"),border_color=PBLC_Colors.button("outline"),
+                                                         border_width=PBLC_Colors.button("outline_size"))
+        self.pblc_special_patch_install.grid(row=2,column=2,padx=(5,10),pady=10)
+
+        self.main_actions = customtkinter.CTkFrame(self.main_frame,fg_color=PBLC_Colors.frame("darker"),corner_radius=5)
+        self.main_actions.grid_columnconfigure(0,weight=1)
+        self.main_actions.grid_columnconfigure(1,weight=1)
+        self.main_actions.grid_columnconfigure(2,weight=1)
+        self.main_actions.grid_rowconfigure(0,weight=1)
+        self.main_actions.grid(row=1,column=0)
+
+        self.redownload_mods_img = customtkinter.CTkImage(PBLC_Icons.refresh(),size=(15,15))
+        self.redownload_all_mods = customtkinter.CTkButton(self.main_actions,text="Redownload Mods",image=self.redownload_mods_img,command=self.reinstall_all_mods,fg_color=PBLC_Colors.button("main"),
+                                                         hover_color=PBLC_Colors.button("hover"),border_color=PBLC_Colors.button("outline"),
+                                                         border_width=PBLC_Colors.button("outline_size"))
+        self.redownload_all_mods.grid(row=0,column=0,padx=(10,5),pady=10)
+
+        self.uninstall_mods_img = customtkinter.CTkImage(PBLC_Icons.uninstall(),size=(15,15))
+        self.uninstall_mods = customtkinter.CTkButton(self.main_actions,text="Uninstall Mods",image=self.uninstall_mods_img,command=self.uninstall_everything,fg_color=PBLC_Colors.button("main"),
+                                                         hover_color=PBLC_Colors.button("hover"),border_color=PBLC_Colors.button("outline"),
+                                                         border_width=PBLC_Colors.button("outline_size"))
+        self.uninstall_mods.grid(row=0,column=1,padx=(5,5),pady=10)
+
+        self.list_installed_mods = customtkinter.CTkButton(self.main_actions,text="Export Mods List",image=self.file_icon_thing,command=self.export_mod_list,fg_color=PBLC_Colors.button("main"),
+                                                         hover_color=PBLC_Colors.button("hover"),border_color=PBLC_Colors.button("outline"),
+                                                         border_width=PBLC_Colors.button("outline_size"))
+        self.list_installed_mods.grid(row=0,column=2,padx=(5,10),pady=10)
+
+        #Mods
+
+        logMan.new("Drawing Mods")
+
+        self.main_frame = customtkinter.CTkFrame(self.tabview.tab("Mods"), corner_radius=0, fg_color="transparent")
+        self.main_frame.grid_columnconfigure(0, weight=1)
+        self.main_frame.grid_rowconfigure(0, weight=1)
+        self.main_frame.grid_rowconfigure(1, weight=1)
+        self.main_frame.grid_rowconfigure(2, weight=1)
+        self.main_frame.grid(row=0, column=0,sticky='nsew')
+
+        #self.fetch_mods = customtkinter.CTkButton(self.main_frame, text="Fetch Mods", command=self.fetchModData)
+        #self.fetch_mods.grid(row=3, column=0)
+
+        self.thunderstore_mod_frame = thunderstoreModScrollFrame(self.main_frame,fg_color=PBLC_Colors.frame("main"),width=960,height=486,parent=self)
+        self.thunderstore_mod_frame.grid(row=0,column=0,sticky="nsew")
+
+        self.url_import_frame = customtkinter.CTkFrame(self.main_frame)
+        self.url_import_frame.grid_columnconfigure(0,weight=1)
+        self.url_import_frame.grid_columnconfigure(1,weight=1)
+        self.url_import_frame.grid_columnconfigure(2,weight=1)
+        self.url_import_frame.grid_columnconfigure(3,weight=1)
+        self.url_import_frame.grid_rowconfigure(0,weight=1)
+        self.url_import_frame.grid(row=1,column=0,sticky='nsew',pady=2)
+
+        self.import_url_box = customtkinter.CTkEntry(self.url_import_frame,width=550,height=10,placeholder_text="Thunderstore Package URL")
+        self.import_url_box.grid(row=0,column=0,padx=3,sticky='nsew')
+        self.import_url_box.bind("<Return>",lambda mod_frame=self.thunderstore_mod_frame: self.import_thunderstore_url(mod_frame))
+
+        self.import_url_vers_box = customtkinter.CTkEntry(self.url_import_frame,width=130,height=10,placeholder_text="Version (Optional)")
+        self.import_url_vers_box.grid(row=0,column=1,padx=3,sticky='nsew')
+        self.import_url_vers_box.bind("<Return>",lambda mod_frame=self.thunderstore_mod_frame: self.import_thunderstore_url(mod_frame))
+
+        self.import_from_url = customtkinter.CTkButton(self.url_import_frame,text="Download",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=lambda mod_frame = self.thunderstore_mod_frame: self.import_thunderstore_url(mod_frame),border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
+        self.import_from_url.grid(row=0,column=2,padx=3,sticky='nsew')
+
+        self.check_for_updatesall = customtkinter.CTkButton(self.url_import_frame,text="Scan for Updates",fg_color=PBLC_Colors.button("main"),hover_color=PBLC_Colors.button("hover"),command=self.check_for_updates_all,border_color=PBLC_Colors.button("outline"),border_width=PBLC_Colors.button("outline_size"))
+        self.check_for_updatesall.grid(row=0,column=3,padx=3,sticky='nsew')
+
+        return
+
     def drawPBLCUI(self,default_frame="Home",loader=True,modpack=None):
         ## Cleaning menu
         logMan.new(f"Loading {modpack}")
