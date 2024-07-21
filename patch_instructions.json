@@ -125,7 +125,6 @@
                 "url_add_mod|ShaosilGaming|GeneralImprovements|1.3.0",
                 "url_add_mod|SimonTendo|LCGoldScrapMod|1.7.1",
                 "url_add_mod|TestAccount666|ShipWindows|1.5.2",
-                "url_add_mod|Toybox|LittleCompany|1.3.3",
                 "delete_mod|SweetOnion|LethalSnap",
                 "download_override|1HwhEaJvGv_Wfx-w7D5FqKwg4YVASMKlS|https://www.dropbox.com/scl/fi/tm4tnocqfhxi2iq78y0on/PBLC-v11-Patch-4.zip?rlkey=7lfyt02v84wjk7f4ih33yhiw2&st=33ibmwwm&dl=1",
                 "update_vers|0.0.4"
@@ -171,6 +170,11 @@
                 "delete_mod|Toybox|LittleCompany",
                 "download_override|1AbID0UDoRCWokBIAT4wDaXPwR2PUrZBq|https://www.dropbox.com/scl/fi/helakhy0fbt5w35hhotj4/PBLC-v11-Patch-5.zip?rlkey=mltnudwtfl0efpye47eersrti&st=de3uc1f2&dl=1",
                 "update_vers|0.0.5"
+            ],
+            "0.0.6": [
+                "delete_mod|Toybox|LittleCompany",
+                "update_vers|0.0.6"
+
             ]
         }
     }
