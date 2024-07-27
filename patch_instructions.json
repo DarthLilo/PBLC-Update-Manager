@@ -213,6 +213,21 @@
                 "url_add_mod|YaBoiDucki|men_stalker|1.6.1",
                 "download_override|1NWzkMOObvelcJaFSNwBFyT8Jow1LtLJU|https://www.dropbox.com/scl/fi/9s8820dxfsdatmzhfbzbg/PBLC-v11-Patch-8.zip?rlkey=sf5u0gi4lnq94xhcnsgqjc61r&st=n3n8jf1j&dl=1",
                 "update_vers|0.0.8"
+            ],
+            "0.0.9": [
+                "url_add_mod|DarthLilo|LilosScrapExtension|1.2.0",
+                "url_add_mod|DemonMae|oneshotinteriors|1.0.2",
+                "url_add_mod|DemonMae|oneshotmoons|1.7.1",
+                "url_add_mod|Dev1A3|LethalFixes|1.1.8",
+                "url_add_mod|DiggC|CruiserImproved|1.3.0",
+                "url_add_mod|IAmBatby|LethalLevelLoader|1.3.7",
+                "url_add_mod|MegaPiggy|EnumUtils|1.0.5",
+                "url_add_mod|ShaosilGaming|GeneralImprovements|1.3.5",
+                "url_add_mod|TestAccount666|ShipWindows|1.5.3",
+                "url_add_mod|XuXiaolan|CodeRebirth|0.2.6",
+                "url_add_mod|YaBoiDucki|men_stalker|2.0.0",
+                "download_override|1WoV0kAIdYJbnwhVMv88jK5m5mNHOJCaj|https://www.dropbox.com/scl/fi/a2riyh5dgyzfhvmimh0d5/PBLC-v11-Patch-9.zip?rlkey=vpno9aq91231dnhnx8l53n7lr&st=z5lfct76&dl=1",
+                "update_vers|0.0.9"
             ]
         }
     }
