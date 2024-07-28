@@ -236,6 +236,11 @@
                 "url_add_mod|YaBoiDucki|men_stalker|2.1.0",
                 "url_add_mod|Yorimor|CustomStoryLogs|1.4.5",
                 "update_vers|0.1.0"
+            ],
+            "0.1.1": [
+                "url_add_mod|DemonMae|oneshotinteriors|1.0.3",
+                "url_add_mod|Entity378|SellBodiesFixed|1.9.2",
+                "update_vers|0.1.1"
             ]
         }
     }
