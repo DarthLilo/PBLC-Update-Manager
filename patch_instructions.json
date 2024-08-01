@@ -273,6 +273,10 @@
                 "url_add_mod|XuXiaolan|CodeRebirth|0.4.0",
                 "download_override|1JEXGMHoMt4mW7mHJJ4rHO4FHPqR4DqDD|https://www.dropbox.com/scl/fi/6krb2jkjv7vjcs1ypto78/PBLC-v11-Patch-15.zip?rlkey=9f726zyc1clmuu2m2bzqwt4sb&st=ugb8bfhm&dl=1",
                 "update_vers|0.1.5"
+            ],
+            "0.1.6": [
+                "download_override|14bCnTu8f7ZGEz6p6sn_xFUZ6zlgVwXCu|https://www.dropbox.com/scl/fi/k7viptqj5jhg9wti39i8k/PBLC-v11-Patch-16.zip?rlkey=qm2ydftbzx2t63j4wm8wmp74i&st=gb8dt8ey&dl=1",
+                "update_vers|0.1.6"
             ]
         }
     }
