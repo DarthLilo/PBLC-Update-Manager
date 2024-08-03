@@ -277,6 +277,14 @@
             "0.1.6": [
                 "download_override|14bCnTu8f7ZGEz6p6sn_xFUZ6zlgVwXCu|https://www.dropbox.com/scl/fi/k7viptqj5jhg9wti39i8k/PBLC-v11-Patch-16.zip?rlkey=qm2ydftbzx2t63j4wm8wmp74i&st=gb8dt8ey&dl=1",
                 "update_vers|0.1.6"
+            ],
+            "0.1.7": [
+                "url_add_mod|ButteryStancakes|ButteryFixes|1.6.0",
+                "url_add_mod|Gemumoddo|LethalEmotesAPI|1.13.3",
+                "url_add_mod|mattymatty|Matty_Fixes_Experimental|1.1.16",
+                "url_add_mod|TestAccount666|ShipWindows|1.7.0",
+                "url_add_mod|XuXiaolan|CodeRebirth|0.4.2",
+                "update_vers|0.1.7"
             ]
         }
     }
