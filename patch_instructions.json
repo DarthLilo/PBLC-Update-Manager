@@ -285,6 +285,10 @@
                 "url_add_mod|TestAccount666|ShipWindows|1.7.0",
                 "url_add_mod|XuXiaolan|CodeRebirth|0.4.2",
                 "update_vers|0.1.7"
+            ],
+            "0.1.8": [
+                "delete_mod|YaBoiDucki|men_stalker",
+                "update_vers|0.1.8"
             ]
         }
     }
