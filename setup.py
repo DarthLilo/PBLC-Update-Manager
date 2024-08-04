@@ -10,7 +10,8 @@ build_options = {'packages': [],
 base = 'Win32GUI'
 
 executables = [
-    Executable('main.py', base=base, target_name = 'PBLC Update Manager',icon='assets/pill_bottle.ico')
+    Executable('main.py', base=base, target_name = 'PBLC Update Manager',icon='assets/pill_bottle.ico'),
+    Executable('main.py', base="console", target_name = 'PBLC Update Manager (CONSOLE)',icon='assets/pill_bottle.ico')
 ]
 
 setup(name='PBLC Update Manager',
