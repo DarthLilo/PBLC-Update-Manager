@@ -1,6 +1,6 @@
 {
     "release" : {
-        "name":"PBLC","description":"Leightweight version of our modpack for v60!","version": "12.0.0","release_date":"8-17-2024", "needs_reinstall":true, "starting_version":"12.0.0", "pblc_min":"0.3.6"
+        "name":"PBLC","description":"Full modded pack for v62 of Lethal Company","version": "13.0.0","release_date":"8-23-2024", "needs_reinstall":true, "starting_version":"13.0.0", "pblc_min":"0.3.6"
     },
     "beta" : {
         "name":"PBLC","description":"Alternate version of our Lethal Company modpack with support for v55! (Almost no bugs now :blush:)","version": "11.0.0","release_date":"7-02-2024", "needs_reinstall":true, "starting_version":"11.0.0", "pblc_min":"0.3.5", "beta_version": "0.0.3"
