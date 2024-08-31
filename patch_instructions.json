@@ -299,5 +299,54 @@
                 "update_vers|0.1.9"
             ]
         }
+    },
+    "13.0.0": {
+        "release": {
+            "0.0.1": [
+                "url_add_mod|4902|Cruiser_Additions|1.2.2",
+                "url_add_mod|Alice|DungeonGenerationPlus|1.1.1",
+                "url_add_mod|AllToasters|SpectateEnemies|2.6.0",
+                "url_add_mod|bctix|FPSCounter|1.4.0",
+                "url_add_mod|Booos|StupidAssKitty|1.0.7",
+                "url_add_mod|ButteryStancakes|ButteryFixes|1.8.1",
+                "url_add_mod|ButteryStancakes|MeleeFixes|1.3.1",
+                "url_add_mod|DarthLilo|BabyManeater|1.0.1",
+                "url_add_mod|DarthLilo|LilosScrapExtension|1.4.0",
+                "url_add_mod|DarthLilo|SkinnedRendererPatch|1.1.3",
+                "url_add_mod|DemonMae|oneshotinteriors|1.2.4",
+                "url_add_mod|DemonMae|oneshotmoons|1.8.1",
+                "url_add_mod|Dev1A3|LethalFixes|1.2.0",
+                "url_add_mod|DiFFoZ|HarmonyXTranspilerFix|1.1.0",
+                "url_add_mod|EliteMasterEric|Coroner|2.1.0",
+                "url_add_mod|Entity378|SellBodiesFixed|1.10.1",
+                "url_add_mod|FlipMods|HotbarPlus|1.7.5",
+                "url_add_mod|FlipMods|ObjectVolumeController|1.1.1",
+                "url_add_mod|FlipMods|TooManyEmotes|2.2.4",
+                "url_add_mod|FlipMods|TooManyEmotesScrap|1.0.7",
+                "url_add_mod|fumiko|CullFactory|1.3.2",
+                "url_add_mod|Gemumoddo|LethalEmotesAPI|1.15.4",
+                "url_add_mod|giosuel|Imperium|0.2.6",
+                "url_add_mod|Hamunii|DevTools|1.1.1",
+                "url_add_mod|Hamunii|TestingLib|1.2.1",
+                "url_add_mod|LethalCompanyModding|LCUltrawide_Community|1.1.2",
+                "url_add_mod|LogicError|NightmareFoxy|1.0.11",
+                "url_add_mod|Magic_Wesley|WesleysInteriors|1.3.5",
+                "url_add_mod|mattymatty|Matty_Fixes_Experimental|1.1.17",
+                "url_add_mod|megumin|LethalDevMode|1.0.0",
+                "url_add_mod|mrov|LightsOut|0.1.3",
+                "url_add_mod|mrov|WeatherRegistry|0.1.22",
+                "url_add_mod|projectbots|MoonUnlockUnhide|1.2.1",
+                "url_add_mod|ShaosilGaming|GeneralImprovements|1.3.8",
+                "url_add_mod|SillySquad|Selenes_Choice|2.0.1",
+                "url_add_mod|TestAccount666|TestAccountCore|1.8.2",
+                "url_add_mod|xilophor|LethalNetworkAPI|3.2.1",
+                "url_add_mod|XuXiaolan|CodeRebirth|0.5.1",
+                "url_add_mod|XuXiaolan|ImmersiveScrap|1.3.0",
+                "url_add_mod|Zaggy1024|OpenBodyCams|2.3.0",
+                "delete_mod|IntegrityChaos|Diversity",
+                "download_override|1-ObUP-jYj3omdppiFl4E5Y2HLCgAtqj4|https://www.dropbox.com/scl/fi/qy4e0rigwv2gngxf094w5/PBLC-v13-Patch-1.zip?rlkey=9i00zmro4scx114srqa4d681b&st=zw31mjiq&dl=1",
+                "update_vers|0.0.1"
+            ]
+        }
     }
 }
