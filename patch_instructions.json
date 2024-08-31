@@ -347,6 +347,14 @@
                 "delete_mod|IntegrityChaos|Diversity",
                 "download_override|1-ObUP-jYj3omdppiFl4E5Y2HLCgAtqj4|https://www.dropbox.com/scl/fi/qy4e0rigwv2gngxf094w5/PBLC-v13-Patch-1.zip?rlkey=9i00zmro4scx114srqa4d681b&st=zw31mjiq&dl=1",
                 "update_vers|0.0.1"
+            ],
+            "0.0.2": [
+                "delete_mod|giosuel|Imperium",
+                "delete_mod|Hamunii|DevTools",
+                "delete_mod|Hamunii|TestingLib",
+                "delete_mod|megumin|LethalDevMode",
+                "delete_mod|projectbots|MoonUnlockUnhide",
+                "update_vers|0.0.2"
             ]
         }
     }
