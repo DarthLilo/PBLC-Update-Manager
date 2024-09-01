@@ -357,6 +357,20 @@
                 "url_add_mod|FlipMods|TooManyEmotes|2.2.5",
                 "url_add_mod|XuXiaolan|CodeRebirth|0.5.2",
                 "update_vers|0.0.3"
+            ],
+            "0.0.4": [
+                "url_add_mod|DiFFoZ|LethalPerformance|0.3.5",
+                "url_add_mod|fumiko|CullFactory|1.3.4",
+                "url_add_mod|jaspercreations|Scopophobia|1.1.5",
+                "url_add_mod|Magic_Wesley|WesleysInteriors|1.3.7",
+                "url_add_mod|taffyko|BetterSprayPaint|2.0.7",
+                "delete_mod|giosuel|Imperium",
+                "delete_mod|Hamunii|DevTools",
+                "delete_mod|Hamunii|TestingLib",
+                "delete_mod|megumin|LethalDevMode",
+                "delete_mod|projectbots|MoonUnlockUnhide",
+                "download_override|1i4Z2K5rB-NkfmtG1xQFUdKEjwITGb9kw|https://www.dropbox.com/scl/fi/whj9gfbrc86kunhuueev4/PBLC-v13-Patch-4.zip?rlkey=fphmdo3sg252xhl6dqnj9jgiw&st=s4nrr79b&dl=1",
+                "update_vers|0.0.4"
             ]
         }
     }
