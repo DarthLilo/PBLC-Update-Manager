@@ -49,6 +49,6 @@ def compare_installs(install1,install2):
 
 
 my_lethal = "E:\\Program Files (x86)\\Steam\\steamapps\\common\\Lethal Company\\BepInEx"
-exo_lethal = "E:\\Program Files (x86)\\Steam\\steamapps\\common\\Lethal Company\\BepInEx-EXO"
+exo_lethal = "C:\\Users\\darth\\Downloads\\BepInEx(1)\\BepInEx"
 
 compare_installs(my_lethal,exo_lethal)
