@@ -351,6 +351,11 @@
                 "delete_mod|megumin|LethalDevMode",
                 "delete_mod|projectbots|MoonUnlockUnhide",
                 "update_vers|0.0.2"
+            ],
+            "0.0.3": [
+                "url_add_mod|Bibendi|AEIOUCompany|1.3.7",
+                "url_add_mod|FlipMods|TooManyEmotes|2.2.5",
+                "url_add_mod|XuXiaolan|CodeRebirth|0.5.2"
             ]
         }
     }
