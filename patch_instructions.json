@@ -371,6 +371,10 @@
                 "delete_mod|projectbots|MoonUnlockUnhide",
                 "download_override|1i4Z2K5rB-NkfmtG1xQFUdKEjwITGb9kw|https://www.dropbox.com/scl/fi/whj9gfbrc86kunhuueev4/PBLC-v13-Patch-4.zip?rlkey=fphmdo3sg252xhl6dqnj9jgiw&st=s4nrr79b&dl=1",
                 "update_vers|0.0.4"
+            ],
+            "0.0.5": [
+                "download_override|1KPxUDHn1DuIrm1LFFfdiRBfrHTme-k3r|https://www.dropbox.com/scl/fi/ffr6e9jp7chxug3kf73q7/PBLC-v13-Patch-5.zip?rlkey=eyso3gtj6ul9v97glr99d1irq&st=9izrkzqe&dl=1",
+                "update_vers|0.0.5"
             ]
         }
     }
