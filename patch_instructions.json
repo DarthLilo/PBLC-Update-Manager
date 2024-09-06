@@ -375,6 +375,37 @@
             "0.0.5": [
                 "download_override|1KPxUDHn1DuIrm1LFFfdiRBfrHTme-k3r|https://www.dropbox.com/scl/fi/ffr6e9jp7chxug3kf73q7/PBLC-v13-Patch-5.zip?rlkey=eyso3gtj6ul9v97glr99d1irq&st=9izrkzqe&dl=1",
                 "update_vers|0.0.5"
+            ],
+            "0.0.6": [
+                "url_add_mod|Alice|DungeonGenerationPlus|1.1.2",
+                "url_add_mod|AtomicStudio|Moved_Magnet_Switch|1.1.0",
+                "url_add_mod|AudioKnight|StarlancerAIFix|3.8.1",
+                "url_add_mod|ButteryStancakes|ButteryFixes|1.9.0",
+                "url_add_mod|ButteryStancakes|Chameleon|1.0.1",
+                "url_add_mod|darmuh|suitsTerminal|1.4.4",
+                "url_add_mod|DarthLilo|BabyManeater|1.1.1",
+                "url_add_mod|DarthLilo|WhoVoted|1.0.0",
+                "url_add_mod|DiggC|CruiserImproved|1.4.1",
+                "url_add_mod|explodingMods|LethalMoonUnlocks|2.1.8",
+                "url_add_mod|FlipMods|HotbarPlus|1.7.6",
+                "url_add_mod|FlipMods|TooManyEmotes|2.2.6",
+                "url_add_mod|fumiko|CullFactory|1.3.8",
+                "url_add_mod|ironbean|MeteorShowerChance|1.1.1",
+                "url_add_mod|LethalCompanyModding|Yukieji_UnityExplorer|4.12.1",
+                "url_add_mod|Magic_Wesley|WesleysInteriors|1.3.8",
+                "url_add_mod|mattymatty|BagConfig|0.0.4",
+                "url_add_mod|mattymatty|Matty_Fixes_Experimental|1.1.19",
+                "url_add_mod|Monkeytype|HideChat|1.0.0",
+                "url_add_mod|mrov|WeatherRegistry|0.1.23",
+                "url_add_mod|ShaosilGaming|GeneralImprovements|1.4.3",
+                "url_add_mod|taffyko|BetterSprayPaint|2.0.8",
+                "url_add_mod|WhiteSpike|Interactive_Terminal_API|1.1.3",
+                "url_add_mod|Zaggy1024|OpenBodyCams|2.3.1",
+                "delete_mod|darmuh|ghostCodes",
+                "delete_mod|LC_Into_the_Darkness_Team|CompanyMines",
+                "delete_mod|SillySquad|Selenes_Choice",
+                "download_override|13mbyTxweGZd6fWGqlXdAwGdtQXjl5UxZ|https://www.dropbox.com/scl/fi/k5j3iu3mutfzn057n29r4/PBLC-v13-Patch-6.zip?rlkey=accko4cmmre1uagejwui0ouop&st=h5qaocn0&dl=1",
+                "update_vers|0.0.6"
             ]
         }
     }
