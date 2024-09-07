@@ -413,6 +413,10 @@
             "0.0.1": [
                 "download_override|1tIlWwRUDGr7V6_H4yN5hd7v01MZbVNMk|https://www.dropbox.com/scl/fi/1syx51i68edj19ckflj30/PBLC-v14-Patch-1.zip?rlkey=lwtnp7dtmp7dbd45ngs2h58y5&st=b18n24t3&dl=1",
                 "update_vers|0.0.1"
+            ],
+            "0.0.2": [
+                "url_add_mod|BMX|LobbyCompatibility|1.2.0",
+                "update_vers|0.0.2"
             ]
         }
     }
