@@ -452,6 +452,15 @@
                 "delete_mod|BMX|LobbyCompatibility",
                 "download_override|1tjWd95ZrfIQ6uYboEsOKhDryE9BMeeGF|https://www.dropbox.com/scl/fi/24svclpggo3mhpa0jlyyk/PBLC-v14-Patch-3.zip?rlkey=rlj5vkpfzk915hd8kht9xvica&st=a6p75u0r&dl=1",
                 "update_vers|0.0.1"
+            ],
+            "0.0.2": [
+                "url_add_mod|Dev1A3|LethalFixes|1.2.2",
+                "url_add_mod|FlipMods|TooManyEmotes|2.2.7",
+                "url_add_mod|Magic_Wesley|WesleysInteriors|1.3.13",
+                "url_add_mod|mattymatty|Matty_Fixes_Experimental|1.1.24",
+                "url_add_mod|xilophor|LethalNetworkAPI|3.3.1",
+                "download_override|1IYQCXopwQoAy-SlH0KNMsa7E_vA9b5WV|https://www.dropbox.com/scl/fi/yd10nj04hrj47vxrue07a/PBLC-v15-Patch-2.zip?rlkey=9g3c0o36muo888ui92to1vmeh&st=3rzyagz3&dl=1",
+                "update_vers|0.0.2"
             ]
         }
     }
