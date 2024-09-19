@@ -461,6 +461,19 @@
                 "url_add_mod|xilophor|LethalNetworkAPI|3.3.1",
                 "download_override|1IYQCXopwQoAy-SlH0KNMsa7E_vA9b5WV|https://www.dropbox.com/scl/fi/yd10nj04hrj47vxrue07a/PBLC-v15-Patch-2.zip?rlkey=9g3c0o36muo888ui92to1vmeh&st=3rzyagz3&dl=1",
                 "update_vers|0.0.2"
+            ],
+            "0.0.3": [
+                "url_add_mod|AudioKnight|StarlancerAIFix|3.8.3",
+                "url_add_mod|ButteryStancakes|ButteryFixes|1.10.2",
+                "url_add_mod|DarthLilo|LevelMusicLib|1.0.2",
+                "url_add_mod|FlipMods|TooManyEmotesScrap|1.0.8",
+                "url_add_mod|fumiko|CullFactory|1.3.15",
+                "url_add_mod|Magic_Wesley|WesleysInteriors|1.3.14",
+                "url_add_mod|mattymatty|AdditionalNetworking_Experimental|2.1.1",
+                "url_add_mod|mrov|WeatherRegistry|0.1.25",
+                "url_add_mod|Zehs|SellMyScrap|1.6.2",
+                "download_override|1YWN_IZDNxKLIwAdsvsUerZrN5qM8BLD_|https://www.dropbox.com/scl/fi/g53jwh620yorhh8mkjcl6/PBLC-v15-Patch-3.zip?rlkey=ug73yvfgsxxjlsp3r4v9yimr9&st=ywz2cesz&dl=1",
+                "update_vers|0.0.3"
             ]
         }
     }
