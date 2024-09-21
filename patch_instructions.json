@@ -486,6 +486,18 @@
             "0.0.2": [
                 "download_override|1b1uNx_RGc5ukez7UVDA9r-8aUeEjEDXw|https://www.dropbox.com/scl/fi/usc0gxg2o57cp6lrr7wkj/PBLC-v16-Patch-1.zip?rlkey=yyp4k96vfvv2wxzsqkfc8ky3i&st=t81f4hph&dl=1",
                 "update_vers|0.0.2"
+            ],
+            "0.0.3": [
+                "url_add_mod|ButteryStancakes|EnemySoundFixes|1.5.10",
+                "url_add_mod|darmuh|darmuhsTerminalStuff|3.5.10",
+                "url_add_mod|JacobG5|JLL|1.5.2",
+                "url_add_mod|Magic_Wesley|Asteroid14|2.0.5",
+                "url_add_mod|Rozebud|FOV_Adjust|1.1.1",
+                "url_add_mod|WhiteSpike|Scrap_Insurance|1.0.2",
+                "url_add_mod|Zaggy1024|OpenBodyCams|2.4.2",
+                "delete_mod|LethalCompanyModding|UnityDebuggerAssistant",
+                "download_override|1cgSPup7Mv8zo7SZi_E-5qz90qBuJqFko|https://www.dropbox.com/scl/fi/8wqatv6cpop9fz41c6w1d/PBLC-v16-Patch-3.zip?rlkey=isruccdacp9xsqsbs9jgtoxwa&st=q4mmx1w4&dl=1",
+                "update_vers|0.0.3"
             ]
         }
     }
