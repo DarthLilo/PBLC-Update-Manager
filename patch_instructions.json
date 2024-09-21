@@ -482,6 +482,10 @@
             "0.0.1": [
                 "url_add_mod|Zaggy1024|OpenBodyCams|2.4.1",
                 "update_vers|0.0.1"
+            ],
+            "0.0.2": [
+                "download_override|1b1uNx_RGc5ukez7UVDA9r-8aUeEjEDXw|https://www.dropbox.com/scl/fi/usc0gxg2o57cp6lrr7wkj/PBLC-v16-Patch-1.zip?rlkey=yyp4k96vfvv2wxzsqkfc8ky3i&st=t81f4hph&dl=1",
+                "update_vers|0.0.2"
             ]
         }
     }
