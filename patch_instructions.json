@@ -476,5 +476,13 @@
                 "update_vers|0.0.3"
             ]
         }
+    },
+    "16.0.0": {
+        "release": {
+            "0.0.1": [
+                "url_add_mod|Zaggy1024|OpenBodyCams|2.4.1",
+                "update_vers|0.0.1"
+            ]
+        }
     }
 }
