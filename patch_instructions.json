@@ -498,6 +498,13 @@
                 "delete_mod|LethalCompanyModding|UnityDebuggerAssistant",
                 "download_override|1cgSPup7Mv8zo7SZi_E-5qz90qBuJqFko|https://www.dropbox.com/scl/fi/8wqatv6cpop9fz41c6w1d/PBLC-v16-Patch-3.zip?rlkey=isruccdacp9xsqsbs9jgtoxwa&st=q4mmx1w4&dl=1",
                 "update_vers|0.0.3"
+            ],
+            "0.0.4": [
+                "url_add_mod|NickNubes|Scrap_Diver|0.1.0",
+                "url_add_mod|svenston|OSRSJester|0.1.0",
+                "url_add_mod|tav|lethalchimp|0.1.2",
+                "delete_mod|darmuh|darmuhsTerminalStuff",
+                "update_vers|0.0.4"
             ]
         }
     }
