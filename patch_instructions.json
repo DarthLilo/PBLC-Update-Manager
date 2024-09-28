@@ -489,7 +489,6 @@
             ],
             "0.0.3": [
                 "url_add_mod|ButteryStancakes|EnemySoundFixes|1.5.10",
-                "url_add_mod|darmuh|darmuhsTerminalStuff|3.5.10",
                 "url_add_mod|JacobG5|JLL|1.5.2",
                 "url_add_mod|Magic_Wesley|Asteroid14|2.0.5",
                 "url_add_mod|Rozebud|FOV_Adjust|1.1.1",
@@ -505,6 +504,26 @@
                 "url_add_mod|tav|lethalchimp|0.1.2",
                 "delete_mod|darmuh|darmuhsTerminalStuff",
                 "update_vers|0.0.4"
+            ],
+            "0.0.5": [
+                "url_add_mod|AinaVT|LethalConfig|1.4.3",
+                "url_add_mod|AtomicStudio|Moved_Magnet_Switch|1.2.0",
+                "url_add_mod|darmuh|OpenLib|0.2.1",
+                "url_add_mod|Dev1A3|LethalFixes|1.2.3",
+                "url_add_mod|Gemumoddo|LethalEmotesAPI|1.15.5",
+                "url_add_mod|Hamunii|AutoHookGenPatcher|1.0.4",
+                "url_add_mod|Hamunii|DetourContext_Dispose_Fix|1.0.3",
+                "url_add_mod|JacobG5|JLL|1.6.0",
+                "url_add_mod|kRYstall9|FastSwitchPlayerViewInRadar|1.3.2",
+                "url_add_mod|Magic_Wesley|WesleysInteriors|1.4.3",
+                "url_add_mod|qwbarch|Mirage|1.9.2",
+                "url_add_mod|qwbarch|MirageCore|1.0.1",
+                "url_add_mod|qwbarch|NAudioLame|2.1.1",
+                "url_add_mod|willis81808|LethalSettings|1.4.0",
+                "url_add_mod|Zaggy1024|OpenBodyCams|2.4.3",
+                "url_add_mod|Zehs|SellMyScrap|1.7.1",
+                "download_override|1OK8weh3BLxM5zEvYU0_fnCvXXdOQzP_m|https://www.dropbox.com/scl/fi/t8uooich0yubsu1dtgaoj/PBLC-v16-Patch-5.zip?rlkey=5yvizxe8eggcabophuujuvypy&st=5sskrols&dl=1",
+                "update_vers|0.0.5"
             ]
         }
     }
