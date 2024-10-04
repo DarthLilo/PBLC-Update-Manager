@@ -1,8 +1,0 @@
-{
-    "release" : {
-        "name":"PBLC","description":"Version 10 of our Lethal Company modpack with multiple new moons and a massive launcher update!","version": "10.0.0","release_date":"6-09-2024", "needs_reinstall":true, "starting_version":"10.0.0", "pblc_min":"0.3.0"
-    },
-    "beta" : {
-        "name":"PBLC","description":"Alternate version of our Lethal Company modpack with support for v55! (Almost no bugs now :blush:)","version": "11.0.0","release_date":"7-02-2024", "needs_reinstall":true, "starting_version":"11.0.0", "pblc_min":"0.3.5", "beta_version": "0.0.3"
-    }
-}
