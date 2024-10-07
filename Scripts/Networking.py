@@ -51,5 +51,5 @@ class Networking:
                 download_package.write(chunk)
                 chunk_count += len(chunk)
                 #download_percentage = Maths.DownloadPercent(chunk_count,total_size_in_bytes,True)
-                if print_length: Logging.New(f"Downloading... [{chunk_count}]")
+                if print_length: Logging.New(f"Downloading... [{Maths.ConvertSize(chunk_count)}]")
                     

@@ -70,10 +70,16 @@ class Thunderstore:
             return
         
         def Download(url):
+            
+            if not os.path.exists(Cache.SelectedModpack):
+                Logging.New("Please select a modpack first!",'error')
+                return
+
             author, mod, mod_version = Thunderstore.Extract(url)
             cache_package = Cache.Get(author,mod,mod_version)
             
             package = Thunderstore.DownloadPackage(author,mod,cache_package['version_number'],f"{Cache.SelectedModpack}/BepInEx/plugins")
             package = Filetree.DecompressZip(package)
+            Filetree.GetFiles(package)
 
-            return
+            return package

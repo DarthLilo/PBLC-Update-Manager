@@ -1,4 +1,5 @@
-import winreg
+import winreg, traceback, json
+from .Logging import Logging
 
 class Util:
     def ReadReg(ep, p = r"", k = ''):
@@ -8,5 +9,16 @@ class Util:
             if key:
                 winreg.CloseKey(key)
             return value[0]
+        except FileNotFoundError as e:
+            Logging.New(traceback.format_exc(),'error')
+            return "Check32Bit"
         except Exception as e:
+            Logging.New(traceback.format_exc(),'error')
             return None
+        
+    def OpenJson(path):
+        with open(path, 'r') as json_opener:
+            json_data = json_opener.read()
+        json_data = json.loads(json_data)
+
+        return json_data
