@@ -12,7 +12,7 @@ class Cache():
 
     def __init__(self,CacheFolder):
 
-        Logging.New("Starting caching system...")
+        Logging.New("Starting caching system...",'startup')
         Cache.CacheFolder = CacheFolder
         Cache.LethalCompanyPackageIndex = f"{CacheFolder}/lethal_company_package_index.json"
         Cache.LethalPackageCache = f"{CacheFolder}/lethal_package_cache.pk1"

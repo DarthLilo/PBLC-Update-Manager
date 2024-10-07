@@ -8,7 +8,7 @@ class Config():
 
     def __init__(self, DataFolder):
         Config.ConfigFilePath = f"{DataFolder}/config.ini"
-        Logging.New("Starting config engine...")
+        Logging.New("Starting config system...", 'startup')
 
         Config.CheckForConfig() # Locate config
         Config.Load() # Load config
