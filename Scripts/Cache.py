@@ -9,6 +9,7 @@ class Cache():
     LethalPackageCache = ""
     Packages = {}
     SelectedModpack = ""
+    LoadedMods = {}
 
     def __init__(self,CacheFolder):
 

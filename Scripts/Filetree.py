@@ -1,6 +1,8 @@
-import os, zipfile, winreg, vdf
+import os.path
+import os, zipfile, winreg, vdf, shutil
 from .Logging import Logging
 from .Util import Util
+from .Cache import Cache
 
 class Filetree():
 
@@ -37,23 +39,44 @@ class Filetree():
         os.remove(zip)
         return destination
     
-    def GetFiles(path):
-        for folder, _, files in os.walk(path):
+    def SortFiles(folder):
+
+        package_files = []
+        special_folders = ["plugins","patchers","core","config"]
+
+        for root, dirs, files in os.walk(folder):
             for file in files:
-                absolute_path = os.path.join(folder,file)
-                relative_path = os.path.relpath(absolute_path,os.path.dirname(path))
-                Logging.New(relative_path)
-
-    def LocateLethalCompany():
-        custom_lethal_path = ""
-
-        Logging.New("Locating Lethal Company path...")
+                rel_path = os.path.relpath(os.path.join(root,file),folder)
+                package_files.append(rel_path)
+        
+        for sub_dir in os.listdir(folder):
+            if os.path.isdir(f"{folder}/{sub_dir}"):
+                if sub_dir == "BepInEx":
+                    shutil.copytree(f"{folder}/{sub_dir}",f"{Cache.SelectedModpack}/BepInEx",dirs_exist_ok=True)
+                    shutil.rmtree(f"{folder}/{sub_dir}")
+                    continue
+                for tag in special_folders:
+                    if sub_dir == tag:
+                        shutil.copytree(f"{folder}/{sub_dir}",f"{Cache.SelectedModpack}/BepInEx/{tag}",dirs_exist_ok=True)
+                        shutil.rmtree(f"{folder}/{sub_dir}")
+                        break
+        
+        return package_files
+    
+    def LocateSteam():
         steam_install_path = str(Util.ReadReg(ep = winreg.HKEY_LOCAL_MACHINE, p = r"SOFTWARE\\Wow6432Node\\Valve\\Steam", k = 'InstallPath')) # Locating 64 bit registry entry
 
         if steam_install_path == "Check32Bit":
             steam_install_path = str(Util.ReadReg(ep = winreg.HKEY_LOCAL_MACHINE, p = r"SOFTWARE\\Valve\\Steam", k = 'InstallPath')) # Swapping to 32 bit registry entry
 
-        steamapps = steam_install_path+"\\steamapps"
+        return steam_install_path
+
+    def LocateLethalCompany():
+        custom_lethal_path = ""
+
+        Logging.New("Locating Lethal Company path...")
+
+        steamapps = Filetree.LocateSteam()+"\\steamapps"
         library_folders = steamapps+"\\libraryfolders.vdf"
         libdata = vdf.load(open(library_folders))
         lethal_company_steamid = "1966720"

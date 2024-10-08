@@ -22,3 +22,7 @@ class Util:
         json_data = json.loads(json_data)
 
         return json_data
+    
+    def WriteJson(path,data):
+        with open(path, "w") as json_writer:
+            json_writer.write(json.dumps(data,indent=4))

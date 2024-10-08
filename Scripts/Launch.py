@@ -7,12 +7,14 @@ import os, shutil, subprocess
 class Launch:
 
     LethalCompanyPath = ""
+    SteamFolder = ""
 
-    def __init__(self, LethalCompanyFolder):
+    def __init__(self, LethalCompanyFolder,SteamFolder):
 
         Logging.New("Starting launch system...",'startup')
 
         Launch.LethalCompanyPath = LethalCompanyFolder
+        Launch.SteamFolder = SteamFolder
 
         return
     
@@ -27,12 +29,12 @@ class Launch:
         if not os.path.exists(modpack_path):
             Logging.New("Please select a modpack to launch!",'error')
             return
-        lethal_executable = f"{Launch.LethalCompanyPath}\\Lethal Company.exe"
         Launch.Setup()
         Logging.New(f"Launching modpack {author}-{name}")
 
         launch_command = [
-            lethal_executable,
+            f"{Launch.SteamFolder}/Steam.exe",
+            '-applaunch', '1966720',
             '--doorstop-enable', 'true',
             '--doorstop-target', f"{modpack_path}/BepInEx/core/BepInEx.Preloader.dll"
         ]

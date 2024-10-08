@@ -1,4 +1,4 @@
-import sys, os, json
+import sys, os, json, time
 
 from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton
@@ -29,18 +29,17 @@ Scripts.Config(ProgramDataFolder)
 LethalCompanyFolder = Scripts.Filetree.LocateLethalCompany()
 Scripts.Cache(CacheFolder)
 Scripts.Modpacks(ModpacksFolder)
-Scripts.Launch(LethalCompanyFolder)
+Scripts.Launch(LethalCompanyFolder,Scripts.Filetree.LocateSteam())
 
 #########################################################################
 
 Scripts.Modpacks.New("DarthLilo","teehee")
 Scripts.Modpacks.Select("DarthLilo","teehee")
-#Scripts.Thunderstore.Download("https://thunderstore.io/c/lethal-company/p/DarthLilo/MagnetLock/")
-#Scripts.Thunderstore.Download("https://thunderstore.io/c/lethal-company/p/AinaVT/LethalConfig/")
-#Scripts.Thunderstore.Download("https://thunderstore.io/c/lethal-company/p/DarthLilo/ItemWeights/")
-Scripts.Thunderstore.Download("https://thunderstore.io/c/lethal-company/p/Rune580/LethalCompany_InputUtils/")
-
-#Scripts.Launch.Start("DarthLilo","teehee")
+Scripts.Modpacks.Mods.Add("https://thunderstore.io/c/lethal-company/p/x753/More_Suits/1.3.3")
+#Scripts.Modpacks.Mods.Add("https://thunderstore.io/c/lethal-company/p/ManiaBania/1000_Quota_Stare/")
+#Scripts.Modpacks.DeleteMod("x753","More_Suits","1.4.3")
+time.sleep(1)
+Scripts.Modpacks.Mods.CheckForUpdates("x753","More_Suits")
 
 class PBLCWindowLaunch(QMainWindow):
     def __init__(self):
