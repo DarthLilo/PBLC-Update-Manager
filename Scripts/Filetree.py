@@ -2,7 +2,6 @@ import os.path
 import os, zipfile, winreg, vdf, shutil
 from .Logging import Logging
 from .Util import Util
-from .Cache import Cache
 
 class Filetree():
 
@@ -39,7 +38,7 @@ class Filetree():
         os.remove(zip)
         return destination
     
-    def SortFiles(folder):
+    def SortFiles(modpack_dir,folder):
 
         package_files = []
         special_folders = ["plugins","patchers","core","config"]
@@ -52,12 +51,12 @@ class Filetree():
         for sub_dir in os.listdir(folder):
             if os.path.isdir(f"{folder}/{sub_dir}"):
                 if sub_dir == "BepInEx":
-                    shutil.copytree(f"{folder}/{sub_dir}",f"{Cache.SelectedModpack}/BepInEx",dirs_exist_ok=True)
+                    shutil.copytree(f"{folder}/{sub_dir}",f"{modpack_dir}/BepInEx",dirs_exist_ok=True)
                     shutil.rmtree(f"{folder}/{sub_dir}")
                     continue
                 for tag in special_folders:
                     if sub_dir == tag:
-                        shutil.copytree(f"{folder}/{sub_dir}",f"{Cache.SelectedModpack}/BepInEx/{tag}",dirs_exist_ok=True)
+                        shutil.copytree(f"{folder}/{sub_dir}",f"{modpack_dir}/BepInEx/{tag}",dirs_exist_ok=True)
                         shutil.rmtree(f"{folder}/{sub_dir}")
                         break
         
@@ -88,3 +87,11 @@ class Filetree():
                 lethal_path = os.path.normpath(f"{cur_lib['path']}/steamapps/common/Lethal Company")
                 Logging.New(f"Located Lethal Company path: {lethal_path}")
                 return lethal_path
+    
+    def DirSize(target_path):
+        total_size = 0
+        for path, dirs, files in os.walk(target_path):
+            for f in files:
+                filepath = os.path.join(path,f)
+                total_size += os.path.getsize(filepath)
+        return total_size

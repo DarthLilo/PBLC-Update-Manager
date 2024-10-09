@@ -74,19 +74,24 @@ class Thunderstore:
             
             if not os.path.exists(Cache.SelectedModpack):
                 Logging.New("Please select a modpack first!",'error')
-                return
+                return "", "", "", {}
             
             if not url:
                 if not author or not mod:
                     Logging.New("Please provide either a URL or mod info!",'error')
-                    return
+                    return "", "", "", {}
             
             if url:
                 author, mod, mod_version = Thunderstore.Extract(url)
 
-            cache_package = Cache.Get(author,mod,mod_version)
+            mod_cache_package = Cache.Get(author,mod,mod_version)
+
+            if Cache.FileCache.IsCached(author,mod,mod_cache_package['version_number']):
+                package = shutil.copy(Cache.FileCache.Get(author,mod,mod_cache_package['version_number']),f"{Cache.SelectedModpack}/BepInEx/plugins/{author}-{mod}-{mod_cache_package['version_number']}.zip")
+            else:
+                package = Thunderstore.DownloadPackage(author,mod,mod_cache_package['version_number'],f"{Cache.SelectedModpack}/BepInEx/plugins")
+                Cache.FileCache.AddMod(package)
             
-            package = Thunderstore.DownloadPackage(author,mod,cache_package['version_number'],f"{Cache.SelectedModpack}/BepInEx/plugins")
             package = Filetree.DecompressZip(package)
 
-            return package, author, mod, cache_package['version_number'], Filetree.SortFiles(package)
+            return package, author, mod, mod_cache_package['version_number'], Filetree.SortFiles(Cache.SelectedModpack,package)
