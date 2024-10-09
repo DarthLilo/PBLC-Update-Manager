@@ -1,12 +1,15 @@
 from .Logging import Logging
 from .Networking import Networking
-import requests, pickle, json, os
+from .Filetree import Filetree
+from .Maths import Maths
+import requests, pickle, json, os, shutil
 
 class Cache():
 
     CacheFolder = ""
     LethalCompanyPackageIndex = ""
     LethalPackageCache = ""
+    ModCache = ""
     Packages = {}
     SelectedModpack = ""
     LoadedMods = {}
@@ -17,6 +20,7 @@ class Cache():
         Cache.CacheFolder = CacheFolder
         Cache.LethalCompanyPackageIndex = f"{CacheFolder}/lethal_company_package_index.json"
         Cache.LethalPackageCache = f"{CacheFolder}/lethal_package_cache.pk1"
+        Cache.ModCache = f"{CacheFolder}/ModCache"
 
         if not os.path.exists(Cache.LethalCompanyPackageIndex):
             Cache.Download()
@@ -28,6 +32,9 @@ class Cache():
 
         else: # Load existing pk1 cache file
             Cache.Packages = Cache.LoadIndex()
+        
+        if not os.path.exists(Cache.ModCache):
+            os.mkdir(Cache.ModCache)
 
         return
     
@@ -83,6 +90,31 @@ class Cache():
             return Cache.Packages.get(key)
         
         return Cache.Packages.get(key)['versions'][0]
-    
 
-                
+    class FileCache():
+
+        def IsCached(author,name,mod_version):
+            return os.path.exists(f"{Cache.ModCache}/{author}-{name}-{mod_version}.zip")
+        
+        def Get(author,name,mod_version):
+            return f"{Cache.ModCache}/{author}-{name}-{mod_version}.zip"
+        
+        def AddMod(path):
+
+            file_name = os.path.basename(path)
+            new_loc = f"{Cache.ModCache}/{file_name}"
+
+            if os.path.exists(new_loc):
+                os.remove(new_loc)
+                Logging.New(f"Cleared old cache for {file_name}")
+            
+            shutil.copy(path,new_loc)
+
+            Logging.New(f"Cached file {file_name}")
+
+            return
+        
+        def Clear():
+            for folder in os.listdir(Cache.ModCache):
+                os.remove(f"{Cache.ModCache}/{folder}")
+            Logging.New("Cleared Mod Cache!")
