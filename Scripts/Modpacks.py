@@ -96,6 +96,23 @@ class Modpacks:
 
         return
 
+    def ScanForUpdates():
+
+        if not os.path.exists(Cache.SelectedModpack):
+            Logging.New("Please select a modpack first!")
+            return
+        
+        if not Cache.Exists():
+            Logging.New("Cannot run updater without having files cached, please cache and try again!")
+            return
+        
+        for mod in Cache.LoadedMods:
+            mod_json = Util.OpenJson(Cache.LoadedMods[mod]['json_file'])
+            mod_json['has_updates'] = Modpacks.Mods.CheckForUpdates(mod_json['author'],mod_json['name'])
+            Util.WriteJson(Cache.LoadedMods[mod]['json_file'],mod_json)
+
+        return
+
     class Mods:
         def Path(author,name,mod_version):
             return f"{Cache.SelectedModpack}/BepInEx/plugins/{author}-{name}-{mod_version}"
@@ -121,20 +138,39 @@ class Modpacks:
             mod_json['author'] = author
             mod_json['name'] = name
             mod_json['mod_version'] = mod_version
+            mod_json['enabled'] = True
             mod_json['files'] = files
+            mod_json['has_updates'] = False
+            mod_json['url'] = f"https://thunderstore.io/c/lethal-company/p/{author}/{name}/"
 
             Util.WriteJson(target_mod_json,mod_json)
 
             return
         
-        def Add(url):
+        def Add(url=None,author=None,mod=None,mod_version="",ignore_dependencies=False):
             if not os.path.exists(Cache.SelectedModpack):
                 Logging.New("Please select a modpack first!", 'error')
                 return
+            
+            if not url:
+                if not author or not mod or not mod_version.strip():
+                    Logging.New(f"Not enough mod info to get a download! [{author}-{mod}-{mod_version}]")
+                    return
 
-            mod_location, author, name, mod_version, mod_files = Thunderstore.Download(url)
+            if url and not Cache.Exists():
+                Logging.New("Cannot download from a URL without having the package index! Please cache first!")
+                return
+            
+            if Modpacks.Mods.Installed(author,mod,url):
+                Logging.New("This mod is already installed, either update it or delete it!")
+                return
+
+            mod_location, author, name, mod_version, mod_files = Thunderstore.Download(url,author,mod,mod_version)
             Modpacks.Mods.AddPackageFiles(author,name,mod_version,mod_files)
             Modpacks.Mods.LoadMod(mod_location)
+
+            if not ignore_dependencies:
+                Logging.New(Modpacks.Mods.Dependencies(author,name))
         
         def Delete(author,name,mod_version=""):
             if not os.path.exists(Cache.SelectedModpack):
@@ -174,8 +210,14 @@ class Modpacks:
                 return Util.OpenJson(Cache.LoadedMods[f"{author}-{name}"]['json_file'])
             
             return {}
+        
+        def WriteJson(author,name,data):
+            Util.WriteJson(Cache.LoadedMods[f"{author}-{name}"]['json_file'],data)
 
-        def Installed(author,name):
+        def Installed(author=None,name=None,url=None):
+            if url:
+                author, mod, mod_version = Thunderstore.Extract(url)
+            
             return f"{author}-{name}" in Cache.LoadedMods
 
         def CheckForUpdates(author, name):
@@ -200,8 +242,60 @@ class Modpacks:
                 return False
             
             Logging.New(f"Updating [{author}-{name}]...")
+
+            if not Modpacks.Mods.Json(author,name)['enabled']:
+                Modpacks.Mods.Toggle(author,name)
             
             Modpacks.Mods.Delete(author,name,Modpacks.Mods.GetVersion(author,name))
             Modpacks.Mods.Add(f"https://thunderstore.io/c/lethal-company/p/{author}/{name}/{mod_version}")
 
             Logging.New(f"Finished updating [{author}-{name}]")
+        
+        def OpenURL(author,name):
+
+            Networking.OpenURL(Modpacks.Mods.Json(author,name)['url'])
+        
+        def Toggle(author,name):
+            
+            mod_json = Modpacks.Mods.Json(author,name)
+            cur_state = mod_json['enabled']
+            valid_names = ["plugins","config","core","patcher"]
+            mod_path = Modpacks.Mods.Path(author,name,Modpacks.Mods.GetVersion(author,name))
+
+            if cur_state:
+                for file in mod_json['files']:
+                    if str(file).split("\\")[0].lower() in valid_names:
+                        os.rename(f"{Cache.SelectedModpack}/BepInEx/{file}",f"{Cache.SelectedModpack}/BepInEx/{file}"+"_disabled")
+
+                    elif str(file).split("\\")[0].lower() == "bepinex":
+                        os.rename(f"{Cache.SelectedModpack}/{file}",f"{Cache.SelectedModpack}/{file}"+"_disabled")
+
+                    else:
+                        os.rename(f"{mod_path}/{file}",f"{mod_path}/{file}"+"_disabled")
+            else:
+                for file in mod_json['files']:
+                    if str(file).split("\\")[0].lower() in valid_names:
+                        os.rename(f"{Cache.SelectedModpack}/BepInEx/{file}"+"_disabled",f"{Cache.SelectedModpack}/BepInEx/{file}")
+
+                    elif str(file).split("\\")[0].lower() == "bepinex":
+                        os.rename(f"{Cache.SelectedModpack}/{file}"+"_disabled",f"{Cache.SelectedModpack}/{file}",)
+
+                    else:
+                        os.rename(f"{mod_path}/{file}"+"_disabled", f"{mod_path}/{file}")
+
+            mod_json['enabled'] = not mod_json['enabled']
+            Modpacks.Mods.WriteJson(author,name,mod_json)
+
+            return
+        
+        def Dependencies(author,name):
+
+            mod_dependencies = Cache.Get(author,name)['dependencies']
+
+            cur_dep = 0
+            for dependency in mod_dependencies:
+                if str(dependency).__contains__("BepInEx-BepInExPack"):
+                    mod_dependencies.remove(dependency)
+                cur_dep += 1
+
+            return mod_dependencies
