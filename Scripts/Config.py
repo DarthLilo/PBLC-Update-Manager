@@ -51,7 +51,6 @@ class Config():
         settings_library = {
 
             "general": {
-
                 "test_config": {
                     "value": "This is a default value",
                     "default": "This is a default value",
@@ -59,6 +58,14 @@ class Config():
                     "type": "string"
                 }
 
+            },
+            "cache": {
+                "auto_download_cache": {
+                    "value": "False",
+                    "default": "False",
+                    "description": "Should the Thunderstore Cache be automatically downloaded if missing?",
+                    "type": "bool"
+                }
             }
 
         }

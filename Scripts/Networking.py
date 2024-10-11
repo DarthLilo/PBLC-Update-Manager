@@ -1,4 +1,4 @@
-import validators, os, requests, traceback, json
+import validators, os, requests, traceback, json, webbrowser
 from urllib import request
 from urllib.error import HTTPError
 from packaging import version
@@ -52,4 +52,8 @@ class Networking:
                 chunk_count += len(chunk)
                 #download_percentage = Maths.DownloadPercent(chunk_count,total_size_in_bytes,True)
                 if print_length: Logging.New(f"Downloading... [{Maths.ConvertSize(chunk_count)}]")
+    
+    def OpenURL(url):
+        Logging.New(f"Opening {url}")
+        webbrowser.open_new(url)
                     

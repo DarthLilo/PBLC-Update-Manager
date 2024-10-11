@@ -57,7 +57,12 @@ class Thunderstore:
                 Logging.New("Please enter a valid path to download the BepInEx file too!",'error')
                 return
             
-            bepinex = Thunderstore.DownloadPackage("BepInEx","BepInExPack",Cache.Get("BepInEx","BepInExPack")['version_number'],download_folder)
+            try:
+                bepinex_version = Cache.Get("BepInEx","BepInExPack")['version_number']
+            except TypeError:
+                bepinex_version = "5.4.2100"
+            
+            bepinex = Thunderstore.DownloadPackage("BepInEx","BepInExPack",bepinex_version,download_folder)
             bepinex = Filetree.DecompressZip(bepinex)
 
             for file in os.listdir(bepinex+"/BepInExPack"):
@@ -77,21 +82,23 @@ class Thunderstore:
                 return "", "", "", {}
             
             if not url:
-                if not author or not mod:
+                if not author or not mod or not mod_version.strip():
                     Logging.New("Please provide either a URL or mod info!",'error')
                     return "", "", "", {}
             
             if url:
                 author, mod, mod_version = Thunderstore.Extract(url)
-
-            mod_cache_package = Cache.Get(author,mod,mod_version)
-
-            if Cache.FileCache.IsCached(author,mod,mod_cache_package['version_number']):
-                package = shutil.copy(Cache.FileCache.Get(author,mod,mod_cache_package['version_number']),f"{Cache.SelectedModpack}/BepInEx/plugins/{author}-{mod}-{mod_cache_package['version_number']}.zip")
+                mod_cache_package = Cache.Get(author,mod,mod_version)
+                target_mod_version = mod_cache_package['version_number']
             else:
-                package = Thunderstore.DownloadPackage(author,mod,mod_cache_package['version_number'],f"{Cache.SelectedModpack}/BepInEx/plugins")
+                target_mod_version = mod_version
+
+            if Cache.FileCache.IsCached(author,mod,target_mod_version):
+                package = shutil.copy(Cache.FileCache.Get(author,mod,target_mod_version),f"{Cache.SelectedModpack}/BepInEx/plugins/{author}-{mod}-{target_mod_version}.zip")
+            else:
+                package = Thunderstore.DownloadPackage(author,mod,target_mod_version,f"{Cache.SelectedModpack}/BepInEx/plugins")
                 Cache.FileCache.AddMod(package)
             
             package = Filetree.DecompressZip(package)
 
-            return package, author, mod, mod_cache_package['version_number'], Filetree.SortFiles(Cache.SelectedModpack,package)
+            return package, author, mod, target_mod_version, Filetree.SortFiles(Cache.SelectedModpack,package)

@@ -2,6 +2,7 @@ from .Logging import Logging
 from .Networking import Networking
 from .Filetree import Filetree
 from .Maths import Maths
+from .Config import Config
 import requests, pickle, json, os, shutil
 
 class Cache():
@@ -22,16 +23,18 @@ class Cache():
         Cache.LethalPackageCache = f"{CacheFolder}/lethal_package_cache.pk1"
         Cache.ModCache = f"{CacheFolder}/ModCache"
 
-        if not os.path.exists(Cache.LethalCompanyPackageIndex):
-            Cache.Download()
-        
-        if not os.path.exists(Cache.LethalPackageCache): # If no cache pk1 file is found, create one
+        if Config.Read("cache","auto_download_cache","value") == "True":
 
-            Cache.Index()
-            Cache.SaveIndex()
-
-        else: # Load existing pk1 cache file
-            Cache.Packages = Cache.LoadIndex()
+            if not os.path.exists(Cache.LethalCompanyPackageIndex):
+                Cache.Download()
+            
+            if not os.path.exists(Cache.LethalPackageCache): # If no cache pk1 file is found, create one
+            
+                Cache.Index()
+                Cache.SaveIndex()
+    
+            else: # Load existing pk1 cache file
+                Cache.Packages = Cache.LoadIndex()
         
         if not os.path.exists(Cache.ModCache):
             os.mkdir(Cache.ModCache)
@@ -90,6 +93,9 @@ class Cache():
             return Cache.Packages.get(key)
         
         return Cache.Packages.get(key)['versions'][0]
+
+    def Exists():
+        return os.path.exists(Cache.LethalCompanyPackageIndex)
 
     class FileCache():
 

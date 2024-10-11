@@ -9,3 +9,4 @@ from .Maths import Maths
 from .Thunderstore import Thunderstore
 from .Launch import Launch
 from .Util import Util
+from .QueueMan import QueueMan

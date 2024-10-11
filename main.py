@@ -35,13 +35,23 @@ Scripts.Launch(LethalCompanyFolder,Scripts.Filetree.LocateSteam())
 
 Scripts.Modpacks.New("DarthLilo","teehee")
 Scripts.Modpacks.Select("DarthLilo","teehee")
+#Scripts.Modpacks.Mods.Add(author="IAmBatby",mod="LethalLevelLoader",mod_version="1.3.10")
 #Scripts.Modpacks.Mods.Add("https://thunderstore.io/c/lethal-company/p/x753/More_Suits/1.3.3")
 #Scripts.Modpacks.Mods.Add("https://thunderstore.io/c/lethal-company/p/ManiaBania/1000_Quota_Stare/")
+
 #Scripts.Modpacks.DeleteMod("x753","More_Suits","1.4.3")
 #Scripts.Logging.New(Scripts.Modpacks.Mods.CheckForUpdates("x753","More_Suits"))
 #Scripts.Modpacks.Mods.Update("x753","More_Suits")
 #Scripts.Modpacks.Mods.Delete("x753","More_Suits")
 #Scripts.Modpacks.Delete("DarthLilo","teehee")
+
+#Scripts.Modpacks.Mods.Toggle("x753","More_Suits")
+
+#Scripts.Modpacks.ScanForUpdates()
+
+Scripts.QueueMan.Debug()
+
+time.sleep(15)
 
 class PBLCWindowLaunch(QMainWindow):
     def __init__(self):
