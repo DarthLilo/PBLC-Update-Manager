@@ -1,26 +1,35 @@
-import queue, json, threading, time
+import queue, json, threading, time, os
 from .Logging import Logging
 from .Util import Util
+from .Cache import Cache
+from .Thunderstore import Thunderstore
+from .Modpacks import Modpacks
 
 class QueueMan:
 
     max_threads = 6
     threads_status = {x:"open" for x in range(max_threads)}
     active_queue = queue.Queue()
+    queue_reference = []
     package_length = 0
 
     def Debug():
 
         QueueMan.ClearQueue()
-        QueueMan.QueuePackage("1","like","1.0.0")
-        QueueMan.QueuePackage("2","ong","1.0.0")
-        QueueMan.QueuePackage("3","thats","1.0.0")
-        QueueMan.QueuePackage("4","freaky","1.0.0")
-        QueueMan.QueuePackage("5","as","1.0.0")
-        QueueMan.QueuePackage("6","fuck","1.0.0")
-        QueueMan.QueuePackage("7","damn","1.0.0")
-        QueueMan.QueuePackage("8","damn","1.0.0")
-        threading.Thread(target=QueueMan.Start(),daemon=True)
+        QueueMan.QueuePackage("DarthLilo","MagnetLock","1.2.0")
+        QueueMan.QueuePackage("DarthLilo","LevelMusicLib","1.0.2")
+        QueueMan.QueuePackage("DarthLilo","WhoVoted","1.0.2")
+        QueueMan.QueuePackage("DarthLilo","BabyManeater","1.1.2")
+        QueueMan.QueuePackage("DarthLilo","LilosScrapExtension","1.4.0")
+        QueueMan.QueuePackage("DarthLilo","SkinnedRendererPatch","1.1.3")
+        QueueMan.QueuePackage("AinaVT","LethalConfig","1.4.3")
+        QueueMan.QueuePackage("IAmBatby","LethalLevelLoader","1.3.10")
+        QueueMan.QueuePackage("Evaisa","LethalLib","0.16.1")
+        QueueMan.QueuePackage("Evaisa","FixPluginTypesSerialization","1.1.1")
+        QueueMan.QueuePackage("MaxWasUnavailable","LethalModDataLib","1.2.2")
+        QueueMan.QueuePackage("Evaisa","HookGenPatcher","0.0.5")
+        #threading.Thread(target=QueueMan.Start(),daemon=True)
+        Logging.New(QueueMan.active_queue)
 
         return
     
@@ -108,12 +117,29 @@ class QueueMan:
                     return
                 
                 # DOWNLOADING
-                time.sleep(1)
-                Logging.New(json.dumps(package_data,indent=4))
+                self.download_ts_mod(package_data['author'],package_data['name'],package_data['version'])
 
 
                 # CLOSING THREAD
                 QueueMan.UnlockThread(self.thread_index)
                 self.queue.task_done()
+        
+        def download_ts_mod(self,author,name,mod_version):
+            if not os.path.exists(Cache.SelectedModpack):
+                Logging.New("Please select a modpack first!")
+                return
+            
+            if Modpacks.Mods.Installed(author,name):
+                Logging.New(f"{author}-{name} is already installed, skipping!")
+                return
+            
+            mod_location, author, name, mod_version, mod_files = Thunderstore.Download(author=author,mod=name,mod_version=mod_version)
+            Modpacks.Mods.AddPackageFiles(author,name,mod_version,mod_files)
+            Modpacks.Mods.LoadMod(mod_location)
+
+            Logging.New(f"Finished installing [{author}-{name}-{mod_version}]")
+            return
+            
+
     
     # Might have to create special download function in the queue manager to avoid circular imports from modpacks.py, shitty but it is what it is

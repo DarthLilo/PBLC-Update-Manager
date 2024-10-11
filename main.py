@@ -50,8 +50,9 @@ Scripts.Modpacks.Select("DarthLilo","teehee")
 #Scripts.Modpacks.ScanForUpdates()
 
 Scripts.QueueMan.Debug()
+#Scripts.Launch.Start("DarthLilo","teehee")
 
-time.sleep(15)
+#time.sleep(60)
 
 class PBLCWindowLaunch(QMainWindow):
     def __init__(self):
