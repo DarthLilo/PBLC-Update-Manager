@@ -3,7 +3,6 @@ from .Logging import Logging
 from .Util import Util
 from .Cache import Cache
 from .Thunderstore import Thunderstore
-from .Modpacks import Modpacks
 
 class QueueMan:
 
@@ -16,20 +15,9 @@ class QueueMan:
     def Debug():
 
         QueueMan.ClearQueue()
-        QueueMan.QueuePackage("DarthLilo","MagnetLock","1.2.0")
-        QueueMan.QueuePackage("DarthLilo","LevelMusicLib","1.0.2")
-        QueueMan.QueuePackage("DarthLilo","WhoVoted","1.0.2")
         QueueMan.QueuePackage("DarthLilo","BabyManeater","1.1.2")
         QueueMan.QueuePackage("DarthLilo","LilosScrapExtension","1.4.0")
-        QueueMan.QueuePackage("DarthLilo","SkinnedRendererPatch","1.1.3")
-        QueueMan.QueuePackage("AinaVT","LethalConfig","1.4.3")
-        QueueMan.QueuePackage("IAmBatby","LethalLevelLoader","1.3.10")
-        QueueMan.QueuePackage("Evaisa","LethalLib","0.16.1")
-        QueueMan.QueuePackage("Evaisa","FixPluginTypesSerialization","1.1.1")
-        QueueMan.QueuePackage("MaxWasUnavailable","LethalModDataLib","1.2.2")
-        QueueMan.QueuePackage("Evaisa","HookGenPatcher","0.0.5")
-        #threading.Thread(target=QueueMan.Start(),daemon=True)
-        Logging.New(QueueMan.active_queue)
+        threading.Thread(target=QueueMan.Start(),daemon=True)
 
         return
     
@@ -51,25 +39,54 @@ class QueueMan:
             "version":version
         }
 
+        if f"{author}-{name}-{version}" in QueueMan.queue_reference:
+                return
+
         QueueMan.package_length += 1
         QueueMan.active_queue.put(package)
+        QueueMan.queue_reference.append(f"{author}-{name}-{version}")
         Logging.New(f"Queued {package}")
+
+        package_dependencies = Cache.Get(author,name,version)['dependencies']
+        if package_dependencies:
+            for dependency in package_dependencies:
+                if str(dependency).__contains__("BepInEx-BepInExPack-"):
+                    continue
+
+                if not dependency in QueueMan.queue_reference:
+                    split_dependency = dependency.split("-")
+                    QueueMan.QueuePackage(split_dependency[0],split_dependency[1],split_dependency[2])
 
         return
     
     def QueuePackages(packages):
         """Queues a bunch of packages all at once, should be in list format and each individual entry should follow the standard format"""
         for package in packages:
+
+            if f"{package['author']}-{package['name']}-{package['version']}" in QueueMan.queue_reference:
+                continue
+
             QueueMan.package_length += 1
             QueueMan.active_queue.put(package)
+            QueueMan.queue_reference.append(f"{package['author']}-{package['name']}-{package['version']}")
             Logging.New(f"Queued {package}")
+
+            package_dependencies = Cache.Get(package['author'],package['name'],package['version'])['dependencies']
+            if package_dependencies:
+                for dependency in package_dependencies:
+                    if str(dependency).__contains__("BepInEx-BepInExPack-"):
+                        continue
+
+                    if not dependency in QueueMan.queue_reference:
+                        split_dependency = dependency.split("-")
+                        QueueMan.QueuePackage(split_dependency[0],split_dependency[1],split_dependency[2])
     
     def ClearQueue():
         for tasks in range(QueueMan.active_queue.qsize()):
             task = QueueMan.active_queue.get()
             Logging.New(f"Removed {task} from queue!")
 
-    def Execute(threads=max_threads):
+    def Execute(threads=max_threads,overrides_function=None,update=False):
         active_threads = []
         for i in range(min(threads,QueueMan.package_length)):
             open_thread = QueueMan.GetOpenThread()
@@ -92,11 +109,14 @@ class QueueMan:
         print('oh shit bitch')
         Logging.New("NANANANA BOOOO BOOOOOOOO")
 
-    def Start(threads=max_threads):
+        if callable(overrides_function):
+            overrides_function(update) # execute override function
+
+    def Start(threads=max_threads,overrides_function=None,update=False):
         """Starts the multithreaded download based on current queue, must be setup prior to launching download!
         This should also be run inside of its own thread to prevent program freezes!"""
 
-        download_thread = threading.Thread(target=lambda threads = threads:QueueMan.Execute(threads),daemon=True)
+        download_thread = threading.Thread(target=lambda threads = threads:QueueMan.Execute(threads,overrides_function=overrides_function,update=update),daemon=True)
         Logging.New("Starting multithreaded download")
         download_thread.start()
         
@@ -129,16 +149,41 @@ class QueueMan:
                 Logging.New("Please select a modpack first!")
                 return
             
-            if Modpacks.Mods.Installed(author,name):
+            if f"{author}-{name}" in Cache.LoadedMods:
                 Logging.New(f"{author}-{name} is already installed, skipping!")
                 return
             
             mod_location, author, name, mod_version, mod_files = Thunderstore.Download(author=author,mod=name,mod_version=mod_version)
-            Modpacks.Mods.AddPackageFiles(author,name,mod_version,mod_files)
-            Modpacks.Mods.LoadMod(mod_location)
+            self.AddPackageFiles(author,name,mod_version,mod_files)
+            self.LoadMod(mod_location)
 
             Logging.New(f"Finished installing [{author}-{name}-{mod_version}]")
             return
+        
+        def LoadMod(self,path):
+            full_mod_name = os.path.basename(path).split("-")
+            author = full_mod_name[0]
+            name = full_mod_name[1]
+
+            new_mod = {
+                "json_file": f"{path}/mod.json",
+                "icon": f"{path}/icon.png",
+                }
+
+            Cache.LoadedMods[f"{author}-{name}"] = new_mod
+        
+        def AddPackageFiles(self,author,name,mod_version,files):
+            target_mod_json = f"{Cache.SelectedModpack}/BepInEx/plugins/{author}-{name}-{mod_version}/mod.json"
+            mod_json = {}
+            mod_json['author'] = author
+            mod_json['name'] = name
+            mod_json['mod_version'] = mod_version
+            mod_json['enabled'] = True
+            mod_json['files'] = files
+            mod_json['has_updates'] = False
+            mod_json['url'] = f"https://thunderstore.io/c/lethal-company/p/{author}/{name}/"
+
+            Util.WriteJson(target_mod_json,mod_json)
             
 
     
