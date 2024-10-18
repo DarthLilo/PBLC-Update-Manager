@@ -12,3 +12,4 @@ from .Util import Util
 from .QueueMan import QueueMan
 from .UI import UI
 from . import UIElements
+from .Assets import Assets

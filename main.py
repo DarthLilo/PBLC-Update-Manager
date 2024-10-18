@@ -4,6 +4,7 @@ from PyQt6.QtCore import QSize, Qt, pyqtProperty
 from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QSizePolicy
 from PyQt6.QtGui import QMovie, QAction, QIcon, QFontDatabase
 import Scripts
+import Scripts.Assets
 
 ############################### Variables ###############################
 
@@ -27,6 +28,7 @@ Scripts.Filetree.VerifyList([ProgramDataFolder,LoggingFolder,ModpacksFolder,Cach
 
 
 Scripts.Logging(LoggingFolder)
+Scripts.Assets(AssetsFolder)
 Scripts.Config(ProgramDataFolder)
 LethalCompanyFolder = Scripts.Filetree.LocateLethalCompany()
 Scripts.Cache(CacheFolder)
@@ -83,10 +85,10 @@ class PBLCWindow(QMainWindow):
 
 # ACTUALLY START THE WINDOW
 
-app = QApplication(sys.argv)
-window = PBLCWindow()
-window.show()
+#app = QApplication(sys.argv)
+#window = PBLCWindow()
+#window.show()
 
-app.exec()
+#app.exec()
 
 Scripts.Logging.Close()
