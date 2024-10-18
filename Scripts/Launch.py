@@ -19,11 +19,20 @@ class Launch:
         return
     
     def Setup():
+        if not Filetree.VerifyLethalPath(Launch.LethalCompanyPath):
+            Logging.New("Error finding Lethal Company path! Please set one manually in config!")
+            return False
 
         if not Filetree.VerifyList([f"{Launch.LethalCompanyPath}/winhttp.dll",f"{Launch.LethalCompanyPath}/doorstop_config.ini",f"{Launch.LethalCompanyPath}/BepInEx/core"],create_folder=False):
             Thunderstore.DownloadBepInEx(Launch.LethalCompanyPath)
+        
+        return True
     
     def Start(author,name):
+
+        if not Filetree.VerifyLethalPath(Launch.LethalCompanyPath):
+            Logging.New("Error finding Lethal Company path! Please set one manually in config!")
+            return False
 
         modpack_path = Modpacks.Path(author,name)
         if not os.path.exists(modpack_path):
@@ -41,4 +50,4 @@ class Launch:
 
         subprocess.Popen(launch_command,shell=True)
 
-        return
+        return True
