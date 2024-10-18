@@ -31,3 +31,7 @@ class Time():
     
     def CurrentTime():
         return str(datetime.now().strftime("%H:%M:%S"))
+    
+    def IsOlder(local,outwards):
+        """Checks if the \"local\" time is older than the \"outwards\" time"""
+        return local < outwards
