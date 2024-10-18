@@ -51,12 +51,12 @@ class Config():
         settings_library = {
 
             "general": {
-                "test_config": {
-                    "value": "This is a default value",
-                    "default": "This is a default value",
-                    "description": "Just a test config option, won't do anything for now",
-                    "type": "string"
-                }
+                "lethal_company_path": {
+                    "value": "",
+                    "default": "",
+                    "description": "Overrides the Lethal Company path function and allows the user to set it manually",
+                    "type": "path"
+                },
 
             },
             "cache": {
