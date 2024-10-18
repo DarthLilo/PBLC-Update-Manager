@@ -2,6 +2,7 @@ import os.path
 import os, zipfile, winreg, vdf, shutil
 from .Logging import Logging
 from .Util import Util
+from .Config import Config
 
 class Filetree():
 
@@ -71,7 +72,9 @@ class Filetree():
         return steam_install_path
 
     def LocateLethalCompany():
-        custom_lethal_path = ""
+        custom_lethal_path = Config.Read("general","lethal_company_path","value")
+        if os.path.exists(custom_lethal_path):
+            return custom_lethal_path
 
         Logging.New("Locating Lethal Company path...")
 
@@ -86,7 +89,7 @@ class Filetree():
             if lethal_company_steamid in apps:
                 lethal_path = os.path.normpath(f"{cur_lib['path']}/steamapps/common/Lethal Company")
                 Logging.New(f"Located Lethal Company path: {lethal_path}")
-                return lethal_path
+                return "lethal_path"
     
     def DirSize(target_path):
         total_size = 0
@@ -95,3 +98,7 @@ class Filetree():
                 filepath = os.path.join(path,f)
                 total_size += os.path.getsize(filepath)
         return total_size
+    
+    def VerifyLethalPath(path):
+        Logging.New("Verifying Lethal Company path...")
+        return os.path.exists(path)
