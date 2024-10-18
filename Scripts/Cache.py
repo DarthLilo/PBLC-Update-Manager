@@ -23,18 +23,16 @@ class Cache():
         Cache.LethalPackageCache = f"{CacheFolder}/lethal_package_cache.pk1"
         Cache.ModCache = f"{CacheFolder}/ModCache"
 
-        if Config.Read("cache","auto_download_cache","value") == "True":
-
-            if not os.path.exists(Cache.LethalCompanyPackageIndex):
-                Cache.Download()
-            
-            if not os.path.exists(Cache.LethalPackageCache): # If no cache pk1 file is found, create one
-            
-                Cache.Index()
-                Cache.SaveIndex()
+        if not os.path.exists(Cache.LethalCompanyPackageIndex):
+            Cache.Download()
+         
+        if not os.path.exists(Cache.LethalPackageCache): # If no cache pk1 file is found, create one
+         
+            Cache.Index()
+            Cache.SaveIndex()
     
-            else: # Load existing pk1 cache file
-                Cache.Packages = Cache.LoadIndex()
+        else: # Load existing pk1 cache file
+            Cache.Packages = Cache.LoadIndex()
         
         if not os.path.exists(Cache.ModCache):
             os.mkdir(Cache.ModCache)
@@ -50,6 +48,7 @@ class Cache():
     def Index():
         """Indexes the cache file into memory, packages can be retrieved using the [author] [name] format"""
         Logging.New("Beginning package index process, this might take a while...")
+        Cache.Packages.clear()
         with open(Cache.LethalCompanyPackageIndex, 'r', encoding='utf-8') as file:
             data = json.load(file)
 
@@ -74,6 +73,20 @@ class Cache():
         Logging.New("Load package index from pk1 file")
         
         return {}
+    
+    def Reset():
+        Cache.Packages.clear()
+        try:
+            os.remove(Cache.LethalCompanyPackageIndex)
+            os.remove(Cache.LethalPackageCache)
+        except FileNotFoundError:
+            Logging.New("Cache reset file not found!",'error')
+    
+    def Update():
+        Cache.Reset()
+        Cache.Download()
+        Cache.Index()
+        Cache.SaveIndex()
 
     def Get(owner,name,version="",full_package=False):
         """Gets the matching package entry for the owner and name specified, if a version is specified it will return the entry for that version"""
