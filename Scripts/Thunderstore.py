@@ -66,7 +66,7 @@ class Thunderstore:
             bepinex = Filetree.DecompressZip(bepinex)
 
             for file in os.listdir(bepinex+"/BepInExPack"):
-                shutil.move(f"{bepinex}/BepInExPack/{file}",download_folder)
+                shutil.move(f"{bepinex}/BepInExPack/{file}",os.path.join(download_folder,file))
             
             os.makedirs(f"{download_folder}/BepInEx/plugins")
             
