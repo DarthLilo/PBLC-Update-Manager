@@ -84,6 +84,14 @@ class Modpacks:
             if os.path.isdir(f"{plugins_folder}/{file}") and os.path.exists(f"{plugins_folder}/{file}/mod.json"):
                 Modpacks.Mods.LoadMod(f"{plugins_folder}/{file}")
     
+    def GetModCount(author,name):
+        mod_count = 0
+        plugins_folder = f"{Modpacks.Path(author,name)}/BepInEx/plugins"
+        for file in os.listdir(plugins_folder):
+            if os.path.isdir(f"{plugins_folder}/{file}") and os.path.exists(f"{plugins_folder}/{file}/mod.json"):
+                mod_count += 1
+        return mod_count
+
     def Export(author,name):
         export_json_loc = f"{Modpacks.Path(author,name)}/{author}-{name}.json"
         modpack_json = Modpacks.GetJson(author,name)
@@ -215,6 +223,15 @@ class Modpacks:
 
         return
 
+    def List():
+        modpack_json_paths = []
+        for file in os.listdir(Modpacks.ModpackFolder):
+            if os.path.isdir(f"{Modpacks.ModpackFolder}/{file}") and os.path.exists(f"{Modpacks.ModpackFolder}/{file}/modpack.json"):
+                modpack_json = Util.OpenJson(f"{Modpacks.ModpackFolder}/{file}/modpack.json")
+                modpack_json['mod_count'] = Modpacks.GetModCount(modpack_json['author'],modpack_json['name'])
+                modpack_json_paths.append(modpack_json)
+
+        return modpack_json_paths
 
     class Mods:
         def Path(author,name,mod_version):

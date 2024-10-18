@@ -52,7 +52,7 @@ class ModpackFrame(QFrame):
     
     def draw(self):
 
-        self.modpack_label = ClickableLabel(self.label_clicked,text="modpack_icon",xyCords=self._xyCords,hoverEvent=self.label_hover)
+        self.modpack_label = ClickableLabel(self.label_clicked,text="modpack_icon",xyCords=self._xyCords,author=self.modpack_author,name=self.modpack_name,version=self.modpack_version,hoverEvent=self.label_hover)
         self.modpack_label.setPixmap(self.modpack_pixmap)
         self.modpack_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.grid_layout.addWidget(self.modpack_label)
@@ -90,9 +90,8 @@ class ModpackFrame(QFrame):
     def label_clicked(self, event, data):
         button = event.button()
         modifiers = event.modifiers()
-
         if modifiers == Qt.KeyboardModifier.NoModifier and button == Qt.MouseButton.LeftButton:
-            print(f'omg [{data[['author']],"",data['name']}] was clicked')
+            print(f'omg [{data['author'],"",data['name']}] was clicked')
         return
 
     def label_hover(self, hover):

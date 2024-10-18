@@ -32,7 +32,6 @@ LethalCompanyFolder = Scripts.Filetree.LocateLethalCompany()
 Scripts.Cache(CacheFolder)
 Scripts.Modpacks(ModpacksFolder)
 Scripts.Launch(LethalCompanyFolder,Scripts.Filetree.LocateSteam())
-Scripts.UI(AssetsFolder)
 
 #########################################################################
 
@@ -53,27 +52,33 @@ Scripts.UI(AssetsFolder)
 class PBLCWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        Scripts.UI.LoadFonts()  
         self.setWindowTitle("PBLC Update Manager - [VERSION HERE]")
         self.setMinimumSize(1000,580)
         self.setWindowIcon(QIcon("E:\\Lilos Coding\\PBML\\assets\\pill_bottle.ico"))
 
         ### LOAD MENU BAR
         menu = self.menuBar()
-        file_menu = menu.addAction("&File")
-        modpacks_menu = menu.addAction("&Modpacks")
-        view_menu = menu.addAction("&View")
+        file_menu = menu.addMenu("&File")
+        modpacks_menu = menu.addMenu("&Modpacks")
+        view_menu = menu.addMenu("&View")
+
+        dev_action = QAction("dev action",self)
+        dev_action.triggered.connect(self.devAction)
+        file_menu.addAction(dev_action)
 
         pblc_layout = QGridLayout()
-        pblc_layout.setSpacing(16)
+        #pblc_layout.setSpacing(16)  
+        self.main_menu = Scripts.UI(AssetsFolder)
         
-        pblc_asset = Scripts.UIElements.LoadingScreen()
-        pblc_layout.addWidget(pblc_asset)
+        pblc_layout.addWidget(self.main_menu)
 
         layout_container = QWidget()
         layout_container.setLayout(pblc_layout)
 
         self.setCentralWidget(layout_container)
+    
+    def devAction(self):
+        self.main_menu.FadeToModpackSelection(self.main_menu._screen_loading)
 
 
 # ACTUALLY START THE WINDOW
