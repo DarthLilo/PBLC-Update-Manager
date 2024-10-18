@@ -1,4 +1,5 @@
-import winreg, traceback, json
+import winreg, traceback, json, validators
+from urllib import request
 from .Logging import Logging
 
 class Util:
@@ -26,3 +27,10 @@ class Util:
     def WriteJson(path,data):
         with open(path, "w") as json_writer:
             json_writer.write(json.dumps(data,indent=4))
+    
+    def UrlPathDecoder(path):
+
+        if validators.url(path):
+            return json.loads(request.urlopen(path).read().decode())
+        
+        return Util.OpenJson(path)
