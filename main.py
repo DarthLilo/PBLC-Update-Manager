@@ -1,7 +1,8 @@
-import sys, os, json, time
+import sys, os, json, time, random
 
-from PyQt6.QtCore import QSize, Qt
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton
+from PyQt6.QtCore import QSize, Qt, pyqtProperty
+from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QSizePolicy
+from PyQt6.QtGui import QMovie, QAction, QIcon, QFontDatabase
 import Scripts
 
 ############################### Variables ###############################
@@ -12,13 +13,14 @@ ProgramDataFolder = os.path.normpath(f"{CurFolder}/ProgramData")
 LoggingFolder = os.path.normpath(f"{ProgramDataFolder}/Logs")
 ModpacksFolder = os.path.normpath(f"{ProgramDataFolder}/Modpacks")
 CacheFolder = os.path.normpath(f"{ProgramDataFolder}/Cache")
+AssetsFolder = os.path.normpath(f"{CurFolder}/ProgramAssets")
 LethalCompanyFolder = ""
 
 
 ############################### Verify Folders ##########################
 
 
-Scripts.Filetree.VerifyList([ProgramDataFolder,LoggingFolder,ModpacksFolder,CacheFolder])
+Scripts.Filetree.VerifyList([ProgramDataFolder,LoggingFolder,ModpacksFolder,CacheFolder,AssetsFolder])
 
 
 ############################### Start Subsystems ########################
@@ -30,52 +32,56 @@ LethalCompanyFolder = Scripts.Filetree.LocateLethalCompany()
 Scripts.Cache(CacheFolder)
 Scripts.Modpacks(ModpacksFolder)
 Scripts.Launch(LethalCompanyFolder,Scripts.Filetree.LocateSteam())
+Scripts.UI(AssetsFolder)
 
 #########################################################################
 
-Scripts.Modpacks.New("DarthLilo","teehee")
-Scripts.Modpacks.Select("DarthLilo","teehee")
-#Scripts.Modpacks.Mods.Add(author="IAmBatby",mod="LethalLevelLoader",mod_version="1.3.10")
-#Scripts.Modpacks.Mods.Add("https://thunderstore.io/c/lethal-company/p/x753/More_Suits/1.3.3")
-#Scripts.Modpacks.Mods.Add("https://thunderstore.io/c/lethal-company/p/ManiaBania/1000_Quota_Stare/")
+#Scripts.Modpacks.Import("E:\\Lilos Coding\\PBML\\ProgramData\\DarthLilo-teehee.json")
 
-#Scripts.Modpacks.DeleteMod("x753","More_Suits","1.4.3")
-#Scripts.Logging.New(Scripts.Modpacks.Mods.CheckForUpdates("x753","More_Suits"))
-#Scripts.Modpacks.Mods.Update("x753","More_Suits")
-#Scripts.Modpacks.Mods.Delete("x753","More_Suits")
-#Scripts.Modpacks.Delete("DarthLilo","teehee")
 
-#Scripts.Modpacks.Mods.Toggle("x753","More_Suits")
+#Scripts.Modpacks.Setup(Scripts.Util.OpenJson("E:\\Lilos Coding\\PBML\\ProgramData\\DarthLilo-teehee.json"))
 
-#Scripts.Modpacks.ScanForUpdates()
-
-Scripts.QueueMan.Debug()
-#Scripts.Launch.Start("DarthLilo","teehee")
+#Scripts.Modpacks.New("DarthLilo","teehee")
+#Scripts.Modpacks.Select("DarthLilo","teehee")
 
 #time.sleep(60)
 
-class PBLCWindowLaunch(QMainWindow):
+#Scripts.Launch.Start("DarthLilo","teehee")
+
+#Scripts.Modpacks.Export("DarthLilo","teehee")
+
+class PBLCWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        Scripts.UI.LoadFonts()  
+        self.setWindowTitle("PBLC Update Manager - [VERSION HERE]")
+        self.setMinimumSize(1000,580)
+        self.setWindowIcon(QIcon("E:\\Lilos Coding\\PBML\\assets\\pill_bottle.ico"))
 
-        self.setWindowTitle("PBLC Update Manager")
+        ### LOAD MENU BAR
+        menu = self.menuBar()
+        file_menu = menu.addAction("&File")
+        modpacks_menu = menu.addAction("&Modpacks")
+        view_menu = menu.addAction("&View")
 
-        button = QPushButton("Press Me!")
+        pblc_layout = QGridLayout()
+        pblc_layout.setSpacing(16)
+        
+        pblc_asset = Scripts.UIElements.LoadingScreen()
+        pblc_layout.addWidget(pblc_asset)
 
-        self.setFixedSize(QSize(400,300))
-        self.setCentralWidget(button)
+        layout_container = QWidget()
+        layout_container.setLayout(pblc_layout)
 
+        self.setCentralWidget(layout_container)
 
-#mod, author, mod_version = Scripts.Networking.Extract("https://thunderstore.io/c/lethal-company/p/DarthLilo/MagnetLock/1.2.0")
-#
-#Scripts.Networking.DownloadPackage(mod,author,mod_version)
 
 # ACTUALLY START THE WINDOW
 
-#app = QApplication(sys.argv)
-#window = PBLCWindowLaunch()
-#window.show()
-#
-#app.exec()
+app = QApplication(sys.argv)
+window = PBLCWindow()
+window.show()
+
+app.exec()
 
 Scripts.Logging.Close()
