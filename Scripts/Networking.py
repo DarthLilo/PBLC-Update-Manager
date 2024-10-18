@@ -1,4 +1,4 @@
-import validators, os, requests, traceback, json, webbrowser
+import validators, os, requests, traceback, json, webbrowser, gdown
 from urllib import request
 from urllib.error import HTTPError
 from packaging import version
@@ -56,4 +56,15 @@ class Networking:
     def OpenURL(url):
         Logging.New(f"Opening {url}")
         webbrowser.open_new(url)
-                    
+    
+    def DownloadFromGoogleDrive(source,destination):
+        if not source or not destination:
+            Logging.New("Please provide a valid source/destination!",'error')
+            return "invalid"
+        Logging.New(f"Beginning download of {source} from Google Drive")
+        try:
+            gdown.download(id=source,output=destination)
+            return "finished"
+        except gdown.exceptions.FileURLRetrievalError:
+            Logging.New(f"{source} has too many requests!")
+            return "too_many_requests"
