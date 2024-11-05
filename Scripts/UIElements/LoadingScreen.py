@@ -2,6 +2,8 @@ from PyQt6.QtCore import QSize, Qt, pyqtProperty, QRect
 from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QSizePolicy, QVBoxLayout, QLineEdit, QLabel, QFrame, QSpacerItem, QHBoxLayout, QCompleter, QComboBox, QPushButton, QTabBar, QFileDialog, QToolTip, QScrollArea, QLayout
 from PyQt6.QtGui import QMovie, QAction, QIcon, QFontDatabase, QFont, QPixmap, QColor
 
+from ..Assets import Assets
+
 class LoadingScreen(QWidget):
     def __init__(self, parent=None):
         super().__init__()
@@ -9,7 +11,7 @@ class LoadingScreen(QWidget):
         self._layout = QGridLayout(self)
 
         self.loading_anim_label = QLabel()
-        self.loading_anim = QMovie("D:\\Lilo's Art\\Exports\\LethalLoadScreen\\full_gif_final.gif")
+        self.loading_anim = QMovie(Assets.getResource(Assets.ResourceTypes.loading_screen))
         self.loading_anim_label.setMovie(self.loading_anim)
         self.loading_anim.start()
         self.loading_anim_label.setFixedSize(QSize(400,400))
