@@ -4,6 +4,8 @@ from PyQt6.QtCore import (
 from PyQt6.QtWidgets import QGridLayout, QLabel, QFrame, QSizePolicy, QHBoxLayout, QSpacerItem, QWidget, QPushButton, QVBoxLayout, QProgressBar
 from PyQt6.QtGui import QColor, QPalette, QPixmap, QFont, QIcon
 
+from ..Assets import Assets
+
 import os, random
 
 class ThreadFrame(QFrame):
@@ -21,7 +23,7 @@ class ThreadFrame(QFrame):
     def draw(self):
 
         self.thread_icon_label = QLabel("thread_icon_label")
-        self.thread_icon_label.setPixmap(QPixmap("E:\\Lilos Coding\\PBML\\assets\\inactive_thread.png").scaled(QSize(105,105),aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio,transformMode=Qt.TransformationMode.SmoothTransformation))
+        self.thread_icon_label.setPixmap(QPixmap(Assets.getResource(Assets.ResourceTypes.inactive_thread)).scaled(QSize(105,105),aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio,transformMode=Qt.TransformationMode.SmoothTransformation))
         self._layout.addWidget(self.thread_icon_label)
 
         self.thread_info_container = QFrame()
@@ -40,8 +42,8 @@ class ThreadFrame(QFrame):
         
         self._layout.addWidget(self.thread_info_container)
     
-    def setIcon(self,filepath):
-        self.thread_icon_label.setPixmap(QPixmap(filepath).scaled(QSize(105,105),aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio,transformMode=Qt.TransformationMode.SmoothTransformation))
+    def setIcon(self,qpixmap:QPixmap):
+        self.thread_icon_label.setPixmap(qpixmap.scaled(QSize(105,105),aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio,transformMode=Qt.TransformationMode.SmoothTransformation))
     
     def setName(self, name):
         self.thread_name_label.setText(str(name))
