@@ -1,9 +1,13 @@
 import validators, os, requests, traceback, json, webbrowser, gdown
+from PyQt6.QtGui import QIcon, QPixmap
 from urllib import request
 from urllib.error import HTTPError
 from packaging import version
 from .Logging import Logging
 from .Maths import Maths
+from .Assets import Assets
+from PIL import Image
+from io import BytesIO
 
 class Networking: 
 
@@ -38,10 +42,11 @@ class Networking:
         """Compares two versions to see if the host version is higher than the client version"""
         return version.Version(host_version) > version.Version(client_version)
 
-    def DownloadFromUrl(url,location,print_length=False):
+    def DownloadFromUrl(url,location,print_length=None,feedback_func=None):
         Logging.New(f"Downloading [{url}]...")
 
         package_request = requests.get(url,stream=True)
+        download_percentage = 0
 
         total_size_in_bytes = int(package_request.headers.get('content-length',0))
 
@@ -50,8 +55,14 @@ class Networking:
             for chunk in package_request.iter_content(chunk_size=1024):
                 download_package.write(chunk)
                 chunk_count += len(chunk)
-                #download_percentage = Maths.DownloadPercent(chunk_count,total_size_in_bytes,True)
-                if print_length: Logging.New(f"Downloading... [{Maths.ConvertSize(chunk_count)}]")
+
+                download_percentage_local = Maths.DownloadPercent(chunk_count,total_size_in_bytes,True)
+                if callable(feedback_func) and download_percentage_local != download_percentage: 
+                    feedback_func(download_percentage_local)
+                    download_percentage = download_percentage_local
+                
+                if callable(print_length):
+                    print_length(f"{Maths.ConvertSize(chunk_count)}")
     
     def OpenURL(url):
         Logging.New(f"Opening {url}")
@@ -68,3 +79,26 @@ class Networking:
         except gdown.exceptions.FileURLRetrievalError:
             Logging.New(f"{source} has too many requests!")
             return "too_many_requests"
+    
+    def GetURLImage(url):
+        """Returns a PIL Image from a URL"""
+        try:
+            fin_image = Image.open(BytesIO(requests.get(url).content))
+        except Exception as e:
+            Logging.New(traceback.format_exc(),'error')
+            fin_image = Image.open(Assets.getResource(Assets.IconTypes.missing))
+
+        return fin_image
+    
+    def DownloadURLImage(url, destination):
+        """Saves an image from a URL"""
+        opener = request.build_opener()
+        opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+        request.install_opener(opener)
+        request.urlretrieve(url, destination)
+
+    
+    def IsURL(url):
+        if validators.url(url) != True:
+            return False
+        return True
