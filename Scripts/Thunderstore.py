@@ -7,7 +7,7 @@ import os, shutil, json
 
 class Thunderstore:
 
-        def DownloadPackage(author,mod,mod_version,download_folder):
+        def DownloadPackage(author,mod,mod_version,download_folder,feedback_func=None,text_output_func=None):
             """Downloads a package from Thunderstore given the proper information and returns a filepath"""
 
             if not os.path.exists(download_folder):
@@ -18,7 +18,7 @@ class Thunderstore:
             zip_name = f"{author}-{mod}-{mod_version}.zip"
             package_file = os.path.join(download_folder,zip_name)
 
-            Networking.DownloadFromUrl(download_link,package_file)
+            Networking.DownloadFromUrl(download_link,package_file,feedback_func=feedback_func,print_length=text_output_func)
 
             return package_file
         
@@ -51,8 +51,14 @@ class Thunderstore:
 
             return author, mod, mod_version
         
-        def DownloadBepInEx(download_folder):
+        def DownloadBepInEx(download_folder,loop_count=0):
             """Downloads and decompresses a BepInEx install to a specified location"""
+
+            if loop_count > 20:
+                Logging.New("Loop count over 20, cancelling!", 'error')
+            
+            loop_count = loop_count + 1
+
             if not os.path.exists(download_folder):
                 Logging.New("Please enter a valid path to download the BepInEx file too!",'error')
                 return
@@ -65,8 +71,12 @@ class Thunderstore:
             bepinex = Thunderstore.DownloadPackage("BepInEx","BepInExPack",bepinex_version,download_folder)
             bepinex = Filetree.DecompressZip(bepinex)
 
-            for file in os.listdir(bepinex+"/BepInExPack"):
-                shutil.move(f"{bepinex}/BepInExPack/{file}",os.path.join(download_folder,file))
+            try:
+                for file in os.listdir(bepinex+"/BepInExPack"):
+                    shutil.move(f"{bepinex}/BepInExPack/{file}",os.path.join(download_folder,file))
+            except FileNotFoundError:
+                shutil.rmtree(bepinex)
+                Thunderstore.DownloadBepInEx(download_folder,loop_count)
             
             os.makedirs(f"{download_folder}/BepInEx/plugins")
             
@@ -74,7 +84,7 @@ class Thunderstore:
 
             return
         
-        def Download(url=None,author=None,mod=None,mod_version=""):
+        def Download(url=None,author=None,mod=None,mod_version="",feedback_func=None,text_output_func=None):
             """Extracts a mod from a URL and downloads it to the currently selected modpack, returns the packages location, author, name, version, and new files"""
             
             if not os.path.exists(Cache.SelectedModpack):
@@ -93,12 +103,28 @@ class Thunderstore:
             else:
                 target_mod_version = mod_version
 
+            package = Thunderstore.PackageSafteyDownload(author,mod,target_mod_version,feedback_func,text_output_func=text_output_func)
+
+            Logging.New(f"{author}-{mod} download has completed, starting next step")
+            return package, author, mod, target_mod_version, Filetree.SortFiles(Cache.SelectedModpack,package)
+        
+        def PackageSafteyDownload(author,mod,target_mod_version,feedback_func,loop_count=0,text_output_func=None):
+            loop_count = loop_count + 1
+
+            if loop_count > 20:
+                Logging.New("Saftey Download FAILED, loop count was over 20!",'error')
+                return None
             if Cache.FileCache.IsCached(author,mod,target_mod_version):
                 package = shutil.copy(Cache.FileCache.Get(author,mod,target_mod_version),f"{Cache.SelectedModpack}/BepInEx/plugins/{author}-{mod}-{target_mod_version}.zip")
             else:
-                package = Thunderstore.DownloadPackage(author,mod,target_mod_version,f"{Cache.SelectedModpack}/BepInEx/plugins")
+                package = Thunderstore.DownloadPackage(author,mod,target_mod_version,f"{Cache.SelectedModpack}/BepInEx/plugins",feedback_func,text_output_func)
                 Cache.FileCache.AddMod(package)
             
             package = Filetree.DecompressZip(package)
-
-            return package, author, mod, target_mod_version, Filetree.SortFiles(Cache.SelectedModpack,package)
+            
+            if not os.path.exists(package):
+                Logging.New(f"Corrupted zip file found, redownloading {package} iter {loop_count}", 'warning')
+                Cache.FileCache.DeleteMod(author,mod,target_mod_version)
+                Thunderstore.PackageSafteyDownload(author,mod,target_mod_version,feedback_func,loop_count,text_output_func)
+            
+            return package
