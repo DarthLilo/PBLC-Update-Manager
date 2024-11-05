@@ -1,10 +1,9 @@
 import sys, os, json, time, random
 
-from PyQt6.QtCore import QSize, Qt, pyqtProperty
+from PyQt6.QtCore import QSize, Qt, pyqtProperty, QLoggingCategory
 from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QSizePolicy
 from PyQt6.QtGui import QMovie, QAction, QIcon, QFontDatabase
 import Scripts
-import Scripts.Assets
 
 ############################### Variables ###############################
 
@@ -30,6 +29,7 @@ Scripts.Filetree.VerifyList([ProgramDataFolder,LoggingFolder,ModpacksFolder,Cach
 Scripts.Logging(LoggingFolder)
 Scripts.Assets(AssetsFolder)
 Scripts.Config(ProgramDataFolder)
+Scripts.QueueMan()
 LethalCompanyFolder = Scripts.Filetree.LocateLethalCompany()
 Scripts.Cache(CacheFolder)
 Scripts.Modpacks(ModpacksFolder)
@@ -37,40 +37,24 @@ Scripts.Launch(LethalCompanyFolder,Scripts.Filetree.LocateSteam())
 
 #########################################################################
 
-#Scripts.Modpacks.Import("E:\\Lilos Coding\\PBML\\ProgramData\\DarthLilo-teehee.json")
-
-
-#Scripts.Modpacks.Setup(Scripts.Util.OpenJson("E:\\Lilos Coding\\PBML\\ProgramData\\DarthLilo-teehee.json"))
-
-#Scripts.Modpacks.New("DarthLilo","teehee")
-#Scripts.Modpacks.Select("DarthLilo","teehee")
-
-#time.sleep(60)
-
-#Scripts.Launch.Start("DarthLilo","teehee")
-
-#Scripts.Modpacks.Export("DarthLilo","teehee")
-
 class PBLCWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("PBLC Update Manager - [VERSION HERE]")
         self.setMinimumSize(1000,580)
-        self.setWindowIcon(QIcon("E:\\Lilos Coding\\PBML\\assets\\pill_bottle.ico"))
+        self.setWindowIcon(QIcon(Scripts.Assets.getResource(Scripts.Assets.ResourceTypes.app_icon)))
 
         ### LOAD MENU BAR
         menu = self.menuBar()
         file_menu = menu.addMenu("&File")
-        modpacks_menu = menu.addMenu("&Modpacks")
-        view_menu = menu.addMenu("&View")
 
-        dev_action = QAction("dev action",self)
-        dev_action.triggered.connect(self.devAction)
-        file_menu.addAction(dev_action)
+        config_menu  =QAction("Preferences",self)
+        config_menu.triggered.connect(self.OpenConfig)
+        file_menu.addAction(config_menu)
 
+        #Start UI
         pblc_layout = QGridLayout()
-        #pblc_layout.setSpacing(16)  
-        self.main_menu = Scripts.UI(AssetsFolder)
+        self.main_menu = Scripts.UI()
         
         pblc_layout.addWidget(self.main_menu)
 
@@ -78,17 +62,19 @@ class PBLCWindow(QMainWindow):
         layout_container.setLayout(pblc_layout)
 
         self.setCentralWidget(layout_container)
+
+        
     
-    def devAction(self):
-        self.main_menu.FadeToModpackSelection(self.main_menu._screen_loading)
+    def OpenConfig(self):
+        self.main_menu.OpenConfigScreen()
 
 
 # ACTUALLY START THE WINDOW
 
-#app = QApplication(sys.argv)
-#window = PBLCWindow()
-#window.show()
+app = QApplication(sys.argv)
+window = PBLCWindow()
+window.show()
 
-#app.exec()
+app.exec()
 
 Scripts.Logging.Close()
