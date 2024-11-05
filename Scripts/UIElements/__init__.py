@@ -8,5 +8,7 @@ from .ModpackDownloadScreen import ModpackDownloadScreen
 from .ConfigMenu import ConfigMenu
 from .VerticalTab import VerticalTabWidget
 from .LoadingScreen import LoadingScreen
+from .LoadingScreenCacheUpdate import LoadingScreenCacheUpdate
 from .ModpackSelection import ModpackSelection
 from .FaderWidget import FaderWidget
+from .AddImportModpack import AddImportModpack
