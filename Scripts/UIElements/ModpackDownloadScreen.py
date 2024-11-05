@@ -3,6 +3,8 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QSi
 from PyQt6.QtGui import QMovie, QAction, QIcon, QFontDatabase, QFont, QPixmap, QColor
 
 from .ActiveThreadsScrollMenu import ActiveThreadsScrollMenu
+from ..Config import Config
+from ..Networking import Networking
 
 import threading, datetime, time
 
@@ -14,7 +16,7 @@ class ModpackDownloadScreen(QWidget):
         self.start_time = None
         self._kill_clock = False
 
-        self.mod_download_threads_frame = ActiveThreadsScrollMenu()
+        self.mod_download_threads_frame = ActiveThreadsScrollMenu(max_threads=int(Config.Read("performance","max_download_threads","value")))
         #self.mod_download_threads_frame.setFrameStyle(QFrame.Shape.StyledPanel)
         #self.mod_download_threads_frame.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
 
@@ -69,3 +71,14 @@ class ModpackDownloadScreen(QWidget):
     
     def killClock(self):
         self._kill_clock = True
+
+    def setGlobalPercent(self,value):
+        self.current_progress_bar.setValue(int(value))
+    
+    def setPercentageBar(self,thread,value):
+        self.mod_download_threads_frame._threads[thread].setProgress(value)
+    
+    def setThreadDisplay(self,thread,author,name,version):
+        target_thread = self.mod_download_threads_frame._threads[thread]
+        target_thread.setName(f"{author}-{name}-{version}")
+        target_thread.setIcon(Networking.GetURLImage(f"https://gcdn.thunderstore.io/live/repository/icons/{author}-{name}-{version}.png").toqpixmap())
