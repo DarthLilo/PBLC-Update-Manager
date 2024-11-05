@@ -6,20 +6,34 @@ from .Util import Util
 from .Networking import Networking
 from .QueueMan import QueueMan
 from .Filetree import Filetree
+from time import sleep
 import os, json, shutil, threading, gdown
+
+from PyQt6.QtCore import QObject, pyqtSignal
 
 class Modpacks:
 
     ModpackFolder = ""
-
     ModpackData = {}
+    UpdatePercentageFunc = None
+    UpdateThreadDisplay = None
+    CloseDownloadScreenFunc = None
+    CacheLoadingScreenFunc = None
+    SetGlobalPercent = None
+    SetCacheStatus = None
+    CacheToModpack = None
+    ShowDownloadScreen = None
+    ShowLoadingScreen = None
+    LoadingToEdit = None
+    DeselectModpack = None
+    RefreshModpacks = None
 
     def __init__(self, ModpacksFolder):
         Logging.New("Starting modpack system...",'startup')
         Modpacks.ModpackFolder = ModpacksFolder
         return
     
-    def New(author,name,modpack_version="1.0.0"):
+    def New(author,name,modpack_version="1.0.0",online_link="",icon=""):
         
         modpack_location = Modpacks.Path(author,name)
         
@@ -28,17 +42,27 @@ class Modpacks:
             return ""
         
         os.mkdir(modpack_location)
-        Modpacks.CreateJson(author,name,modpack_version,modpack_location)
+        Modpacks.CreateJson(author,name,modpack_version,modpack_location,online_link)
         Thunderstore.DownloadBepInEx(modpack_location)
+
+        if Networking.IsURL(icon):
+            Networking.DownloadURLImage(icon,f"{Modpacks.Path(author,name)}/icon.png")
+        elif os.path.exists(icon):
+            Modpacks.CopyIcon(author,name,icon)
 
         return
     
-    def CreateJson(author,name,modpack_version,modpack_location):
+    def CopyIcon(author,name,icon_path):
+        modpack_path = Modpacks.Path(author,name)
+        shutil.copy(icon_path,f"{modpack_path}/icon.png")
+    
+    def CreateJson(author,name,modpack_version,modpack_location,online_link):
         modpack_metadata = {
             "author": author,
             "name": name,
             "version": modpack_version,
             "update_date": Time.CurrentDate(),
+            "online_link": online_link,
             "overrides": []
         }
 
@@ -91,6 +115,16 @@ class Modpacks:
             if os.path.isdir(f"{plugins_folder}/{file}") and os.path.exists(f"{plugins_folder}/{file}/mod.json"):
                 mod_count += 1
         return mod_count
+    
+    def ListMods(author,name):
+        mods = []
+        plugins_folder = f"{Modpacks.Path(author,name)}/BepInEx/plugins"
+        for file in os.listdir(plugins_folder):
+            if os.path.isdir(f"{plugins_folder}/{file}") and os.path.exists(f"{plugins_folder}/{file}/mod.json"):
+                mod_json_data = Util.OpenJson(f"{plugins_folder}/{file}/mod.json")
+                mod_json_data['icon_path'] = f"{plugins_folder}/{file}/icon.png"
+                mods.append(mod_json_data)
+        return mods
 
     def Export(author,name):
         export_json_loc = f"{Modpacks.Path(author,name)}/{author}-{name}.json"
@@ -102,6 +136,8 @@ class Modpacks:
             "version": modpack_json['version'],
             "update_date": modpack_json['update_date'],
             "cache_timestamp": os.path.getmtime(f"{Cache.CacheFolder}/lethal_company_package_index.json"),
+            "online_link": "",
+            "icon_url": "",
             "contents": {
                 "thunderstore_packages": [],
                 "overrides": []
@@ -119,55 +155,64 @@ class Modpacks:
 
         return
     
-    def Setup(modpack_data):
+    def Setup(modpack_data,finish_func):
+        QueueMan.ClearQueue()
 
         Modpacks.ModpackData = modpack_data
 
-        if Time.IsOlder(os.path.getmtime(f"{Cache.CacheFolder}/lethal_company_package_index.json"),modpack_data['cache_timestamp']):
-            Cache.Update()
-
-        Modpacks.New(modpack_data['author'],modpack_data['name'],modpack_data['version'])
+        Modpacks.New(modpack_data['author'],modpack_data['name'],modpack_data['version'],modpack_data['online_link'],modpack_data['icon_url'])
         Modpacks.Select(modpack_data['author'],modpack_data['name'])
 
         QueueMan.QueuePackages(modpack_data['contents']['thunderstore_packages'])
-        
-        threading.Thread(target=QueueMan.Start(overrides_function=Modpacks.DownloadOverrides),daemon=True).start()
+        Modpacks.DownloadManagement.StartWorkerObject(finish_func=finish_func)
+        #threading.Thread(target=QueueMan.Start(overrides_function=Modpacks.DownloadOverrides),daemon=True).start()
 
         # Overrides
         
         return
     
-    def DownloadOverrides(update=False):
+    def DownloadOverrides(update=False,closeSignalFunc=None,downloadScreenFunc=None,finish_func=None):
         
+        # Swap to loading screen
+
+        if callable(downloadScreenFunc): downloadScreenFunc("Downloading Overrides")
+
         modpack_data = Modpacks.ModpackData
         download_loc = f"{Cache.SelectedModpack}/override.zip"
         preexisting_data = Util.OpenJson(f"{Cache.SelectedModpack}/modpack.json")
-        if modpack_data['contents']['overrides']:
-            for override in modpack_data['contents']['overrides']:
+        if "contents" in modpack_data:
+            if modpack_data['contents']['overrides']:
+                for override in modpack_data['contents']['overrides']:
 
-                if update and override in preexisting_data['overrides']:
-                    Logging.New(f"{override} is already installed, skipping!")
-                    continue
+                    if update and override in preexisting_data['overrides']:
+                        Logging.New(f"{override} is already installed, skipping!")
+                        continue
 
-                if not override['gdrive'] and not override['dropbox']:
-                    Logging.New("No valid links found, skipping!")
-                    continue
+                    if not override['gdrive'] and not override['dropbox']:
+                        Logging.New("No valid links found, skipping!")
+                        continue
 
-                gd_file = Networking.DownloadFromGoogleDrive(override['gdrive'],download_loc)
-                if gd_file == "too_many_requests" or gd_file == "invalid":
-                    dropbox = override['dropbox']
-                    if str(dropbox).endswith("&dl=0"):
-                        dropbox = str(dropbox).replace("&dl=0","&dl=1")
+                    gd_file = Networking.DownloadFromGoogleDrive(override['gdrive'],download_loc)
+                    if gd_file == "too_many_requests" or gd_file == "invalid":
+                        dropbox = override['dropbox']
+                        if str(dropbox).endswith("&dl=0"):
+                            dropbox = str(dropbox).replace("&dl=0","&dl=1")
 
-                    Networking.DownloadFromUrl(dropbox,download_loc)
-                
-                preexisting_data['overrides'].append(override)
+                        Networking.DownloadFromUrl(dropbox,download_loc)
 
-                Filetree.DecompressZip(download_loc,Cache.SelectedModpack)
+                    preexisting_data['overrides'].append(override)
 
-                Util.WriteJson(f"{Cache.SelectedModpack}/modpack.json",preexisting_data)
-        
+                    Filetree.DecompressZip(download_loc,Cache.SelectedModpack)
+
+                    Util.WriteJson(f"{Cache.SelectedModpack}/modpack.json",preexisting_data)
+
         Modpacks.ModpackData = {}
+        Logging.New("Finished modpack download, starting closure proceedures")
+        
+        if callable(closeSignalFunc): closeSignalFunc()
+        if callable(finish_func): finish_func()
+
+        #Modpacks._screenFinishUpdate()
 
     def ScanForUpdates():
 
@@ -181,27 +226,53 @@ class Modpacks:
         
         for mod in Cache.LoadedMods:
             mod_json = Util.OpenJson(Cache.LoadedMods[mod]['json_file'])
-            mod_json['has_updates'] = Modpacks.Mods.CheckForUpdates(mod_json['author'],mod_json['name'])
-            Util.WriteJson(Cache.LoadedMods[mod]['json_file'],mod_json)
+            has_updates = Modpacks.Mods.CheckForUpdates(mod_json['author'],mod_json['name'])
+            if has_updates:
+                mod_json['has_updates'] = Cache.Get(mod_json['author'],mod_json['name'])['version_number']
+                Util.WriteJson(Cache.LoadedMods[mod]['json_file'],mod_json)
 
         return
 
-    def Import(modpack):
+    def UpdateVerify(author,name,finish_func=None):
+        modpack_json = Modpacks.GetJson(author,name)
+        if modpack_json['online_link']:
+            Modpacks.ImportVerify(modpack_json['online_link'],Modpacks.ShowDownloadScreen,Modpacks.CacheLoadingScreenFunc,Modpacks.SetCacheStatus,finish_func)
+        else:
+            Logging.New("No valid update path linked, skipping")
+            if callable(finish_func): finish_func()
+
+    def ImportVerify(modpack, showdownloadfunc=None,cacheloadingfunc=None,cachestatusfunc=None,finish_func=None):
         """Given a URL or a filepath it will import/update a modpack!"""
+        
+        modpack_data = Util.UrlPathDecoder(modpack)
+
+        if Time.IsOlder(os.path.getmtime(f"{Cache.CacheFolder}/lethal_company_package_index.json"),modpack_data['cache_timestamp']):
+            if callable(cacheloadingfunc): cacheloadingfunc()
+            Cache.Update(lambda modpack_data=modpack, download_func = showdownloadfunc, finishfunc=finish_func :Modpacks.Import(modpack_data,download_func,finishfunc),  cache_status_func=cachestatusfunc)
+        else:
+            Modpacks.Import(modpack,showdownloadfunc,finish_func)
+
+    def Import(modpack, showdownloadfunc=None,finish_func=None):
+        """Given a URL or a filepath it will import/update a modpack!"""
+
+        Logging.New("Importing modpack!")
 
         modpack_data = Util.UrlPathDecoder(modpack)
         
         if os.path.exists(Modpacks.Path(modpack_data['author'],modpack_data['name'])):
             if Networking.CompareVersions(modpack_data['version'],Modpacks.GetJson(modpack_data['author'],modpack_data['name'])['version']):
                 Logging.New("Triggering update sequence")
-                Modpacks.Update(modpack_data['author'],modpack_data['name'],modpack_data)
+                if callable(showdownloadfunc): showdownloadfunc()
+                Modpacks.Update(modpack_data['author'],modpack_data['name'],modpack_data,finish_func)
             else:
                 Logging.New("No updates for this modpack!")
+                if callable(finish_func): finish_func()
                 return
         else:
-            Modpacks.Setup(modpack_data)
+            if callable(showdownloadfunc): showdownloadfunc()
+            Modpacks.Setup(modpack_data,finish_func)
 
-    def Update(author,name,new_data):
+    def Update(author,name,new_data,finish_func=None):
         Modpacks.Select(author,name)
         QueueMan.ClearQueue()
 
@@ -210,12 +281,16 @@ class Modpacks:
         for mod in new_data['contents']['thunderstore_packages']:
 
             if Modpacks.Mods.Installed(mod['author'],mod['name']): # If the mod is already installed update it
-                Modpacks.Mods.Update(mod['author'],mod['name'],mod['version'])
+                if Networking.CompareVersions(mod['version'],Modpacks.Mods.GetVersion(mod['author'],mod['name'])):
+                    Modpacks.Mods.Delete(mod['author'],mod['name'])
+                    QueueMan.QueuePackage(mod['author'],mod['name'],mod['version'])
+                #Modpacks.Mods.Update(mod['author'],mod['name'],mod['version'])
 
             else: # Otherwise queue it up for download
                 QueueMan.QueuePackage(mod['author'],mod['name'],mod['version'])
 
-        threading.Thread(target=QueueMan.Start(overrides_function=Modpacks.DownloadOverrides,update=True),daemon=True).start() #Start update process
+        Modpacks.DownloadManagement.StartWorkerObject(update=True,finish_func=finish_func)
+        #threading.Thread(target=QueueMan.Start(overrides_function=Modpacks.DownloadOverrides,update=True),daemon=True).start() #Start update process
         
         modpack_json = Modpacks.GetJson(author,name)
         modpack_json['version'] = new_data['version']
@@ -228,10 +303,36 @@ class Modpacks:
         for file in os.listdir(Modpacks.ModpackFolder):
             if os.path.isdir(f"{Modpacks.ModpackFolder}/{file}") and os.path.exists(f"{Modpacks.ModpackFolder}/{file}/modpack.json"):
                 modpack_json = Util.OpenJson(f"{Modpacks.ModpackFolder}/{file}/modpack.json")
+                modpack_icon = f"{Modpacks.ModpackFolder}/{file}/icon.png"
                 modpack_json['mod_count'] = Modpacks.GetModCount(modpack_json['author'],modpack_json['name'])
+                modpack_json['icon'] = modpack_icon
                 modpack_json_paths.append(modpack_json)
 
         return modpack_json_paths
+    
+    def Exists(author,name):
+        modpack_path = Modpacks.Path(author,name)
+        if not os.path.exists(modpack_path):
+            return False
+        
+        return os.path.exists(f"{modpack_path}/modpack.json")
+
+    class DownloadManagement:
+        def StartWorkerObject(update=False,finish_func=None,screen_type=0):
+
+            worker_object = QueueWorkerObject()
+            worker_object.progress_output.connect(Modpacks.UpdatePercentageFunc)
+            worker_object.thread_display_update.connect(Modpacks.UpdateThreadDisplay)
+            worker_object.close_download_screen.connect(Modpacks.CloseDownloadScreenFunc)
+            worker_object.loading_screen_trigger.connect(Modpacks.CacheLoadingScreenFunc)
+            if callable(finish_func):
+                worker_object.finish_func.connect(finish_func)
+
+            working_thread = threading.Thread(target=lambda: worker_object.run(update=update,screen_type=screen_type),daemon=True)
+            working_thread.start()
+
+            return
+
 
     class Mods:
         def Path(author,name,mod_version):
@@ -267,10 +368,15 @@ class Modpacks:
 
             return
         
-        def Add(url=None,author=None,mod=None,mod_version="",ignore_dependencies=False):
+        def Add(url=None,author=None,mod=None,mod_version="",ignore_dependencies=False,feedback_func=None,text_output_func=None):
             if not os.path.exists(Cache.SelectedModpack):
                 Logging.New("Please select a modpack first!", 'error')
                 return
+            
+            if url and not Networking.UrlValidator(url):
+                Logging.New("Please enter a valid link!")
+                return
+
             
             if not url:
                 if not author or not mod or not mod_version.strip():
@@ -284,13 +390,26 @@ class Modpacks:
             if Modpacks.Mods.Installed(author,mod,url):
                 Logging.New("This mod is already installed, either update it or delete it!")
                 return
-
-            mod_location, author, name, mod_version, mod_files = Thunderstore.Download(url,author,mod,mod_version)
-            Modpacks.Mods.AddPackageFiles(author,name,mod_version,mod_files)
-            Modpacks.Mods.LoadMod(mod_location)
-
-            if not ignore_dependencies:
-                Logging.New(Modpacks.Mods.Dependencies(author,name))
+            
+            if url:
+                author, mod, mod_version = Thunderstore.Extract(url)
+            
+            if not mod_version.strip():
+                target_version = Cache.Get(author,mod)['version_number']
+            else:
+                target_version = mod_version
+            
+            QueueMan.ClearQueue()
+            QueueMan.QueuePackage(author,mod,target_version)
+            Modpacks.ShowLoadingScreen()
+            Modpacks.DownloadManagement.StartWorkerObject(screen_type=1,finish_func=Modpacks.LoadingToEdit)
+            
+            #mod_location, author, name, mod_version, mod_files = Thunderstore.Download(url,author,mod,mod_version,feedback_func,text_output_func)
+            #Modpacks.Mods.AddPackageFiles(author,name,mod_version,mod_files)
+            #Modpacks.Mods.LoadMod(mod_location)
+#
+            #if not ignore_dependencies:
+            #    Logging.New(Modpacks.Mods.Dependencies(author,name))
         
         def Delete(author,name,mod_version=""):
             if not os.path.exists(Cache.SelectedModpack):
@@ -309,21 +428,26 @@ class Modpacks:
             mod_json = f"{mod_path}/mod.json"
             mod_data = Util.OpenJson(mod_json)
 
-            valid_names = ["plugins","config","core","patcher"]
+            valid_names = ["plugins","config","core","patchers"]
 
             for file in mod_data['files']:
-                if str(file).split("\\")[0].lower() in valid_names:
-                    os.remove(f"{Cache.SelectedModpack}/BepInEx/{file}")
+                try:
+                    if str(file).split("\\")[0].lower() in valid_names:
+                        os.remove(f"{Cache.SelectedModpack}/BepInEx/{file}")
 
-                elif str(file).split("\\")[0].lower() == "bepinex":
-                    os.remove(f"{Cache.SelectedModpack}/{file}")
+                    elif str(file).split("\\")[0].lower() == "bepinex":
+                        os.remove(f"{Cache.SelectedModpack}/{file}")
 
-                else:
-                    os.remove(f"{mod_path}/{file}")
+                    else:
+                        os.remove(f"{mod_path}/{file}")
+                except FileNotFoundError:
+                    Logging.New(f"File not found! {file}",'warning')
 
             shutil.rmtree(mod_path)
             
             Modpacks.Mods.UnloadMod(author,name)
+
+            Logging.New(f"Deleted {author}-{name}")
         
         def Json(author,name):
             if f"{author}-{name}" in Cache.LoadedMods:
@@ -340,6 +464,11 @@ class Modpacks:
             
             return f"{author}-{name}" in Cache.LoadedMods
 
+        def SetUpdateVersion(author,name,new_version):
+            mod_json = Modpacks.Mods.Json(author,name)
+            mod_json['has_updates'] = new_version
+            Modpacks.Mods.WriteJson(author,name,mod_json)
+
         def CheckForUpdates(author, name):
 
             if not Modpacks.Mods.Installed(author, name):
@@ -355,7 +484,7 @@ class Modpacks:
         def GetVersion(author, name):
             return Modpacks.Mods.Json(author,name)["mod_version"]
 
-        def Update(author,name,mod_version=""):
+        def Update(author,name,mod_version="",feedback_func=None,text_output_func=None):
 
             if not Modpacks.Mods.Installed(author, name):
                 Logging.New(f"Invalid mod, [{author}-{name}] isn't installed!")
@@ -371,7 +500,7 @@ class Modpacks:
                 Modpacks.Mods.Toggle(author,name)
             
             Modpacks.Mods.Delete(author,name,Modpacks.Mods.GetVersion(author,name))
-            Modpacks.Mods.Add(f"https://thunderstore.io/c/lethal-company/p/{author}/{name}/{mod_version}")
+            Modpacks.Mods.Add(f"https://thunderstore.io/c/lethal-company/p/{author}/{name}/{mod_version}",feedback_func=feedback_func,text_output_func=text_output_func)
 
             Logging.New(f"Finished updating [{author}-{name}]")
         
@@ -383,11 +512,12 @@ class Modpacks:
             
             mod_json = Modpacks.Mods.Json(author,name)
             cur_state = mod_json['enabled']
-            valid_names = ["plugins","config","core","patcher"]
+            valid_names = ["plugins","config","core","patchers"]
             mod_path = Modpacks.Mods.Path(author,name,Modpacks.Mods.GetVersion(author,name))
 
             if cur_state:
                 for file in mod_json['files']:
+                    if file == "icon.png": continue
                     if str(file).split("\\")[0].lower() in valid_names:
                         os.rename(f"{Cache.SelectedModpack}/BepInEx/{file}",f"{Cache.SelectedModpack}/BepInEx/{file}"+"_disabled")
 
@@ -398,6 +528,7 @@ class Modpacks:
                         os.rename(f"{mod_path}/{file}",f"{mod_path}/{file}"+"_disabled")
             else:
                 for file in mod_json['files']:
+                    if file == "icon.png": continue
                     if str(file).split("\\")[0].lower() in valid_names:
                         os.rename(f"{Cache.SelectedModpack}/BepInEx/{file}"+"_disabled",f"{Cache.SelectedModpack}/BepInEx/{file}")
 
@@ -423,3 +554,23 @@ class Modpacks:
                 cur_dep += 1
 
             return mod_dependencies
+
+class QueueWorkerObject(QObject):
+    thread_display_update = pyqtSignal(int,str,str,str)
+    progress_output = pyqtSignal(int, float)
+    close_download_screen = pyqtSignal()
+    loading_screen_trigger = pyqtSignal(str)
+    finish_func = pyqtSignal()
+
+    def run(self,update=False, screen_type=0):
+
+        if screen_type == 0:
+            threading.Thread(target=QueueMan.Start(overrides_function=Modpacks.DownloadOverrides,
+                                                   emit_method=self.progress_output.emit,
+                                                   thread_display_method=self.thread_display_update.emit,
+                                                   close_download_method=self.close_download_screen.emit,
+                                                   loading_screen_method=self.loading_screen_trigger.emit,
+                                                   set_global_percent_method=Modpacks.SetGlobalPercent,
+                                                   finish_func=self.finish_func.emit,update=update),daemon=True).start()
+        elif screen_type == 1:
+            threading.Thread(target=QueueMan.Start(finish_func=self.finish_func.emit,update=update),daemon=True).start()
