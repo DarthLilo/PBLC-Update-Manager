@@ -55,16 +55,16 @@ class Config():
                     "value": "",
                     "default": "",
                     "description": "Overrides the Lethal Company path function and allows the user to set it manually",
-                    "type": "path"
+                    "type": "folder"
                 },
 
             },
-            "cache": {
-                "auto_download_cache": {
-                    "value": "False",
-                    "default": "False",
-                    "description": "Should the Thunderstore Cache be automatically downloaded if missing?",
-                    "type": "bool"
+            "performance": {
+                "max_download_threads": {
+                    "value": 6,
+                    "default": 6,
+                    "description": "Decides how many threads",
+                    "type": "int"
                 }
             }
 
@@ -131,3 +131,6 @@ class Config():
         Config.Data.write()
 
         return
+
+    def Get():
+        return Config.Data 
