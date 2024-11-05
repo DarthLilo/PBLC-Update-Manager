@@ -7,7 +7,7 @@ from .ThreadFrame import ThreadFrame
 import random
 
 class ActiveThreadsScrollMenu(QScrollArea):
-    def __init__(self, parent=None, max_threads=12):
+    def __init__(self, parent=None, max_threads=6):
         super().__init__()
 
         self._layout_container = QWidget()
@@ -32,7 +32,7 @@ class ActiveThreadsScrollMenu(QScrollArea):
         self.addSpacer()
     
     def addThread(self,thread_index):
-        modpack_frame = ThreadFrame(thread_index=thread_index+1)
+        modpack_frame = ThreadFrame(thread_index=thread_index)
         modpack_frame.setProgress(random.randint(0,100))
         self._layout.addWidget(modpack_frame,self.xPos,self.yPos)
         self._threads.append(modpack_frame)
