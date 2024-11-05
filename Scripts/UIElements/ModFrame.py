@@ -1,29 +1,34 @@
 from PyQt6.QtCore import (
-    Qt, QSize)
+    Qt, QSize, QObject, pyqtSignal)
 
-from PyQt6.QtWidgets import QGridLayout, QLabel, QFrame, QSizePolicy, QHBoxLayout, QSpacerItem, QWidget, QPushButton
+from PyQt6.QtWidgets import QGridLayout, QLabel, QFrame, QSizePolicy, QHBoxLayout, QSpacerItem, QWidget, QPushButton, QDialog, QDialogButtonBox, QVBoxLayout
 from PyQt6.QtGui import QColor, QPalette, QPixmap, QFont, QIcon
 
 from .ClickableLabel import ClickableLabel
 from .AnimatedToggle import AnimatedToggle
+from ..Assets import Assets
+from ..Modpacks import Modpacks
+from ..Cache import Cache
+from ..Networking import Networking
 
-import os, random
+import os, random, threading
 
 class ModFrame(QFrame):
-    def __init__(self, parent=None, mod_icon="", mod_name="Mod",mod_author="Author",mod_version="1.0.0"):
+    def __init__(self, parent=None, mod_icon="", mod_name="Mod",mod_author="Author",mod_version="1.0.0",delete_func=None):
         super().__init__()
-
+        self._mod_json = Modpacks.Mods.Json(mod_author,mod_name)
         self._layout = QHBoxLayout()
         self.mod_icon = mod_icon
         self.mod_name = mod_name
         self.mod_author = mod_author
         self.mod_version = mod_version
-        self.mod_update_version = "0.0.0"
-        self.mod_enabled = bool(random.randint(0,3))
-        self.updateable = bool(random.randint(0,1))
+        self.mod_update_version = self._mod_json['has_updates']
+        self.mod_enabled = self._mod_json['enabled']
+        self.updateable = bool(self._mod_json['has_updates'])
         self.inSearch = True
         self.inFilter = True
         self.curFilter = "All"
+        self._delete_func = delete_func
 
         self.setLayout(self._layout)
         self.setFrameShape(QFrame.Shape.StyledPanel)
@@ -38,7 +43,7 @@ class ModFrame(QFrame):
         if os.path.exists(self.mod_icon):
             mod_icon_path = self.mod_icon
         else:
-            mod_icon_path = "E:\\Lilos Coding\\PBML\\assets\\missing_icon.png"
+            mod_icon_path = Assets.getResource(Assets.IconTypes.missing)
         
         self._mod_icon_pixmap = QPixmap(mod_icon_path).scaled(QSize(80,80),aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio,transformMode=Qt.TransformationMode.SmoothTransformation)
     
@@ -101,17 +106,20 @@ class ModFrame(QFrame):
         self.mod_toggle.stateChanged.connect(self.update_state)
 
         self.refresh_mod = QPushButton()
-        self.refresh_mod.setIcon(QIcon("E:\\Lilos Coding\\PBML\\PBLC Update Manager\\assets\\refresh.png"))
+        self.refresh_mod.setIcon(QIcon(Assets.getResource(Assets.IconTypes.refresh)))
         self.refresh_mod.setIconSize(QSize(30,30))
+        self.refresh_mod.clicked.connect(self.CheckForUpdates)
         self._layout.addWidget(self.refresh_mod,alignment=Qt.AlignmentFlag.AlignRight)
         
 
         self.delete_mod = QPushButton()
-        self.delete_mod.setIcon(QIcon("E:\\Lilos Coding\\PBML\\PBLC Update Manager\\assets\\trash_can.png"))
+        self.delete_mod.setIcon(QIcon(Assets.getResource(Assets.IconTypes.trash_can)))
+        self.delete_mod.clicked.connect(self.DeleteMod)
         self.delete_mod.setIconSize(QSize(30,30))
         self._layout.addWidget(self.delete_mod,alignment=Qt.AlignmentFlag.AlignRight)
     
     def update_state(self, event):
+        Modpacks.Mods.Toggle(self.mod_author,self.mod_name)
         self.mod_enabled = bool(event)
         if self.curFilter == "Disabled":
             self.inFilter = not bool(event)
@@ -147,7 +155,7 @@ class ModFrame(QFrame):
         modifiers = event.modifiers()
 
         if modifiers == Qt.KeyboardModifier.NoModifier and button == Qt.MouseButton.LeftButton:
-            print(data)
+            Networking.OpenURL(f"https://thunderstore.io/c/lethal-company/p/{data['author']}/{data['name']}/")
         return
     
     def HoverEvent(self, hover):
@@ -155,3 +163,75 @@ class ModFrame(QFrame):
             self.mod_name_label.setPalette(self.mod_name_label_hover)
         else:
             self.mod_name_label.setPalette(self.mod_name_label_defualt)
+    
+    def CheckForUpdates(self):
+        has_updates = Modpacks.Mods.CheckForUpdates(self.mod_author,self.mod_name)
+        if has_updates:
+            self.mod_update_version = Cache.Get(self.mod_author,self.mod_name)['version_number']
+            self.updateable = True
+            Modpacks.Mods.SetUpdateVersion(self.mod_author,self.mod_name,self.mod_update_version)
+            self.mod_version_label.setText(f"({self.mod_version}    <    {self.mod_update_version})")
+            self.mod_version_label_grey.setColor(self.mod_version_label.foregroundRole(), QColor("#57ff7e"))
+            self.mod_version_label.setPalette(self.mod_version_label_grey)
+            upd_dialog = UpdateDialog(self.mod_author,self.mod_name,self.mod_version,self.mod_update_version)
+            result = upd_dialog.exec()
+
+            if result:
+                Modpacks.CacheLoadingScreenFunc()
+                Modpacks.SetCacheStatus(f"Downloading {self.mod_author}-{self.mod_name}")
+                #Modpacks.Mods.Update(self.mod_author,self.mod_name,self.mod_update_version)
+                self.updateable = False
+                Modpacks.Mods.SetUpdateVersion(self.mod_author,self.mod_name,False)
+                self.mod_version_label.setText(f"({self.mod_update_version})")
+                self.mod_version_label_grey.setColor(self.mod_version_label.foregroundRole(), QColor("#c3c3c3"))
+                self.mod_version_label.setPalette(self.mod_version_label_grey)
+                self.mod_version = self.mod_update_version
+
+                update_worker_object = UpdateWorkerObject()
+                update_worker_object.progress_update.connect(Modpacks.SetCacheStatus)
+                update_worker_object.finished.connect(Modpacks.CacheToModpack)
+
+                update_worker_thread = threading.Thread(target=lambda :update_worker_object.run(self.mod_author,self.mod_name,self.mod_version))
+                update_worker_thread.start()
+    
+    def DeleteMod(self):
+        Modpacks.Mods.Delete(self.mod_author,self.mod_name,self.mod_version)
+        self.Delete()
+    
+    def Delete(self, s=None, remove_container = True):
+        parent_layout = self.parent().layout()
+        parent_layout.removeWidget(self)
+        if remove_container:
+            self._delete_func(self)
+        self.deleteLater()
+        
+        del self
+
+class UpdateWorkerObject(QObject):
+    progress_update = pyqtSignal(str)
+    finished = pyqtSignal()
+    
+    def run(self,author,name,version):
+        Modpacks.Mods.Update(author,name,version,text_output_func=self.progress_update.emit)
+        self.finished.emit()
+
+class UpdateDialog(QDialog):
+    def __init__(self,author,name,old_version,new_version):
+        super().__init__()
+
+        self.setWindowTitle("Mod Updater")
+        self.setWindowIcon(QIcon(Assets.getResource(Assets.ResourceTypes.app_icon)))
+
+        QButtons = (
+            QDialogButtonBox.StandardButton.Yes | QDialogButtonBox.StandardButton.No
+        )
+
+        self.button_box = QDialogButtonBox(QButtons)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+
+        layout = QVBoxLayout()
+        display_message = QLabel(f"{author}-{name} has a new version available! {old_version} < {new_version}\n\nWould you like to update?")
+        layout.addWidget(display_message)
+        layout.addWidget(self.button_box)
+        self.setLayout(layout)
