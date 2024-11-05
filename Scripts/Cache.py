@@ -2,8 +2,9 @@ from .Logging import Logging
 from .Networking import Networking
 from .Filetree import Filetree
 from .Maths import Maths
-from .Config import Config
-import requests, pickle, json, os, shutil
+import requests, pickle, json, os, shutil, threading
+
+from PyQt6.QtCore import QObject, pyqtSignal
 
 class Cache():
 
@@ -14,6 +15,7 @@ class Cache():
     Packages = {}
     SelectedModpack = ""
     LoadedMods = {}
+    StartCache = False
 
     def __init__(self,CacheFolder):
 
@@ -24,12 +26,13 @@ class Cache():
         Cache.ModCache = f"{CacheFolder}/ModCache"
 
         if not os.path.exists(Cache.LethalCompanyPackageIndex):
-            Cache.Download()
+            Cache.StartCache = True
+            #Cache.Download()
          
         if not os.path.exists(Cache.LethalPackageCache): # If no cache pk1 file is found, create one
-         
-            Cache.Index()
-            Cache.SaveIndex()
+            Cache.StartCache = True
+            #Cache.Index()
+            #Cache.SaveIndex()
     
         else: # Load existing pk1 cache file
             Cache.Packages = Cache.LoadIndex()
@@ -39,22 +42,22 @@ class Cache():
 
         return
     
-    def Download():
+    def Download(cache_status_func=None):
         """Downloads the latest cache file from the Thunderstore CDN"""
         Logging.New("Downloading the latest cache")
 
-        Networking.DownloadFromUrl("https://thunderstore.io/c/lethal-company/api/v1/package/",f"{Cache.CacheFolder}/lethal_company_package_index.json",True)
+        Networking.DownloadFromUrl("https://thunderstore.io/c/lethal-company/api/v1/package/",f"{Cache.CacheFolder}/lethal_company_package_index.json",cache_status_func)
     
-    def Index():
+    def Index(cache_status_func=None):
         """Indexes the cache file into memory, packages can be retrieved using the [author] [name] format"""
         Logging.New("Beginning package index process, this might take a while...")
+        if callable(cache_status_func): cache_status_func(f"Caching mods...")
         Cache.Packages.clear()
         with open(Cache.LethalCompanyPackageIndex, 'r', encoding='utf-8') as file:
             data = json.load(file)
-
             for entry in data:
                 key = (entry['owner'], entry['name'])
-                Logging.New(f"Caching {key}...")
+                #Logging.New(f"Caching {key}...")
                 Cache.Packages[key] = entry
             
             Logging.New("Finished Caching")
@@ -82,11 +85,18 @@ class Cache():
         except FileNotFoundError:
             Logging.New("Cache reset file not found!",'error')
     
-    def Update():
-        Cache.Reset()
-        Cache.Download()
-        Cache.Index()
-        Cache.SaveIndex()
+    def Update(import_func=None,cache_status_func=None):
+
+        Cache.StartWorkerObject(import_func,cache_status_func)
+    
+    def StartWorkerObject(import_func,cache_status_func):
+        worker_object = CacheWorkerObject()
+
+        worker_object.update_status.connect(cache_status_func)
+        worker_object.finished.connect(import_func)
+        
+        working_thread = threading.Thread(target=worker_object.run,daemon=True)
+        working_thread.start()
 
     def Get(owner,name,version="",full_package=False):
         """Gets the matching package entry for the owner and name specified, if a version is specified it will return the entry for that version"""
@@ -119,21 +129,40 @@ class Cache():
             return f"{Cache.ModCache}/{author}-{name}-{mod_version}.zip"
         
         def AddMod(path):
+            try:
+                file_name = os.path.basename(path)
+                new_loc = f"{Cache.ModCache}/{file_name}"
 
-            file_name = os.path.basename(path)
-            new_loc = f"{Cache.ModCache}/{file_name}"
+                if os.path.exists(new_loc):
+                    os.remove(new_loc)
+                    Logging.New(f"Cleared old cache for {file_name}")
 
-            if os.path.exists(new_loc):
-                os.remove(new_loc)
-                Logging.New(f"Cleared old cache for {file_name}")
-            
-            shutil.copy(path,new_loc)
+                shutil.copy(path,new_loc)
 
-            Logging.New(f"Cached file {file_name}")
+                Logging.New(f"Cached file {file_name}")
+            except FileNotFoundError:
+                pass
 
             return
+        
+        def DeleteMod(author,name,mod_version):
+            if Cache.FileCache.IsCached(author,name,mod_version):
+                os.remove(f"{Cache.ModCache}/{author}-{name}-{mod_version}.zip")
+                Logging.New(f"Deleted {author}-{name}-{mod_version} from cache!")
         
         def Clear():
             for folder in os.listdir(Cache.ModCache):
                 os.remove(f"{Cache.ModCache}/{folder}")
             Logging.New("Cleared Mod Cache!")
+
+class CacheWorkerObject(QObject):
+
+    update_status = pyqtSignal(str)
+    finished = pyqtSignal()
+
+    def run(self):
+        Cache.Reset()
+        Cache.Download(self.update_status.emit)
+        Cache.Index(self.update_status.emit)
+        Cache.SaveIndex()
+        self.finished.emit()
