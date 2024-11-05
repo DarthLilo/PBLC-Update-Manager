@@ -8,6 +8,9 @@ class Launch:
 
     LethalCompanyPath = ""
     SteamFolder = ""
+    author = ""
+    name = ""
+    modpack_path = ""
 
     def __init__(self, LethalCompanyFolder,SteamFolder):
 
@@ -38,14 +41,25 @@ class Launch:
         if not os.path.exists(modpack_path):
             Logging.New("Please select a modpack to launch!",'error')
             return
+        
+        Launch.author = author
+        Launch.name = name
+        Launch.modpack_path = modpack_path
+        
+        Logging.New("Preforming update checks...")
+        Modpacks.UpdateVerify(author,name,Launch.actualLaunch)
+    
+    def actualLaunch():
+
+
         Launch.Setup()
-        Logging.New(f"Launching modpack {author}-{name}")
+        Logging.New(f"Launching modpack {Launch.author}-{Launch.name}")
 
         launch_command = [
             f"{Launch.SteamFolder}/Steam.exe",
             '-applaunch', '1966720',
             '--doorstop-enable', 'true',
-            '--doorstop-target', f"{modpack_path}/BepInEx/core/BepInEx.Preloader.dll"
+            '--doorstop-target', f"{Launch.modpack_path}/BepInEx/core/BepInEx.Preloader.dll"
         ]
 
         subprocess.Popen(launch_command,shell=True)
