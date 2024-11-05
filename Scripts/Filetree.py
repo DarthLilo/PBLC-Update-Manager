@@ -35,8 +35,14 @@ class Filetree():
 
         Logging.New(f"Decompressing archive {os.path.basename(zip)}...")
         with zipfile.ZipFile(zip,'a',zipfile.ZIP_DEFLATED) as zipf:
-            zipf.extractall(destination)
-        os.remove(zip)
+            try:
+                zipf.extractall(destination)
+            except FileExistsError:
+                pass
+        try:
+            os.remove(zip)
+        except PermissionError:
+            Logging.New("Zip file is being used by another process, couldn't remove!")
         return destination
     
     def SortFiles(modpack_dir,folder):
@@ -49,17 +55,21 @@ class Filetree():
                 rel_path = os.path.relpath(os.path.join(root,file),folder)
                 package_files.append(rel_path)
         
-        for sub_dir in os.listdir(folder):
-            if os.path.isdir(f"{folder}/{sub_dir}"):
-                if sub_dir == "BepInEx":
-                    shutil.copytree(f"{folder}/{sub_dir}",f"{modpack_dir}/BepInEx",dirs_exist_ok=True)
-                    shutil.rmtree(f"{folder}/{sub_dir}")
-                    continue
-                for tag in special_folders:
-                    if sub_dir == tag:
-                        shutil.copytree(f"{folder}/{sub_dir}",f"{modpack_dir}/BepInEx/{tag}",dirs_exist_ok=True)
+        if os.path.exists(folder):
+            for sub_dir in os.listdir(folder):
+                if os.path.isdir(f"{folder}/{sub_dir}"):
+                    if sub_dir == "BepInEx":
+                        shutil.copytree(f"{folder}/{sub_dir}",f"{modpack_dir}/BepInEx",dirs_exist_ok=True)
                         shutil.rmtree(f"{folder}/{sub_dir}")
-                        break
+                        continue
+                    for tag in special_folders:
+                        if sub_dir == tag:
+                            shutil.copytree(f"{folder}/{sub_dir}",f"{modpack_dir}/BepInEx/{tag}",dirs_exist_ok=True)
+                            try:
+                                shutil.rmtree(f"{folder}/{sub_dir}")
+                            except PermissionError:
+                                Logging.New(f"Error when removing files {folder}/{sub_dir}, they are in use")
+                            break
         
         return package_files
     
@@ -89,7 +99,7 @@ class Filetree():
             if lethal_company_steamid in apps:
                 lethal_path = os.path.normpath(f"{cur_lib['path']}/steamapps/common/Lethal Company")
                 Logging.New(f"Located Lethal Company path: {lethal_path}")
-                return "lethal_path"
+                return lethal_path
     
     def DirSize(target_path):
         total_size = 0
