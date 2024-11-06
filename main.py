@@ -1,9 +1,9 @@
 import sys, os, json, time, random
 
 from PyQt6.QtCore import QSize, Qt, pyqtProperty, QLoggingCategory
-from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QSizePolicy
+from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QSizePolicy, QDialog, QDialogButtonBox, QLabel, QVBoxLayout
 from PyQt6.QtGui import QMovie, QAction, QIcon, QFontDatabase
-import Scripts
+import Scripts, subprocess
 
 ############################### Variables ###############################
 
@@ -51,6 +51,16 @@ class PBLCWindow(QMainWindow):
         self.setWindowTitle(f"PBLC Update Manager - [{ReleaseTag} - {PBLCVersion}]")
         self.setMinimumSize(1000,580)
         self.setWindowIcon(QIcon(Scripts.Assets.getResource(Scripts.Assets.ResourceTypes.app_icon)))
+        
+        if not Scripts.Filetree.IsPythonInstalled():
+            Scripts.Logging.New("Python isn't installed, prompting user to install")
+            dlg = PythonInstalled()
+            response = dlg.exec()
+            if response:
+                subprocess.Popen(f"{CurFolder}/lib/python_install.bat")
+            else:
+                sys.exit()
+                return
 
         ### LOAD MENU BAR
         menu = self.menuBar()
@@ -88,6 +98,25 @@ class PBLCWindow(QMainWindow):
 
     def OpenConfig(self):
         self.main_menu.OpenConfigScreen()
+
+class PythonInstalled(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Launcher Update")
+        self.setWindowIcon(QIcon(Scripts.Assets.getResource(Scripts.Assets.ResourceTypes.app_icon)))
+
+        Buttons = (
+            QDialogButtonBox.StandardButton.Yes | QDialogButtonBox.StandardButton.No
+        )
+        self.button_box = QDialogButtonBox(Buttons)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+
+        layout = QVBoxLayout(self)
+        self.message = QLabel("Python isn't installed, please install it before you can continue!")
+        layout.addWidget(self.message)
+        layout.addWidget(self.button_box)
 
 # ACTUALLY START THE WINDOW
 

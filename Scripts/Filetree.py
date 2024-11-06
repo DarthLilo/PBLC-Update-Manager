@@ -133,3 +133,16 @@ class Filetree():
             result = dlg.exec()
             return True
         return False
+    
+    def IsPythonInstalled():
+        try:
+            result = subprocess.run(['python','--version'],capture_output=True,text=True)
+            if result.returncode == 0:
+                Logging.New(f"Python is installed running version {result.stdout.strip()}")
+                return True
+            else:
+                Logging.New("Python is not installed",'error')
+                return False
+        except FileNotFoundError:
+            Logging.New("Python is not installed",'error')
+            return False
