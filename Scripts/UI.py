@@ -156,11 +156,11 @@ class UI(QWidget):
         self.screen_container.addWidget(self._screen_modpack_selection)
 
         # Modpack download
-        if not Modpacks.Exists("DarthLilo","Events Server") and os.path.exists("E:\\Lilos Coding\\PBML\\DarthLilo-Events Server.json") and Config.Read("general","auto_download_modpack",'value') == "True":
+        if not Modpacks.Exists("DarthLilo","Events Server") and Config.Read("general","auto_download_modpack",'value') == "True":
             dlg = ConfirmDownload("Would you like to install the main modpack?")
             result = dlg.exec()
             if result:
-                Modpacks.ImportVerify("E:\\Lilos Coding\\PBML\\DarthLilo-Events Server.json",self.ShowDownloadScreen,self.ShowLoadingScreenCacheUpdate,self._screen_loading_cache_update.setStatus)
+                Modpacks.ImportVerify("https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/pblc-remake/LiveModpacks/DarthLilo-Events%20Server.json",self.ShowDownloadScreen,self.ShowLoadingScreenCacheUpdate,self._screen_loading_cache_update.setStatus)
                 self.deselectModpack()
             else:
                 Config.Write("general","auto_download_modpack",False)
