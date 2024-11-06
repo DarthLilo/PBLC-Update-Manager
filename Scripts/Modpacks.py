@@ -7,7 +7,7 @@ from .Networking import Networking
 from .QueueMan import QueueMan
 from .Filetree import Filetree
 from time import sleep
-import os, json, shutil, threading, gdown
+import os, json, shutil, threading, gdown, traceback
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
@@ -165,7 +165,6 @@ class Modpacks:
 
         QueueMan.QueuePackages(modpack_data['contents']['thunderstore_packages'])
         Modpacks.DownloadManagement.StartWorkerObject(finish_func=finish_func)
-        #threading.Thread(target=QueueMan.Start(overrides_function=Modpacks.DownloadOverrides),daemon=True).start()
 
         # Overrides
         
@@ -191,14 +190,17 @@ class Modpacks:
                     if not override['gdrive'] and not override['dropbox']:
                         Logging.New("No valid links found, skipping!")
                         continue
+                    try:
+                        gd_file = Networking.DownloadFromGoogleDrive(override['gdrive'],download_loc)
+                        if gd_file == "too_many_requests" or gd_file == "invalid":
+                            dropbox = override['dropbox']
+                            if str(dropbox).endswith("&dl=0"):
+                                dropbox = str(dropbox).replace("&dl=0","&dl=1")
 
-                    gd_file = Networking.DownloadFromGoogleDrive(override['gdrive'],download_loc)
-                    if gd_file == "too_many_requests" or gd_file == "invalid":
-                        dropbox = override['dropbox']
-                        if str(dropbox).endswith("&dl=0"):
-                            dropbox = str(dropbox).replace("&dl=0","&dl=1")
-
-                        Networking.DownloadFromUrl(dropbox,download_loc)
+                            Networking.DownloadFromUrl(dropbox,download_loc)
+                    except Exception as e:
+                        Logging.New(traceback.format_exc(),'error')
+                        modpack_data['contents']['overrides'].append(override)
 
                     preexisting_data['overrides'].append(override)
 
@@ -290,7 +292,6 @@ class Modpacks:
                 QueueMan.QueuePackage(mod['author'],mod['name'],mod['version'])
 
         Modpacks.DownloadManagement.StartWorkerObject(update=True,finish_func=finish_func)
-        #threading.Thread(target=QueueMan.Start(overrides_function=Modpacks.DownloadOverrides,update=True),daemon=True).start() #Start update process
         
         modpack_json = Modpacks.GetJson(author,name)
         modpack_json['version'] = new_data['version']

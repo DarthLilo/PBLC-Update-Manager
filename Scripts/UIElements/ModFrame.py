@@ -6,10 +6,12 @@ from PyQt6.QtGui import QColor, QPalette, QPixmap, QFont, QIcon
 
 from .ClickableLabel import ClickableLabel
 from .AnimatedToggle import AnimatedToggle
+from .LethalRunning import LethalRunning
 from ..Assets import Assets
 from ..Modpacks import Modpacks
 from ..Cache import Cache
 from ..Networking import Networking
+from ..Filetree import Filetree
 
 import os, random, threading
 
@@ -119,6 +121,10 @@ class ModFrame(QFrame):
         self._layout.addWidget(self.delete_mod,alignment=Qt.AlignmentFlag.AlignRight)
     
     def update_state(self, event):
+        
+        if Filetree.IsLethalRunning(LethalRunning):
+            return
+        
         Modpacks.Mods.Toggle(self.mod_author,self.mod_name)
         self.mod_enabled = bool(event)
         if self.curFilter == "Disabled":
@@ -165,6 +171,9 @@ class ModFrame(QFrame):
             self.mod_name_label.setPalette(self.mod_name_label_defualt)
     
     def CheckForUpdates(self):
+        if Filetree.IsLethalRunning(LethalRunning):
+            return
+        
         has_updates = Modpacks.Mods.CheckForUpdates(self.mod_author,self.mod_name)
         if has_updates:
             self.mod_update_version = Cache.Get(self.mod_author,self.mod_name)['version_number']
@@ -191,10 +200,13 @@ class ModFrame(QFrame):
                 update_worker_object.progress_update.connect(Modpacks.SetCacheStatus)
                 update_worker_object.finished.connect(Modpacks.CacheToModpack)
 
-                update_worker_thread = threading.Thread(target=lambda :update_worker_object.run(self.mod_author,self.mod_name,self.mod_version))
+                update_worker_thread = threading.Thread(target=lambda :update_worker_object.run(self.mod_author,self.mod_name,self.mod_version),daemon=True)
                 update_worker_thread.start()
     
     def DeleteMod(self):
+        if Filetree.IsLethalRunning(LethalRunning):
+            return
+        
         Modpacks.Mods.Delete(self.mod_author,self.mod_name,self.mod_version)
         self.Delete()
     

@@ -1,15 +1,21 @@
-import validators, os, requests, traceback, json, webbrowser, gdown
+import validators, os, requests, traceback, json, webbrowser, gdown, shutil, subprocess, sys
 from PyQt6.QtGui import QIcon, QPixmap
+from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel
 from urllib import request
 from urllib.error import HTTPError
 from packaging import version
 from .Logging import Logging
 from .Maths import Maths
 from .Assets import Assets
+from .Filetree import Filetree
 from PIL import Image
 from io import BytesIO
 
 class Networking: 
+
+    github_repo_latest_release = "https://api.github.com/repos/DarthLilo/PBLC-Update-Manager/releases/latest"
+    PBLCVersion = ""
+    CurFolder = ""
 
     def UrlValidator(url):
         if validators.url(url) != True:
@@ -74,7 +80,7 @@ class Networking:
             return "invalid"
         Logging.New(f"Beginning download of {source} from Google Drive")
         try:
-            gdown.download(id=source,output=destination)
+            gdown.download(id=source,output=destination,quiet=True)
             return "finished"
         except gdown.exceptions.FileURLRetrievalError:
             Logging.New(f"{source} has too many requests!")
@@ -97,8 +103,59 @@ class Networking:
         request.install_opener(opener)
         request.urlretrieve(url, destination)
 
-    
     def IsURL(url):
         if validators.url(url) != True:
             return False
         return True
+    
+    def CheckForUpdatesManager():
+        Logging.New("Checking for PBLC Updates")
+        github_api_response = json.loads(request.urlopen(Networking.github_repo_latest_release).read().decode())
+        latest_manager =  str(github_api_response['tag_name'])
+
+        if Networking.CompareVersions(latest_manager,Networking.PBLCVersion):
+            Logging.New("Updates available!")
+            dlg = ConfirmUpdate("There are updates available, would you like to update?")
+            result = dlg.exec()
+            if result:
+                Networking.DownloadLauncherUpdate(github_api_response)
+        else:
+            Logging.New("No updates found.")
+    
+    def DownloadLauncherUpdate(github_api_response):
+        Logging.New("Updating launcher")
+        zip_link = github_api_response['assets'][0]['browser_download_url']
+        temp_download_folder = os.path.normpath(f"{Networking.CurFolder}/download_cache")
+        target_zip  = f"{temp_download_folder}/latest_manager.zip"
+
+        if os.path.exists(temp_download_folder):
+            shutil.rmtree(temp_download_folder)
+        os.mkdir(temp_download_folder)
+
+        request.urlretrieve(zip_link,target_zip)
+
+        Logging.New("Download finished")
+        Filetree.DecompressZip(target_zip,temp_download_folder)
+        subprocess.Popen(["python",f"{Networking.CurFolder}/Updater.py"])
+        sys.exit()
+
+        return
+
+class ConfirmUpdate(QDialog):
+    def __init__(self,message):
+        super().__init__()
+
+        self.setWindowTitle("Launcher Update")
+        self.setWindowIcon(QIcon(Assets.getResource(Assets.ResourceTypes.app_icon)))
+
+        Buttons = (
+            QDialogButtonBox.StandardButton.Yes | QDialogButtonBox.StandardButton.No
+        )
+        self.button_box = QDialogButtonBox(Buttons)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+
+        layout = QVBoxLayout(self)
+        self.message = QLabel(message)
+        layout.addWidget(self.message)
+        layout.addWidget(self.button_box)

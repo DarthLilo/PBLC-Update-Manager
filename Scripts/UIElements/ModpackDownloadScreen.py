@@ -5,8 +5,9 @@ from PyQt6.QtGui import QMovie, QAction, QIcon, QFontDatabase, QFont, QPixmap, Q
 from .ActiveThreadsScrollMenu import ActiveThreadsScrollMenu
 from ..Config import Config
 from ..Networking import Networking
+from ..Logging import Logging
 
-import threading, datetime, time
+import threading, datetime, time, traceback
 
 class ModpackDownloadScreen(QWidget):
     def __init__(self):
@@ -24,11 +25,6 @@ class ModpackDownloadScreen(QWidget):
         self.modpack_progress_frame = QFrame()
         self.modpack_progress_layout = QVBoxLayout(self.modpack_progress_frame)
         self.modpack_progress_frame.setFrameStyle(QFrame.Shape.StyledPanel)
-        
-        self.current_status_label = QLabel("Initializing Download")
-        self.current_status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.current_status_label.setFont(QFont("IBM 3270", 16))
-        self.modpack_progress_layout.addWidget(self.current_status_label)
 
         self.current_progress_bar = QProgressBar()
         self.current_progress_bar.setValue(0)
@@ -44,30 +40,35 @@ class ModpackDownloadScreen(QWidget):
         
         self._layout.addWidget(self.mod_download_threads_frame,0,0,4,1)
         self._layout.addWidget(self.modpack_progress_frame,5,0,1,1)
-    
-    def setStatus(self, status):
-        self.current_status_label.setText(status)
 
     def initClock(self):
+        self._kill_clock = False
+        Logging.New("Clock started!")
+        self.elapsed_time.setText("00:00:00")
         self.start_time = datetime.datetime.timestamp(datetime.datetime.now())
         threading.Thread(target=lambda start_time=self.start_time:self.updateClock(start_time),daemon=True).start()
     
     def updateClock(self, start_time):
-        if self._kill_clock:
-            self._kill_clock
-            return
-        
-        timestamp_start = datetime.datetime.fromtimestamp(start_time)
-        timestamp_now = datetime.datetime.now()
+        try:
+            if self._kill_clock:
+                self._kill_clock
+                Logging.New("Clock killed")
+                return
 
-        difference = round((timestamp_now-timestamp_start).total_seconds())
-        hours, remainder = divmod(difference, 3600)
-        minutes, seconds = divmod(remainder, 60)
-        formatted_time = "{:02}:{:02}:{:02}".format(int(hours), int(minutes), int(seconds))
-        self.elapsed_time.setText(formatted_time)
+            timestamp_start = datetime.datetime.fromtimestamp(start_time)
+            timestamp_now = datetime.datetime.now()
 
-        time.sleep(1)
-        self.updateClock(start_time)
+            difference = round((timestamp_now-timestamp_start).total_seconds())
+            hours, remainder = divmod(difference, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            formatted_time = "{:02}:{:02}:{:02}".format(int(hours), int(minutes), int(seconds))
+            self.elapsed_time.setText(formatted_time)
+            Logging.New(f"Clock updated to {formatted_time}")
+            time.sleep(1)
+            Logging.New("Clock Loop Started")
+            self.updateClock(start_time)
+        except Exception as e:
+            Logging.New(traceback.format_exc(),'error')
     
     def killClock(self):
         self._kill_clock = True

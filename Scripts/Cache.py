@@ -93,7 +93,7 @@ class Cache():
         worker_object = CacheWorkerObject()
 
         worker_object.update_status.connect(cache_status_func)
-        worker_object.finished.connect(import_func)
+        if callable(import_func): worker_object.finished.connect(import_func)
         
         working_thread = threading.Thread(target=worker_object.run,daemon=True)
         working_thread.start()

@@ -112,12 +112,6 @@ class ModpackFrame(QFrame):
             #self._screen_func(data)
         return
     
-    def show(self):
-        self.setVisible(True)
-    
-    def hide(self):
-        self.setVisible(False)
-    
     def UpdateFrameModCount(self,value):
         try:
             self.modpack_mod_count_label.setText(f"({value} Mods)")

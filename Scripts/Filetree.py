@@ -1,8 +1,9 @@
 import os.path
-import os, zipfile, winreg, vdf, shutil
+import os, zipfile, winreg, vdf, shutil, subprocess, traceback
 from .Logging import Logging
 from .Util import Util
 from .Config import Config
+
 
 class Filetree():
 
@@ -112,3 +113,23 @@ class Filetree():
     def VerifyLethalPath(path):
         Logging.New("Verifying Lethal Company path...")
         return os.path.exists(path)
+    
+    def IsProcessRunning(process_name):
+        Logging.New("Checking for process_name")
+        cmd = 'tasklist /fi "imagename eq {}"'.format(process_name)
+        try:
+            output = subprocess.check_output(cmd, shell=True).decode('utf-8')
+            if process_name.lower() in output.lower():
+                return True
+            else:
+                return False
+        except Exception as e:
+            Logging.New(traceback.format_exc(), 'error')
+            return False
+    
+    def IsLethalRunning(popup_window):
+        if Filetree.IsProcessRunning("Lethal Company.exe"):
+            dlg = popup_window()
+            result = dlg.exec()
+            return True
+        return False

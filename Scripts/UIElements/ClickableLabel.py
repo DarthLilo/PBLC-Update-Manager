@@ -2,9 +2,11 @@ from PyQt6.QtWidgets import QLabel, QMenu
 from PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtCore import QEvent
 
+from .LethalRunning import LethalRunning
 from ..Assets import Assets
 from ..Launch import Launch
 from ..Modpacks import Modpacks
+from ..Filetree import Filetree
 
 class ClickableLabel(QLabel):
     """Activates a function \"whenClicked\" when the label is clicked and transmits the event and an dictionary package of data!"""
@@ -71,6 +73,8 @@ class ClickableLabel(QLabel):
         context_menu.exec(event.globalPos())
     
     def deleteModpack(self):
+        if Filetree.IsLethalRunning(LethalRunning):
+            return
         Modpacks.Delete(self._author,self._name)
         Modpacks.RefreshModpacks()
 

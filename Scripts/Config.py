@@ -57,6 +57,12 @@ class Config():
                     "description": "Overrides the Lethal Company path function and allows the user to set it manually",
                     "type": "folder"
                 },
+                "auto_download_modpack": {
+                    "value": True,
+                    "default": True,
+                    "description": "Automatically prompts to download the main modpack to avoid user hastle",
+                    "type": "bool"
+                }
 
             },
             "performance": {

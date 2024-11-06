@@ -5,9 +5,11 @@ class Logging():
 
     LoggingFolder = ""
     CurrentLog = None
+    PBLCVersion = ""
 
-    def __init__(self, LoggingFolder):
+    def __init__(self, LoggingFolder,PBLCVersion):
         Logging.LoggingFolder = LoggingFolder
+        Logging.PBLCVersion = PBLCVersion
 
         Logging.Start()
         return
@@ -52,7 +54,7 @@ class Logging():
     
     def Close():
         current_thread = threading.current_thread().name
-        log_entry = f"[{Time.CurrentTime()}] [END] [{current_thread}] PBLC Update Manager - [VERSION HERE] is closing!"
+        log_entry = f"[{Time.CurrentTime()}] [END] [{current_thread}] PBLC Update Manager - [{Logging.PBLCVersion}] is closing!"
         with open(Logging.CurrentLog,'a') as log_write:
             log_write.write(log_entry)
         print(log_entry)

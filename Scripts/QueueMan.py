@@ -58,9 +58,13 @@ class QueueMan():
                 if Networking.CompareVersions(version,local_version):
                     Logging.New("Package was already queued, but a newer version was requested, overwriting")
                     QueueMan.stale_packages.append(entry)
-                else:
+                elif Networking.CompareVersions(local_version,version):
                     Logging.New("A newer version of the package was already queued, skipping")
                     return
+                else:
+                    Logging.New("A package with the same version was already queued, skipping")
+                    return
+                    
 
         QueueMan.package_length += 1
         QueueMan.active_queue.put(package)
@@ -92,8 +96,11 @@ class QueueMan():
                     if Networking.CompareVersions(package['version'],local_version):
                         Logging.New("Package was already queued, but a newer version was requested, overwriting")
                         QueueMan.stale_packages.append(entry)
-                    else:
+                    elif Networking.CompareVersions(local_version,package['version']):
                         Logging.New("A newer version of the package was already queued, skipping")
+                        continue
+                    else:
+                        Logging.New("A package with the same version was already queued, skipping")
                         continue
 
             QueueMan.package_length += 1
@@ -153,9 +160,6 @@ class QueueMan():
         Logging.New("Starting multithreaded download")
         QueueMan.package_progression = 0
         QueueMan.Execute(threads,overrides_function,update,emit_method,thread_display_method,close_download_method,loading_screen_method,set_global_percent_method,finish_func=finish_func)
-        #download_thread = threading.Thread(target=lambda threads = threads:QueueMan.Execute(threads,overrides_function=overrides_function,update=update),daemon=True)
-        #
-        #download_thread.start()
         
         return
     
@@ -174,6 +178,11 @@ class QueueMan():
 
                 if package_data == None:
                     self.queue.task_done()
+                    return
+                
+                if package_data in QueueMan.stale_packages:
+                    self.queue.task_done()
+                    Logging.New(f"Package was stale, skipping {package_data}")
                     return
                 
                 # DOWNLOADING

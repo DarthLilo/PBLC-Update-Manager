@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QSize, Qt, pyqtProperty, QObject, pyqtSignal
-from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QSizePolicy, QVBoxLayout, QLineEdit, QLabel, QStackedWidget
+from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QSizePolicy, QVBoxLayout, QLineEdit, QLabel, QStackedWidget, QDialog, QDialogButtonBox
 from PyQt6.QtGui import QMovie, QAction, QIcon, QFontDatabase, QFont
 
 from . import UIElements
@@ -9,6 +9,7 @@ from .Assets import Assets
 from .Logging import Logging
 from .Cache import Cache
 from .Config import Config
+from .Networking import Networking
 
 import time, random, threading, os
 
@@ -30,6 +31,8 @@ class UI(QWidget):
         self._screen_add_import_modpack = None
         self._selected_modpack = None
         self._screen_download_threads = UIElements.ModpackDownloadScreen()
+
+        Networking.CheckForUpdatesManager()
 
         #Cache Loading
         if Cache.StartCache:
@@ -60,8 +63,6 @@ class UI(QWidget):
         launch_worker_object.fadeout_anim.connect(self.FadeToModpackSelection)
         
         launch_thread = threading.Thread(target=launch_worker_object.run,daemon=True).start()
-
-        
     
     def LoadFonts(self):
         lethal_font = QFontDatabase.addApplicationFont(f"{Assets.asset_folder}/3270-Regular.ttf")
@@ -119,7 +120,7 @@ class UI(QWidget):
     def ShowEditModpackScreen(self, data = None,update_modcount_func=None):
         Modpacks.Select(data['author'],data['name'])
         if not self._screen_edit_modpack:
-            self._screen_edit_modpack = UIElements.EditModpackMenu(Assets.modpackIcon(data['icon']),data['name'],data['author'],data['version'],data['mod_count'],self.ShowModpactSelectionScreen,update_modcount_func)
+            self._screen_edit_modpack = UIElements.EditModpackMenu(Assets.modpackIcon(data['icon']),data['name'],data['author'],data['version'],data['mod_count'],self.ShowModpackSelectionScreen,update_modcount_func)
             self._selected_modpack = f"{data['author']}-{data['name']}"
         else:
             if self._selected_modpack != f"{data['author']}-{data['name']}":
@@ -134,11 +135,13 @@ class UI(QWidget):
         self.screen_container.addWidget(self._screen_edit_modpack)
         return
     
-    def ShowModpactSelectionScreen(self):
+    def ShowModpackSelectionScreen(self):
         if not self._screen_modpack_selection:
             self._screen_modpack_selection = UIElements.ModpackSelection(Modpacks.List(),self.ShowEditModpackScreen,self.ShowAddImportModpackScreen)
         
+        self.screen_container.removeWidget(self._screen_loading_cache_update)
         self.screen_container.removeWidget(self._screen_edit_modpack)
+        self.screen_container.removeWidget(self._screen_loading)
         self.screen_container.addWidget(self._screen_modpack_selection)
         self._screen_modpack_selection.rescanModpacks(Modpacks.List())
 
@@ -153,9 +156,14 @@ class UI(QWidget):
         self.screen_container.addWidget(self._screen_modpack_selection)
 
         # Modpack download
-        if not Modpacks.Exists("DarthLilo","Events Server") and os.path.exists("E:\\Lilos Coding\\PBML\\DarthLilo-Events Server.json"):
-            Modpacks.ImportVerify("E:\\Lilos Coding\\PBML\\DarthLilo-Events Server.json",self.ShowDownloadScreen,self.ShowLoadingScreenCacheUpdate,self._screen_loading_cache_update.setStatus)
-            self.deselectModpack()
+        if not Modpacks.Exists("DarthLilo","Events Server") and os.path.exists("E:\\Lilos Coding\\PBML\\DarthLilo-Events Server.json") and Config.Read("general","auto_download_modpack",'value') == "True":
+            dlg = ConfirmDownload("Would you like to install the main modpack?")
+            result = dlg.exec()
+            if result:
+                Modpacks.ImportVerify("E:\\Lilos Coding\\PBML\\DarthLilo-Events Server.json",self.ShowDownloadScreen,self.ShowLoadingScreenCacheUpdate,self._screen_loading_cache_update.setStatus)
+                self.deselectModpack()
+            else:
+                Config.Write("general","auto_download_modpack",False)
 
     def ShowDownloadScreen(self, prev_menu = None):
         
@@ -233,3 +241,22 @@ class LaunchWorkerObject(QObject):
         time.sleep(1.5)
         self.fadeout_anim.emit()
         return
+
+class ConfirmDownload(QDialog):
+    def __init__(self,message):
+        super().__init__()
+
+        self.setWindowTitle("Modpack Install")
+        self.setWindowIcon(QIcon(Assets.getResource(Assets.ResourceTypes.app_icon)))
+
+        Buttons = (
+            QDialogButtonBox.StandardButton.Yes | QDialogButtonBox.StandardButton.No
+        )
+        self.button_box = QDialogButtonBox(Buttons)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+
+        layout = QVBoxLayout(self)
+        self.message = QLabel(message)
+        layout.addWidget(self.message)
+        layout.addWidget(self.button_box)

@@ -2,9 +2,11 @@ from PyQt6.QtCore import QSize, Qt, pyqtProperty, QRect
 from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QSizePolicy, QVBoxLayout, QLineEdit, QLabel, QFrame, QSpacerItem, QHBoxLayout, QCompleter, QComboBox, QPushButton, QDialog, QDialogButtonBox
 from PyQt6.QtGui import QMovie, QAction, QIcon, QFontDatabase, QFont, QPixmap, QColor
 
+from .LethalRunning import LethalRunning
 from ..Assets import Assets
 from ..Launch import Launch
 from ..Modpacks import Modpacks
+from ..Filetree import Filetree
 
 import os
 
@@ -104,20 +106,21 @@ class ModpackInfoFrame(QFrame):
         os.startfile(Modpacks.Path(self._modpack_author,self._modpack_name))
     
     def updateModpack(self):
-        dlg = ConfirmUpdate("Check for and install updates if available?")
-        result = dlg.exec()
-        if result:
-            Modpacks.UpdateVerify(self._modpack_author,self._modpack_name)
-            Modpacks.DeselectModpack()
+        if not Filetree.IsLethalRunning(LethalRunning):
+            dlg = ConfirmUpdate("Check for and install updates if available?")
+            result = dlg.exec()
+            if result:
+                Modpacks.UpdateVerify(self._modpack_author,self._modpack_name)
+                Modpacks.DeselectModpack()
     
     def deleteModpack(self):
-        dlg = ConfirmUpdate("Are you sure you want to delete this modpack?")
-        result = dlg.exec()
-        if result:
-            self.goBackInteract()
-            Modpacks.DeselectModpack()
-            Modpacks.Delete(self._modpack_author,self._modpack_name)
-            Modpacks.RefreshModpacks()
+        if not Filetree.IsLethalRunning(LethalRunning):
+            dlg = ConfirmUpdate("Are you sure you want to delete this modpack?")
+            result = dlg.exec()
+            if result:
+                Modpacks.DeselectModpack()
+                Modpacks.Delete(self._modpack_author,self._modpack_name)
+                self.goBackInteract()
     
     def goBackInteract(self):
         self._back_event()
