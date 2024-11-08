@@ -165,7 +165,7 @@ class Modpacks:
         Modpacks.New(modpack_data['author'],modpack_data['name'],modpack_data['version'],modpack_data['online_link'],modpack_data['icon_url'])
         Modpacks.Select(modpack_data['author'],modpack_data['name'])
 
-        QueueMan.ExperimentalQueuePackages(modpack_data['contents']['thunderstore_packages'])
+        QueueMan.QueuePackages(modpack_data['contents']['thunderstore_packages'])
         Modpacks.DownloadManagement.StartWorkerObject(finish_func=finish_func)
 
         # Overrides
@@ -406,13 +406,6 @@ class Modpacks:
             QueueMan.QueuePackage(author,mod,target_version)
             Modpacks.ShowLoadingScreen()
             Modpacks.DownloadManagement.StartWorkerObject(screen_type=1,finish_func=Modpacks.LoadingToEdit)
-            
-            #mod_location, author, name, mod_version, mod_files = Thunderstore.Download(url,author,mod,mod_version,feedback_func,text_output_func)
-            #Modpacks.Mods.AddPackageFiles(author,name,mod_version,mod_files)
-            #Modpacks.Mods.LoadMod(mod_location)
-#
-            #if not ignore_dependencies:
-            #    Logging.New(Modpacks.Mods.Dependencies(author,name))
         
         def Delete(author,name,mod_version=""):
             if not os.path.exists(Cache.SelectedModpack):
@@ -568,7 +561,7 @@ class QueueWorkerObject(QObject):
     def run(self,update=False, screen_type=0):
 
         if screen_type == 0:
-            threading.Thread(target=QueueMan.ExperimentalStart(overrides_function=Modpacks.DownloadOverrides,
+            threading.Thread(target=QueueMan.Start(overrides_function=Modpacks.DownloadOverrides,
                                                    emit_method=self.progress_output.emit,
                                                    thread_display_method=self.thread_display_update.emit,
                                                    close_download_method=self.close_download_screen.emit,

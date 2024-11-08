@@ -186,6 +186,9 @@ class EditModpackMenu(QWidget):
             self.mod_list_frame.addMod(mod['icon_path'],mod['name'],mod['author'],mod['mod_version'])
         self.mod_list_frame.addSpacer()
 
+        self.modpack_name = modpack_name
+        self.modpack_author = modpack_author
+
 class AddModInputDialog(QDialog):
     def __init__(self):
         super().__init__()

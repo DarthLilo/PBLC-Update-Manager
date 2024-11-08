@@ -93,10 +93,38 @@ class ModpackFrame(QFrame):
         self.grid_layout.addWidget(self.modpack_label)
 
         # Drawing Modpack Name
-        modpack_name_label = QLabel(self.modpack_name)
+        modpack_name_label = ClickableLabel(self.label_clicked,text=self.modpack_name,xyCords=self._xyCords,
+                                            author=self.modpack_author,name=self.modpack_name,
+                                            version=self.modpack_version,icon_path=self.modpack_icon,
+                                            mod_count=self.mod_count,
+                                            modpack_context_menu=True, edit_screen_func=self._screen_func)
+                                            
         modpack_name_label.setFont(QFont("IBM 3270", 16))
         modpack_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.grid_layout.addWidget(modpack_name_label)
+
+        if winaccent.system_uses_light_theme:
+            modpack_name_label.setStyleSheet(
+            """
+            ClickableLabel {
+                color:#000000;
+            }
+            ClickableLabel::hover{
+                color:#4571ff;
+            }
+            """
+            )
+        else:
+            modpack_name_label.setStyleSheet(
+            """
+            ClickableLabel {
+                color:#ffffff;
+            }
+            ClickableLabel::hover{
+                color:#4298fb;
+            }
+            """
+            )
 
         #Drawing Modpack Author Version
         modpack_author_version_label = QLabel(f"{self.modpack_author} - {self.modpack_version}")
