@@ -45,6 +45,8 @@ Scripts.Networking.CurFolder = CurFolder
 
 #########################################################################
 
+Scripts.Config.Write("general","major_task_running",False)
+
 class PBLCWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -88,6 +90,12 @@ class PBLCWindow(QMainWindow):
         layout_container.setLayout(pblc_layout)
 
         self.setCentralWidget(layout_container)
+    
+    def closeEvent(self, event):
+        if Scripts.Config.Read("general","major_task_running",'value') == False:
+            event.accept()
+        else:
+            event.ignore()
     
     def DownloadCache(self):
         self.main_menu.ShowLoadingScreenCacheUpdate()

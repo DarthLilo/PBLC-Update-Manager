@@ -115,7 +115,7 @@ class ConfigMenu(QDialog):
             setting_action.stateChanged.connect(lambda: self.QueueChange(target_category,setting_name,setting_action.isChecked()))
         
         if setting_type == "folder" or setting_type == "file":
-            setting_action = QPushButton(icon=QIcon(Assets.getResource(Assets.IconTypes.folder)))
+            setting_action = QPushButton(icon=QIcon(Assets.getResource(Assets.IconTypes.folder,True)))
             setting_action.setIconSize(QSize(35,35))
             setting_action.clicked.connect(lambda :self.OpenFileDialog(setting_type,setting_name,target_category,cur_path_label))
             #setting_action = QFileDialog()

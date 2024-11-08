@@ -115,7 +115,7 @@ class Filetree():
         return os.path.exists(path)
     
     def IsProcessRunning(process_name):
-        Logging.New("Checking for process_name")
+        Logging.New(f"Checking for {process_name}")
         cmd = 'tasklist /fi "imagename eq {}"'.format(process_name)
         try:
             output = subprocess.check_output(cmd, shell=True).decode('utf-8')

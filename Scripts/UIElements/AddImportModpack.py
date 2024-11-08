@@ -5,6 +5,7 @@ from PyQt6.QtGui import QMovie, QAction, QIcon, QFontDatabase, QFont, QPixmap, Q
 from ..Assets import Assets
 from ..Logging import Logging
 from ..Modpacks import Modpacks
+from packaging import version
 
 import os
 
@@ -30,7 +31,7 @@ class AddImportModpack(QDialog):
             self._layout.addWidget(self.modpack_source,0,0)
 
             self.modpack_source_button = QPushButton()
-            self.modpack_source_button.setIcon(QIcon(Assets.getResource(Assets.IconTypes.folder)))
+            self.modpack_source_button.setIcon(QIcon(Assets.getResource(Assets.IconTypes.folder,True)))
             self.modpack_source_button.clicked.connect(self.OpenFilepathDialog)
             self._layout.addWidget(self.modpack_source_button,0,1)
 
@@ -53,7 +54,7 @@ class AddImportModpack(QDialog):
             self._layout.addWidget(self.modpack_icon,2,0)
 
             self.modpack_icon_button = QPushButton()
-            self.modpack_icon_button.setIcon(QIcon(Assets.getResource(Assets.IconTypes.folder)))
+            self.modpack_icon_button.setIcon(QIcon(Assets.getResource(Assets.IconTypes.folder,True)))
             self.modpack_icon_button.clicked.connect(self.OpenFilepathDialog)
             self._layout.addWidget(self.modpack_icon_button)
 
@@ -95,6 +96,11 @@ class AddImportModpack(QDialog):
 
             actual_vers = self.modpack_version.text()
             if not actual_vers:
+                actual_vers = "1.0.0"
+            
+            try:
+                version.Version(actual_vers)
+            except version.InvalidVersion:
                 actual_vers = "1.0.0"
 
             if not self.modpack_author.text() or not self.modpack_name.text():

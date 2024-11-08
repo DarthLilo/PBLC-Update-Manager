@@ -22,6 +22,7 @@ class EditModpackMenu(QWidget):
         self.modpack_name = modpack_name
         self.mod_count = mod_count
         self._update_modcount_func = update_modcount_func
+        self._cur_filter = "All"
 
         
         self.modpack_info_frame = ModpackInfoFrame(modpack_name,modpack_author,modpack_version,mod_count,self.modpack_icon_pixmap,back_event)
@@ -60,13 +61,13 @@ class EditModpackMenu(QWidget):
         self.search_completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.search_bar.setCompleter(self.search_completer)
 
-        self.add_mod.setIcon(QIcon(Assets.getResource(Assets.IconTypes.plus)))
+        self.add_mod.setIcon(QIcon(Assets.getResource(Assets.IconTypes.plus,True)))
         self.add_mod.setIconSize(QSize(40,40))
 
-        self.export_modpack.setIcon(QIcon(Assets.getResource(Assets.IconTypes.archive)))
+        self.export_modpack.setIcon(QIcon(Assets.getResource(Assets.IconTypes.archive,True)))
         self.export_modpack.setIconSize(QSize(40,40))
 
-        self.check_for_updates.setIcon(QIcon(Assets.getResource(Assets.IconTypes.download)))
+        self.check_for_updates.setIcon(QIcon(Assets.getResource(Assets.IconTypes.download,True)))
         self.check_for_updates.setIconSize(QSize(40,40))
 
 
@@ -98,6 +99,7 @@ class EditModpackMenu(QWidget):
     
     def RedrawModFrames(self):
         self.deleteAllModFrames()
+        self.mod_list_frame.removeSpacer()
         for mod in Modpacks.ListMods(self.modpack_author,self.modpack_name):
             self.mod_list_frame.addMod(mod['icon_path'],mod['name'],mod['author'],mod['mod_version'])
         self.mod_list_frame.addSpacer()
@@ -105,6 +107,15 @@ class EditModpackMenu(QWidget):
         new_mod_count = Modpacks.GetModCount(self.modpack_author,self.modpack_name)
         self.modpack_info_frame.setModCount(new_mod_count)
         self._update_modcount_func(new_mod_count)
+        if self._cur_filter != "All":
+            for mod in self.mod_list_frame.getMods():
+                mod.update_filter(self._cur_filter)
+            
+        else:
+            for mod in self.mod_list_frame.getMods():
+                mod.inFilter = True
+                mod.curFilter = "All"
+                mod.determine_visibility()
 
     def CheckForUpdates(self):
         if not Filetree.IsLethalRunning(LethalRunning):
@@ -144,6 +155,7 @@ class EditModpackMenu(QWidget):
                 mod.hide()
     
     def updateModFilters(self, event):
+        self._cur_filter = str(event)
         if str(event) != "All":
             for mod in self.mod_list_frame.getMods():
                 mod.update_filter(str(event))

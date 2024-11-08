@@ -62,6 +62,12 @@ class Config():
                     "default": True,
                     "description": "Automatically prompts to download the main modpack to avoid user hastle",
                     "type": "bool"
+                },
+                "major_task_running": {
+                    "value": False,
+                    "default": False,
+                    "description": "",
+                    "type": "hidden"
                 }
 
             },

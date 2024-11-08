@@ -11,7 +11,7 @@ class LoadingScreenCacheUpdate(QWidget):
         self._layout = QGridLayout(self)
 
         self.loading_anim_label = QLabel()
-        self.loading_anim = QMovie(Assets.getResource(Assets.ResourceTypes.loading_screen))
+        self.loading_anim = QMovie(Assets.getResource(Assets.ResourceTypes.loading_screen, True))
         self.loading_anim_label.setMovie(self.loading_anim)
         self.loading_anim.start()
         self.loading_anim_label.setFixedSize(QSize(400,400))

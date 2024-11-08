@@ -13,7 +13,7 @@ from ..Cache import Cache
 from ..Networking import Networking
 from ..Filetree import Filetree
 
-import os, random, threading
+import os, random, threading, winaccent
 
 class ModFrame(QFrame):
     def __init__(self, parent=None, mod_icon="", mod_name="Mod",mod_author="Author",mod_version="1.0.0",delete_func=None):
@@ -31,6 +31,11 @@ class ModFrame(QFrame):
         self.inFilter = True
         self.curFilter = "All"
         self._delete_func = delete_func
+
+        if winaccent.system_uses_light_theme:
+            self.main_theme_color = "#242424"
+        else:
+            self.main_theme_color = "#c3c3c3"
 
         self.setLayout(self._layout)
         self.setFrameShape(QFrame.Shape.StyledPanel)
@@ -75,7 +80,7 @@ class ModFrame(QFrame):
             self.version_color = "#57ff7e"
         else:
             self.version_text = f"({self.mod_version})"
-            self.version_color = "#c3c3c3"
+            self.version_color = self.main_theme_color
 
         self.mod_version_label = QLabel(self.version_text)
         self.mod_version_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
@@ -91,7 +96,7 @@ class ModFrame(QFrame):
         self.mod_author_label.setFont(QFont("IBM 3270", 12))
         self.mod_author_label.setContentsMargins(10,5,0,0)
         self.mod_author_label_grey = self.mod_version_label.palette()
-        self.mod_author_label_grey.setColor(self.mod_version_label.foregroundRole(), QColor("#c3c3c3"))
+        self.mod_author_label_grey.setColor(self.mod_version_label.foregroundRole(), QColor(self.main_theme_color))
         self.mod_author_label.setPalette(self.mod_author_label_grey)
         self.mod_data_layout.addWidget(self.mod_author_label,1,0)
 
@@ -108,14 +113,14 @@ class ModFrame(QFrame):
         self.mod_toggle.stateChanged.connect(self.update_state)
 
         self.refresh_mod = QPushButton()
-        self.refresh_mod.setIcon(QIcon(Assets.getResource(Assets.IconTypes.refresh)))
+        self.refresh_mod.setIcon(QIcon(Assets.getResource(Assets.IconTypes.refresh,True)))
         self.refresh_mod.setIconSize(QSize(30,30))
         self.refresh_mod.clicked.connect(self.CheckForUpdates)
         self._layout.addWidget(self.refresh_mod,alignment=Qt.AlignmentFlag.AlignRight)
         
 
         self.delete_mod = QPushButton()
-        self.delete_mod.setIcon(QIcon(Assets.getResource(Assets.IconTypes.trash_can)))
+        self.delete_mod.setIcon(QIcon(Assets.getResource(Assets.IconTypes.trash_can,True)))
         self.delete_mod.clicked.connect(self.DeleteMod)
         self.delete_mod.setIconSize(QSize(30,30))
         self._layout.addWidget(self.delete_mod,alignment=Qt.AlignmentFlag.AlignRight)
@@ -192,7 +197,7 @@ class ModFrame(QFrame):
                 self.updateable = False
                 Modpacks.Mods.SetUpdateVersion(self.mod_author,self.mod_name,False)
                 self.mod_version_label.setText(f"({self.mod_update_version})")
-                self.mod_version_label_grey.setColor(self.mod_version_label.foregroundRole(), QColor("#c3c3c3"))
+                self.mod_version_label_grey.setColor(self.mod_version_label.foregroundRole(), QColor(self.main_theme_color))
                 self.mod_version_label.setPalette(self.mod_version_label_grey)
                 self.mod_version = self.mod_update_version
 

@@ -63,9 +63,7 @@ class ModpackDownloadScreen(QWidget):
             minutes, seconds = divmod(remainder, 60)
             formatted_time = "{:02}:{:02}:{:02}".format(int(hours), int(minutes), int(seconds))
             self.elapsed_time.setText(formatted_time)
-            Logging.New(f"Clock updated to {formatted_time}")
             time.sleep(1)
-            Logging.New("Clock Loop Started")
             self.updateClock(start_time)
         except Exception as e:
             Logging.New(traceback.format_exc(),'error')

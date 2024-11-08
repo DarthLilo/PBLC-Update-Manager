@@ -1,9 +1,12 @@
 from .Logging import Logging
 from .Filetree import Filetree
 
-from enum import Enum
+from PyQt6.QtCore import QRect
+from PyQt6.QtGui import QIcon, QPixmap
 
-import os
+from enum import Enum
+from PIL import Image, ImageOps, ImageQt
+import os, winaccent
 
 class Assets():
     
@@ -18,11 +21,29 @@ class Assets():
         Filetree.VerifyList(self.asset_dirs)
         Logging.New("Starting assets system...")
     
-    def getResource(icon):
+    def InvertColors(image):
+        if image.mode == "RGBA":
+            r, g, b, a = image.split()
+            rgb_image = Image.merge('RGB', (r,g,b))
+
+            inverted_image = ImageOps.invert(rgb_image)
+            r2,g2,b2 = inverted_image.split()
+            new_image = Image.merge('RGBA',(r2,g2,b2,a))
+        else:
+            new_image = ImageOps.invert(image)
+
+        return new_image
+    
+    def getResource(icon,theme=False):
         icon_path = f"{Assets.asset_folder}/{icon.value}"
         if not os.path.exists(icon_path):
             Logging.New(f"Unable to find {icon.value}")
             return f"{Assets.asset_folder}/missing_icon.png"
+
+        if theme and winaccent.system_uses_light_theme:
+            if icon == Assets.ResourceTypes.loading_screen:
+                return f"{Assets.asset_folder}/loading_screen_dark.gif"
+            return ImageQt.toqpixmap(Assets.InvertColors(Image.open(icon_path)))
 
         return icon_path
     
@@ -31,6 +52,24 @@ class Assets():
             return f"{Assets.asset_folder}/missing_icon.png"
         
         return path
+    
+    def CropCenter(pixmap, scale_factor=2):
+        original_w = pixmap.width()
+        original_h = pixmap.height()
+
+        crop_width = int(original_w // scale_factor)
+        crop_height = int(original_h // scale_factor)
+        
+        crop_rect = QRect(
+            (original_w - crop_width) // 2,
+            (original_h - crop_height) // 2,
+            crop_width,
+            crop_height
+        )
+
+        cropped_pixmap = pixmap.copy(crop_rect)
+        scaled_pixmap = cropped_pixmap.scaled(original_w,original_h)
+        return scaled_pixmap
     
     class IconTypes(str,Enum):
         archive = "icons/archive.png"

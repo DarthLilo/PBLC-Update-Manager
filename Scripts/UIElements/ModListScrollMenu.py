@@ -34,8 +34,11 @@ class ModListSrollMenu(QScrollArea):
         self.mod_names.append(mod_name)
     
     def addSpacer(self):
-        spacer = QSpacerItem(1, 1, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        self._layout.addItem(spacer)
+        self.spacer = QSpacerItem(1, 1, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self._layout.addItem(self.spacer)
+    
+    def removeSpacer(self):
+        self._layout.removeItem(self.spacer)
     
     def removeMod(self, mod):
         self.mods.remove(mod)

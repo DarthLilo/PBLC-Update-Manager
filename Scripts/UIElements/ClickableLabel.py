@@ -55,15 +55,15 @@ class ClickableLabel(QLabel):
         context_menu = QMenu(self)
 
         play_action = QAction("Play", self)
-        play_action.setIcon(QIcon(Assets.getResource(Assets.IconTypes.play)))
+        play_action.setIcon(QIcon(Assets.getResource(Assets.IconTypes.play,True)))
         play_action.triggered.connect(lambda: Launch.Start(self._author,self._name))
 
         edit_action = QAction("Edit", self)
-        edit_action.setIcon(QIcon(Assets.getResource(Assets.IconTypes.edit)))
+        edit_action.setIcon(QIcon(Assets.getResource(Assets.IconTypes.edit,True)))
         edit_action.triggered.connect(lambda: self._edit_screen_func(self.click_data,update_modcount_func=self.parent().UpdateFrameModCount))
 
         delete_action = QAction("Delete", self)
-        delete_action.setIcon(QIcon(Assets.getResource(Assets.IconTypes.trash_can)))
+        delete_action.setIcon(QIcon(Assets.getResource(Assets.IconTypes.trash_can,True)))
         delete_action.triggered.connect(self.deleteModpack)
         
         context_menu.addAction(play_action)

@@ -42,7 +42,7 @@ class Modpacks:
             return ""
         
         os.mkdir(modpack_location)
-        Modpacks.CreateJson(author,name,modpack_version,modpack_location,online_link)
+        Modpacks.CreateJson(author,name,modpack_version,modpack_location,online_link,icon)
         Thunderstore.DownloadBepInEx(modpack_location)
 
         if Networking.IsURL(icon):
@@ -56,13 +56,14 @@ class Modpacks:
         modpack_path = Modpacks.Path(author,name)
         shutil.copy(icon_path,f"{modpack_path}/icon.png")
     
-    def CreateJson(author,name,modpack_version,modpack_location,online_link):
+    def CreateJson(author,name,modpack_version,modpack_location,online_link,icon):
         modpack_metadata = {
             "author": author,
             "name": name,
             "version": modpack_version,
             "update_date": Time.CurrentDate(),
             "online_link": online_link,
+            "icon_url": icon,
             "overrides": []
         }
 
@@ -124,7 +125,8 @@ class Modpacks:
                 mod_json_data = Util.OpenJson(f"{plugins_folder}/{file}/mod.json")
                 mod_json_data['icon_path'] = f"{plugins_folder}/{file}/icon.png"
                 mods.append(mod_json_data)
-        return mods
+        sorted_mods = sorted(mods,key=lambda mod: mod['name'])
+        return sorted_mods
 
     def Export(author,name):
         export_json_loc = f"{Modpacks.Path(author,name)}/{author}-{name}.json"
@@ -136,8 +138,8 @@ class Modpacks:
             "version": modpack_json['version'],
             "update_date": modpack_json['update_date'],
             "cache_timestamp": os.path.getmtime(f"{Cache.CacheFolder}/lethal_company_package_index.json"),
-            "online_link": "",
-            "icon_url": "",
+            "online_link": modpack_json['online_link'],
+            "icon_url": modpack_json['icon_url'],
             "contents": {
                 "thunderstore_packages": [],
                 "overrides": []
@@ -163,7 +165,7 @@ class Modpacks:
         Modpacks.New(modpack_data['author'],modpack_data['name'],modpack_data['version'],modpack_data['online_link'],modpack_data['icon_url'])
         Modpacks.Select(modpack_data['author'],modpack_data['name'])
 
-        QueueMan.QueuePackages(modpack_data['contents']['thunderstore_packages'])
+        QueueMan.ExperimentalQueuePackages(modpack_data['contents']['thunderstore_packages'])
         Modpacks.DownloadManagement.StartWorkerObject(finish_func=finish_func)
 
         # Overrides
@@ -566,7 +568,7 @@ class QueueWorkerObject(QObject):
     def run(self,update=False, screen_type=0):
 
         if screen_type == 0:
-            threading.Thread(target=QueueMan.Start(overrides_function=Modpacks.DownloadOverrides,
+            threading.Thread(target=QueueMan.ExperimentalStart(overrides_function=Modpacks.DownloadOverrides,
                                                    emit_method=self.progress_output.emit,
                                                    thread_display_method=self.thread_display_update.emit,
                                                    close_download_method=self.close_download_screen.emit,

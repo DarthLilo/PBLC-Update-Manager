@@ -9,7 +9,7 @@ from ..Assets import Assets
 from ..Launch import Launch
 from ..Modpacks import Modpacks
 
-import os
+import os, winaccent
 from PIL import Image
 from PIL.ImageQt import ImageQt
 
@@ -28,7 +28,23 @@ class ModpackFrame(QFrame):
         self._screen_func = screen_func
         self.setObjectName("ModpackFrameWidget")
 
-        self.setStyleSheet(
+        if winaccent.system_uses_light_theme:
+            self.darker_text_color = "#242424"
+            self.setStyleSheet(
+            """
+            QWidget#ModpackFrameWidget {
+                background-color:#d1d1d1;
+                border-radius: 10px;
+            }
+            QFrame#ModpackFrameWidget::hover{
+                background-color:#e3e3e3;
+                border-radius: 10px;
+            }
+            """
+            )
+        else:
+            self.darker_text_color = "#c3c3c3"
+            self.setStyleSheet(
             """
             QWidget#ModpackFrameWidget {
                 background-color:#222222;
@@ -39,7 +55,9 @@ class ModpackFrame(QFrame):
                 border-radius: 10px;
             }
             """
-        )
+            )
+
+        
 
         self.generateIcons()
         self.setLayout(self.grid_layout)
@@ -85,7 +103,7 @@ class ModpackFrame(QFrame):
         modpack_author_version_label.setFont(QFont("IBM 3270", 12))
 
         p = modpack_author_version_label.palette()
-        p.setColor(modpack_author_version_label.foregroundRole(), QColor("#c3c3c3"))
+        p.setColor(modpack_author_version_label.foregroundRole(), QColor(self.darker_text_color))
         modpack_author_version_label.setPalette(p)
 
         modpack_author_version_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -96,7 +114,7 @@ class ModpackFrame(QFrame):
         self.modpack_mod_count_label.setFont(QFont("IBM 3270", 12))
 
         p = self.modpack_mod_count_label.palette()
-        p.setColor(self.modpack_mod_count_label.foregroundRole(), QColor("#c3c3c3"))
+        p.setColor(self.modpack_mod_count_label.foregroundRole(), QColor(self.darker_text_color))
         self.modpack_mod_count_label.setPalette(p)
 
         self.modpack_mod_count_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
