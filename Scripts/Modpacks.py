@@ -27,6 +27,7 @@ class Modpacks:
     LoadingToEdit = None
     DeselectModpack = None
     RefreshModpacks = None
+    ShowModpackSelection = None
 
     def __init__(self, ModpacksFolder):
         Logging.New("Starting modpack system...",'startup')
@@ -282,6 +283,19 @@ class Modpacks:
 
         Modpacks.ModpackData = new_data
 
+        verify_mod_cache = []
+        for mod in new_data['contents']['thunderstore_packages']:
+            verify_mod_cache.append(f"{mod['author']}-{mod['name']}")
+        
+        delete_queue = []
+        for mod in Cache.LoadedMods:
+            if mod not in verify_mod_cache:
+                delete_queue.append(mod)
+        
+        for mod in delete_queue:
+            split = mod.split("-")
+            Modpacks.Mods.Delete(split[0],split[1])
+
         for mod in new_data['contents']['thunderstore_packages']:
 
             if Modpacks.Mods.Installed(mod['author'],mod['name']): # If the mod is already installed update it
@@ -320,6 +334,35 @@ class Modpacks:
         
         return os.path.exists(f"{modpack_path}/modpack.json")
 
+    def Verify(modpack_data):
+        Modpacks.Select(modpack_data['author'],modpack_data['name'])
+
+        QueueMan.ClearQueue()
+
+        # Deleting extra mods
+        verify_mod_cache = []
+        for mod in modpack_data['contents']['thunderstore_packages']:
+            verify_mod_cache.append(f"{mod['author']}-{mod['name']}")
+        
+        delete_queue = []
+        for mod in Cache.LoadedMods:
+            if mod not in verify_mod_cache:
+                delete_queue.append(mod)
+        
+        for mod in delete_queue:
+            split = mod.split("-")
+            Modpacks.Mods.Delete(split[0],split[1])
+
+
+
+        for mod in modpack_data['contents']['thunderstore_packages']:
+            if not Modpacks.Mods.Installed(mod['author'],mod['name']):
+                QueueMan.QueuePackage(mod['author'],mod['name'],mod['version'])
+                #Modpacks.Mods.Add(author=mod['author'],mod=mod['name'],mod_version=mod['version'])
+        
+        if len(QueueMan.package_queue):
+            Modpacks.ShowDownloadScreen()
+            Modpacks.DownloadManagement.StartWorkerObject()
     class DownloadManagement:
         def StartWorkerObject(update=False,finish_func=None,screen_type=0):
 

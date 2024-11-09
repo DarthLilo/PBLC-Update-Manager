@@ -67,10 +67,15 @@ class PBLCWindow(QMainWindow):
         ### LOAD MENU BAR
         menu = self.menuBar()
         file_menu = menu.addMenu("&File")
+        cache_menu = menu.addMenu("&Cache")
 
         download_cache = QAction("Download Cache",self)
         download_cache.triggered.connect(self.DownloadCache)
-        file_menu.addAction(download_cache)
+        cache_menu.addAction(download_cache)
+
+        reset_cache = QAction("Clear Cache",self)
+        reset_cache.triggered.connect(self.ClearCache)
+        cache_menu.addAction(reset_cache)
 
         update_button = QAction("Check For Updates",self)
         update_button.triggered.connect(self.CheckForUpdates)
@@ -92,7 +97,7 @@ class PBLCWindow(QMainWindow):
         self.setCentralWidget(layout_container)
     
     def closeEvent(self, event):
-        if Scripts.Config.Read("general","major_task_running",'value') == False:
+        if Scripts.Config.Read("general","major_task_running",'value') == False or Scripts.Config.Read("general","major_task_running",'value') == "False":
             event.accept()
         else:
             event.ignore()
@@ -100,6 +105,9 @@ class PBLCWindow(QMainWindow):
     def DownloadCache(self):
         self.main_menu.ShowLoadingScreenCacheUpdate()
         Scripts.Cache.Update(self.main_menu.ShowModpackSelectionScreen,cache_status_func=self.main_menu._screen_loading_cache_update.setStatus)
+    
+    def ClearCache(self):
+        Scripts.Cache.FileCache.Clear()
 
     def CheckForUpdates(self):
         Scripts.Networking.CheckForUpdatesManager()

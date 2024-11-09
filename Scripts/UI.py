@@ -58,6 +58,7 @@ class UI(QWidget):
         Modpacks.LoadingToEdit = self.LoadingToEditScreen
         Modpacks.DeselectModpack = self.deselectModpack
         Modpacks.RefreshModpacks = self.RefreshModpacks
+        Modpacks.ShowModpackSelection = self.ShowModpackSelectionScreen
 
         launch_worker_object = LaunchWorkerObject()
         launch_worker_object.fadeout_anim.connect(self.FadeToModpackSelection)
@@ -84,6 +85,7 @@ class UI(QWidget):
 
         self.screen_container.removeWidget(self._screen_loading_cache_update)
         self.screen_container.removeWidget(self._screen_edit_modpack)
+        self.screen_container.removeWidget(self._screen_modpack_selection)
         self.screen_container.addWidget(self._screen_loading)
         return
     

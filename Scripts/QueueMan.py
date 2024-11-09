@@ -40,9 +40,9 @@ class QueueMan():
         package_dependencies = Cache.Get(author,name,version)['dependencies']
         if package_dependencies:
             for dependency in package_dependencies:
-                if str(dependency).__contains__("BepInEx-BepInExPack-"):
-                    continue
                 split_dependency = dependency.split("-")
+                if str(dependency).__contains__("BepInEx-BepInExPack-") or f"{split_dependency[0]}-{split_dependency[1]}" in Cache.LoadedMods:
+                    continue
                 QueueMan.QueuePackage(split_dependency[0],split_dependency[1],split_dependency[2])
     
     def QueuePackages(packages):
@@ -112,6 +112,8 @@ class QueueMan():
 
     def ClearQueue():
         QueueMan.package_length = 0
+        QueueMan.package_progression = 0
+        QueueMan.package_queue.clear()
             
     class DownloadFile:
 
