@@ -13,7 +13,7 @@ else:
     CurFolder = os.path.dirname(__file__)
 
 
-ReleaseTag = "Alpha"
+ReleaseTag = "Stable"
 PBLCVersion = "1.0.0"
 ProgramDataFolder = os.path.normpath(f"{CurFolder}/ProgramData")
 LoggingFolder = os.path.normpath(f"{ProgramDataFolder}/Logs")
