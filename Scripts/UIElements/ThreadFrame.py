@@ -1,14 +1,14 @@
 from PyQt6.QtCore import (
     Qt, QSize)
 
-from PyQt6.QtWidgets import QGridLayout, QLabel, QFrame, QSizePolicy, QHBoxLayout, QSpacerItem, QWidget, QPushButton, QVBoxLayout, QProgressBar
+from PyQt6.QtWidgets import QGridLayout, QLabel, QFrame, QSizePolicy, QHBoxLayout, QSpacerItem, QWidget, QPushButton, QVBoxLayout, QProgressBar, QScrollArea
 from PyQt6.QtGui import QColor, QPalette, QPixmap, QFont, QIcon
 
 from ..Assets import Assets
 
 import os, random
 
-class ThreadFrame(QFrame):
+class ThreadFrame(QScrollArea):
     def __init__(self, parent=None, thread_index=0):
         super().__init__()
 

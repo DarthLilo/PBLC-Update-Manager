@@ -33,7 +33,7 @@ class ActiveThreadsScrollMenu(QScrollArea):
     
     def addThread(self,thread_index):
         modpack_frame = ThreadFrame(thread_index=thread_index)
-        modpack_frame.setProgress(random.randint(0,100))
+        modpack_frame.setProgress(0)
         self._layout.addWidget(modpack_frame,self.xPos,self.yPos)
         self._threads.append(modpack_frame)
 

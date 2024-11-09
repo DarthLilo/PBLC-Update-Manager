@@ -8,6 +8,7 @@ from .QueueMan import QueueMan
 from .Filetree import Filetree
 from time import sleep
 import os, json, shutil, threading, gdown, traceback
+from packaging import version
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
@@ -363,6 +364,10 @@ class Modpacks:
         if len(QueueMan.package_queue):
             Modpacks.ShowDownloadScreen()
             Modpacks.DownloadManagement.StartWorkerObject()
+        
+        Modpacks.DeselectModpack()
+        Modpacks.RefreshModpacks()
+        
     class DownloadManagement:
         def StartWorkerObject(update=False,finish_func=None,screen_type=0):
 
@@ -443,7 +448,11 @@ class Modpacks:
             if not mod_version.strip():
                 target_version = Cache.Get(author,mod)['version_number']
             else:
-                target_version = mod_version
+                try:
+                    version.parse(mod_version)
+                    target_version = mod_version
+                except:
+                    target_version = Cache.Get(author,mod)['version_number']
             
             QueueMan.ClearQueue()
             QueueMan.QueuePackage(author,mod,target_version)

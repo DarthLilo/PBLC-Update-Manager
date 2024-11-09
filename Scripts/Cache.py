@@ -103,7 +103,11 @@ class Cache():
         key = (owner, name)
 
         if version.strip():
-            packages = Cache.Packages.get(key)['versions']
+            try:
+                packages = Cache.Packages.get(key)['versions']
+            except TypeError:
+                return {}
+            
             for package in packages:
                 if package['version_number'] == version:
                     return package

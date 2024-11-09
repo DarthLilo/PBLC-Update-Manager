@@ -1,7 +1,7 @@
 from PyQt6.QtCore import (
     Qt, QSize, QObject, pyqtSignal)
 
-from PyQt6.QtWidgets import QGridLayout, QLabel, QFrame, QSizePolicy, QHBoxLayout, QSpacerItem, QWidget, QPushButton, QDialog, QDialogButtonBox, QVBoxLayout
+from PyQt6.QtWidgets import QGridLayout, QLabel, QFrame, QSizePolicy, QHBoxLayout, QSpacerItem, QWidget, QPushButton, QDialog, QDialogButtonBox, QVBoxLayout, QScrollArea
 from PyQt6.QtGui import QColor, QPalette, QPixmap, QFont, QIcon
 
 from .ClickableLabel import ClickableLabel
@@ -62,7 +62,19 @@ class ModFrame(QFrame):
 
         # Mod Data
 
-        self.mod_data_container = QWidget()
+        self.mod_data_container = QScrollArea()
+        self.mod_data_container.setStyleSheet("""
+            QScrollArea {
+                border: none;
+                outline: none;
+                background: transparent;
+            }
+            QScrollBar {
+                border: none;
+            }
+        """)
+        self.mod_data_container.setMaximumHeight(80)
+        self.mod_data_container.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.mod_data_layout = QGridLayout(self.mod_data_container)
         self.mod_data_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
@@ -99,11 +111,10 @@ class ModFrame(QFrame):
         self.mod_author_label_grey.setColor(self.mod_version_label.foregroundRole(), QColor(self.main_theme_color))
         self.mod_author_label.setPalette(self.mod_author_label_grey)
         self.mod_data_layout.addWidget(self.mod_author_label,1,0)
-
         self._layout.addWidget(self.mod_data_container)
 
-        spacer = QSpacerItem(1, 1, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self._layout.addItem(spacer)
+        #spacer = QSpacerItem(1, 1, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        #self._layout.addItem(spacer)
 
         # Actions
 

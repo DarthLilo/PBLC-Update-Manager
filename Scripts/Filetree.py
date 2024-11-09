@@ -46,32 +46,44 @@ class Filetree():
             Logging.New("Zip file is being used by another process, couldn't remove!")
         return destination
     
-    def SortFiles(modpack_dir,folder):
-
+    def SortFiles(modpack_dir, folder):
+        """Distributes files accordingly and returns a list of all of them"""
+        
         package_files = []
-        special_folders = ["plugins","patchers","core","config"]
+        bepinex_folder = os.path.join(modpack_dir,"BepInEx")
 
+        for sub_dir in os.listdir(folder):
+            sub_dir_path = os.path.join(folder,sub_dir)
+            if os.path.isdir(sub_dir_path):
+                package_files.extend(Filetree.FileSortAlgorithm(sub_dir,sub_dir_path,folder,bepinex_folder))
+        
         for root, dirs, files in os.walk(folder):
             for file in files:
-                rel_path = os.path.relpath(os.path.join(root,file),folder)
-                package_files.append(rel_path)
+                package_files.append(os.path.relpath(os.path.join(root,file),folder))
         
-        if os.path.exists(folder):
-            for sub_dir in os.listdir(folder):
-                if os.path.isdir(f"{folder}/{sub_dir}"):
-                    if sub_dir == "BepInEx":
-                        shutil.copytree(f"{folder}/{sub_dir}",f"{modpack_dir}/BepInEx",dirs_exist_ok=True)
-                        shutil.rmtree(f"{folder}/{sub_dir}")
-                        continue
-                    for tag in special_folders:
-                        if sub_dir == tag:
-                            shutil.copytree(f"{folder}/{sub_dir}",f"{modpack_dir}/BepInEx/{tag}",dirs_exist_ok=True)
-                            try:
-                                shutil.rmtree(f"{folder}/{sub_dir}")
-                            except PermissionError:
-                                Logging.New(f"Error when removing files {folder}/{sub_dir}, they are in use")
-                            break
+        return package_files
+    
+    def FileSortAlgorithm(sub_dir,sub_dir_path,folder,bepinex_folder):
+        override_folders = ["patchers","core","config"]
+        package_files = []
+
+        if sub_dir in override_folders: #OVERRIDE FOLDER HANDLING
+            for root, dirs, files in os.walk(sub_dir_path):
+                for file in files:
+                    package_files.append(os.path.relpath(os.path.join(root,file),folder))
+            shutil.copytree(sub_dir_path,os.path.join(bepinex_folder,sub_dir),dirs_exist_ok=True)
+            shutil.rmtree(sub_dir_path)
+
+        elif sub_dir == "plugins": #PLUGINS FOLDER HANDLING
+            for filename in os.listdir(sub_dir_path):
+                shutil.move(os.path.join(sub_dir_path,filename),folder)
+            shutil.rmtree(sub_dir_path)
         
+        elif sub_dir == "BepInEx":
+            for new_sub_dir in os.listdir(sub_dir_path):
+                new_sub_dir_path = os.path.join(sub_dir_path,new_sub_dir)
+                package_files.extend(Filetree.FileSortAlgorithm(new_sub_dir,new_sub_dir_path,folder,bepinex_folder))
+            shutil.rmtree(sub_dir_path)
         return package_files
     
     def LocateSteam():

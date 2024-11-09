@@ -37,7 +37,11 @@ class QueueMan():
         }
         QueueMan.package_queue.append(package)
 
-        package_dependencies = Cache.Get(author,name,version)['dependencies']
+        try:
+            package_dependencies = Cache.Get(author,name,version)['dependencies']
+        except KeyError:
+            Logging.New(f"Error getting dependencies for {author}-{name}")
+            return
         if package_dependencies:
             for dependency in package_dependencies:
                 split_dependency = dependency.split("-")

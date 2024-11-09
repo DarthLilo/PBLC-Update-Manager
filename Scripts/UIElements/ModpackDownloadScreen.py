@@ -52,7 +52,7 @@ class ModpackDownloadScreen(QWidget):
         try:
             if self._kill_clock:
                 self._kill_clock
-                Logging.New("Clock killed")
+                Logging.New(f"Clock killed at {self.elapsed_time.text()}")
                 return
 
             timestamp_start = datetime.datetime.fromtimestamp(start_time)
