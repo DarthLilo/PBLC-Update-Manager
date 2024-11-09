@@ -1,29 +1,17 @@
 ![PBLC Update Manager Logo](https://i.imgur.com/nFTaAqb.png)
 # PBLC Update Manager    ![GitHub all releases](https://img.shields.io/github/downloads/DarthLilo/PBLC-Update-Manager/total?color=blue)
 
-
-
-This is a simple mod updater to easily have friends update Lethal Company mods while still providing a strong enough modpack backend to allow you to create modpacks for friendgroups easily.
-
-### IMPORTANT
-Before reading any further, this program is still in very early development and things are likely to be unstable and or change in the future!
-
-As of right now it isn't possible to easily change which modpack it will download, however, it will be in the future.
+This mod manager is designed to be an alternative solution to popular mod management softwares while providing the user with a clean and fluid experience. Both modpack users and developers will be easily able to install and set up mods for Lethal Company
 
 <br/>
 
 # Features
 
-* Downloading of main and beta version modpacks
-* Built-in program updater
-* Add mods by pasting a thunderstore page link
-* Toggle, update, and delete installed mods easily
-* Export modpacks with all required files with one button
-* Send out patches to modpacks so users won't have to redownload massive files
-* Easy mod management for pack creators
-
-# Future Plans (?)
-  * Multiple Mod Profiles
+* Multiple modpack support
+* Package caching for quick re-downloads
+* Online modpack linking for easy install with friends
+* A quick and responsive UI
+* Extremely fast download times with multithreading
 
 # Building
 First you will want to setup a local copy of the repository:
