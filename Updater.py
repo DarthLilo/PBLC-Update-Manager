@@ -1,11 +1,4 @@
-import os
-import shutil
-import time
-import subprocess
-import sys
-
-time.sleep(1)
-
+import os, sys, shutil, subprocess
 
 def getCurrentPathLoc():
 
@@ -18,21 +11,21 @@ def getCurrentPathLoc():
 
 def clean_old_version():
     current_location = getCurrentPathLoc()
-    delete_list = ["assets","PBLC Update Manager.exe","python3.dll","python310.dll"]
+    delete_list = ["ProgramAssets","PBLC Update Manager.exe","PBLC Update Manager Console.exe","python3.dll","python310.dll"]
     for item in delete_list:
         if os.path.isdir(os.path.join(current_location,item)):
             try:
                 shutil.rmtree(os.path.join(current_location,item))
+                print(f"Removed {item}")
             except:
-                pass
+                print(f"Unable to remove {item}")
         else:
             try:
                 os.remove(os.path.join(current_location,item))
                 print(f"Removed {item}")
             except:
-                pass
-    shutil.rmtree(os.path.join(current_location,"lib"))
-    print("Cleaned library files")
+                print(f"Unable to remove {item}")
+    
 
 def migrate_update_files(source,destination):
     print("Moving files...")
@@ -44,22 +37,24 @@ def migrate_update_files(source,destination):
         if os.path.isdir(file):
             file_path = os.path.join(source,file)
             for sub_file in os.listdir(file_path):
-                print(f"{file}/{sub_file}")
                 sub_file_path = os.path.join(source,file,sub_file)
                 sub_destination_path = os.path.join(destination,file,sub_file)
-                #print(f"{sub_file_path}\n{sub_destination_path}")
-                shutil.move(sub_file_path,sub_destination_path)
+                print(sub_file_path)
+                try:
+                    shutil.move(sub_file_path,sub_destination_path)
+                    print(f"Copied {sub_file}")
+                except PermissionError:
+                    print(f"Permission error when copying {sub_file}")
+                    continue
         else:
             file_path = os.path.join(source,file)
             destination_path = os.path.join(destination,file)
-            print(file)
+            try:
+                shutil.move(file_path,destination_path)
+            except PermissionError:
+                continue
 
-            #print(f"{file_path}\n{destination_path}")
-            shutil.move(file_path,destination_path)
-
-#THIS WILL ACT AS IF ITS IN THE _INTERNAL FOLDER
 temp_download_folder = os.path.join(getCurrentPathLoc(),"download_cache")
-
 target_directory = temp_download_folder
 
 for file in os.listdir(temp_download_folder):
@@ -76,6 +71,7 @@ shutil.rmtree(temp_download_folder)
 relaunch_location = os.path.normpath(os.path.join(getCurrentPathLoc(),"PBLC Update Manager.exe"))
 
 if os.path.exists(relaunch_location):
+    print("Attempting EXE Launch")
     subprocess.Popen(relaunch_location)
 else:
     print("Couldn't run EXE")
