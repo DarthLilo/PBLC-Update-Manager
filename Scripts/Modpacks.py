@@ -616,12 +616,21 @@ class QueueWorkerObject(QObject):
     def run(self,update=False, screen_type=0):
 
         if screen_type == 0:
-            threading.Thread(target=QueueMan.Start(overrides_function=Modpacks.DownloadOverrides,
+            QueueMan.Start(overrides_function=Modpacks.DownloadOverrides,
                                                    emit_method=self.progress_output.emit,
                                                    thread_display_method=self.thread_display_update.emit,
                                                    close_download_method=self.close_download_screen.emit,
                                                    loading_screen_method=self.loading_screen_trigger.emit,
                                                    set_global_percent_method=Modpacks.SetGlobalPercent,
-                                                   finish_func=self.finish_func.emit,update=update),daemon=True).start()
+                                                   finish_func=self.finish_func.emit,update=update)
+            
+            #threading.Thread(target=QueueMan.Start(overrides_function=Modpacks.DownloadOverrides,
+            #                                       emit_method=self.progress_output.emit,
+            #                                       thread_display_method=self.thread_display_update.emit,
+            #                                       close_download_method=self.close_download_screen.emit,
+            #                                       loading_screen_method=self.loading_screen_trigger.emit,
+            #                                       set_global_percent_method=Modpacks.SetGlobalPercent,
+            #                                       finish_func=self.finish_func.emit,update=update),daemon=True).start()
         elif screen_type == 1:
-            threading.Thread(target=QueueMan.Start(finish_func=self.finish_func.emit,update=update),daemon=True).start()
+            #threading.Thread(target=QueueMan.Start(finish_func=self.finish_func.emit,update=update),daemon=True).start()
+            QueueMan.Start(finish_func=self.finish_func.emit,update=update)
