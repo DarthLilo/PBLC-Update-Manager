@@ -212,12 +212,17 @@ class ModFrame(QFrame):
                 self.mod_version_label.setPalette(self.mod_version_label_grey)
                 self.mod_version = self.mod_update_version
 
-                update_worker_object = UpdateWorkerObject()
-                update_worker_object.progress_update.connect(Modpacks.SetCacheStatus)
-                update_worker_object.finished.connect(Modpacks.CacheToModpack)
+                self.UpdateMod(self.mod_author,self.mod_name,self.mod_version)
+                #update_worker_object = UpdateWorkerObject()
+                #update_worker_object.progress_update.connect()
+                #update_worker_object.finished.connect(Modpacks.CacheToModpack)
 
-                update_worker_thread = threading.Thread(target=lambda :update_worker_object.run(self.mod_author,self.mod_name,self.mod_version),daemon=True)
-                update_worker_thread.start()
+                #update_worker_thread = threading.Thread(target=lambda :update_worker_object.run(self.mod_author,self.mod_name,self.mod_version),daemon=True)
+                #update_worker_thread.start()
+    
+    def UpdateMod(self,author,name,version):
+
+        Modpacks.Mods.Update(author,name,version,text_output_func=Modpacks.SetCacheStatus,finished_func=Modpacks.CacheToModpack)
     
     def DeleteMod(self):
         if Filetree.IsLethalRunning(LethalRunning):

@@ -419,7 +419,7 @@ class Modpacks:
 
             return
         
-        def Add(url=None,author=None,mod=None,mod_version="",ignore_dependencies=False,feedback_func=None,text_output_func=None):
+        def Add(url=None,author=None,mod=None,mod_version="",ignore_dependencies=False,feedback_func=None,text_output_func=None,finished_func=None):
             if not os.path.exists(Cache.SelectedModpack):
                 Logging.New("Please select a modpack first!", 'error')
                 return
@@ -453,11 +453,14 @@ class Modpacks:
                     target_version = mod_version
                 except:
                     target_version = Cache.Get(author,mod)['version_number']
+                
+            if not callable(finished_func):
+                finished_func = Modpacks.LoadingToEdit
             
             QueueMan.ClearQueue()
             QueueMan.QueuePackage(author,mod,target_version)
             Modpacks.ShowLoadingScreen()
-            Modpacks.DownloadManagement.StartWorkerObject(screen_type=1,finish_func=Modpacks.LoadingToEdit)
+            Modpacks.DownloadManagement.StartWorkerObject(screen_type=1,finish_func=finished_func)
         
         def Delete(author,name,mod_version=""):
             if not os.path.exists(Cache.SelectedModpack):
@@ -532,7 +535,7 @@ class Modpacks:
         def GetVersion(author, name):
             return Modpacks.Mods.Json(author,name)["mod_version"]
 
-        def Update(author,name,mod_version="",feedback_func=None,text_output_func=None):
+        def Update(author,name,mod_version="",feedback_func=None,text_output_func=None,finished_func=None):
 
             if not Modpacks.Mods.Installed(author, name):
                 Logging.New(f"Invalid mod, [{author}-{name}] isn't installed!")
