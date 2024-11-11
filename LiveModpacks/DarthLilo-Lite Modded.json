@@ -1,0 +1,45 @@
+{
+    "author": "DarthLilo",
+    "name": "Lite Modded",
+    "version": "1.0.0",
+    "update_date": "11-10-2024",
+    "cache_timestamp": 1731276138.61047,
+    "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Lite%20Modded.json",
+    "icon_url": "https://i.imgur.com/tHikFbm.png",
+    "contents": {
+        "thunderstore_packages": [
+            {
+                "author": "notnotnotswipez",
+                "name": "MoreCompany",
+                "version": "1.11.0"
+            },
+            {
+                "author": "mattymatty",
+                "name": "LobbyControl",
+                "version": "2.4.9"
+            },
+            {
+                "author": "FlipMods",
+                "name": "HotbarPlus",
+                "version": "1.8.0"
+            },
+            {
+                "author": "Pooble",
+                "name": "LCBetterSaves",
+                "version": "1.7.3"
+            },
+            {
+                "author": "Zehs",
+                "name": "LCBetterSavesFix",
+                "version": "1.0.0"
+            }
+        ],
+        "overrides": [
+            {
+                "gdrive": "1UDs0WaXWNulpWrlVL6f5m4lqSkgcNW1f",
+                "dropbox": "https://www.dropbox.com/scl/fi/3oj6lnjtdkwa30gp8rfvn/VanillaOverrides.zip?rlkey=udvhwvq8vu9a6ecyzo0p7iq3j&st=6rwbi3vn&dl=1"
+            }
+        ]
+    },
+    "reinstall": false
+}
