@@ -5,6 +5,7 @@ from PyQt6.QtGui import QMovie, QAction, QIcon, QFontDatabase, QFont, QPixmap, Q
 from ..Assets import Assets
 from ..Logging import Logging
 from ..Modpacks import Modpacks
+from ..Networking import Networking
 from packaging import version
 
 import os
@@ -85,7 +86,7 @@ class AddImportModpack(QDialog):
     
     def CreateModpackFunc(self):
         if self._type == 0:
-            if not os.path.exists(self.modpack_source.text()):
+            if not Networking.IsURL(self.modpack_source.text()) and not os.path.exists(self.modpack_source.text()):
                 Logging.New("Please select a valid modpack path first!")
                 return
             self.close()
