@@ -1,13 +1,178 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "0.0.2",
-    "update_date": "11-06-2024",
-    "cache_timestamp": 1730868974.2031307,
-    "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/pblc-remake/LiveModpacks/DarthLilo-Events%20Server.json",
-    "icon_url": "",
+    "version": "1.0.0",
+    "update_date": "11-11-2024",
+    "cache_timestamp": 1731377094.7954464,
+    "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
+    "icon_url": "https://i.imgur.com/LDF9Fz7.png",
     "contents": {
         "thunderstore_packages": [
+            {
+                "author": "4902",
+                "name": "Cruiser_Additions",
+                "version": "1.4.0"
+            },
+            {
+                "author": "4902",
+                "name": "No_Console_Spam",
+                "version": "1.6.0"
+            },
+            {
+                "author": "AdiBTW",
+                "name": "LoadstoneNightly",
+                "version": "0.1.16"
+            },
+            {
+                "author": "AinaVT",
+                "name": "LethalConfig",
+                "version": "1.4.3"
+            },
+            {
+                "author": "AinaVT",
+                "name": "YippeeScrap",
+                "version": "1.0.7"
+            },
+            {
+                "author": "akronman1",
+                "name": "Niko",
+                "version": "0.2.1"
+            },
+            {
+                "author": "Alice",
+                "name": "DungeonGenerationPlus",
+                "version": "1.2.0"
+            },
+            {
+                "author": "AllToasters",
+                "name": "SpectateEnemies",
+                "version": "2.6.0"
+            },
+            {
+                "author": "AntlerShed",
+                "name": "EnemySkinKit",
+                "version": "1.3.4"
+            },
+            {
+                "author": "AntlerShed",
+                "name": "EnemySkinRegistry",
+                "version": "1.4.6"
+            },
+            {
+                "author": "AtomicStudio",
+                "name": "Moved_Magnet_Switch",
+                "version": "1.2.0"
+            },
+            {
+                "author": "AudioKnight",
+                "name": "StarlancerAIFix",
+                "version": "3.8.4"
+            },
+            {
+                "author": "bctix",
+                "name": "FPSCounter",
+                "version": "1.4.0"
+            },
+            {
+                "author": "Beauver",
+                "name": "ExtraTerminalCommands",
+                "version": "1.5.0"
+            },
+            {
+                "author": "Bibendi",
+                "name": "AEIOUCompany",
+                "version": "1.3.7"
+            },
+            {
+                "author": "Bobbie",
+                "name": "NAudio",
+                "version": "2.2.2"
+            },
+            {
+                "author": "Booos",
+                "name": "StupidAssKitty",
+                "version": "1.0.7"
+            },
+            {
+                "author": "BunyaPineTree",
+                "name": "ModelReplacementAPI",
+                "version": "2.4.11"
+            },
+            {
+                "author": "ButteryStancakes",
+                "name": "AccurateStaminaDisplay",
+                "version": "2.2.0"
+            },
+            {
+                "author": "ButteryStancakes",
+                "name": "BarberFixes",
+                "version": "1.2.0"
+            },
+            {
+                "author": "ButteryStancakes",
+                "name": "ButteryFixes",
+                "version": "1.10.8"
+            },
+            {
+                "author": "ButteryStancakes",
+                "name": "Chameleon",
+                "version": "1.2.1"
+            },
+            {
+                "author": "ButteryStancakes",
+                "name": "EnemySoundFixes",
+                "version": "1.5.10"
+            },
+            {
+                "author": "ButteryStancakes",
+                "name": "MeleeFixes",
+                "version": "1.3.1"
+            },
+            {
+                "author": "ButteryStancakes",
+                "name": "RevisitStingers",
+                "version": "1.2.1"
+            },
+            {
+                "author": "ButteryStancakes",
+                "name": "SnowyHolidayDropship",
+                "version": "1.1.0"
+            },
+            {
+                "author": "ButteryStancakes",
+                "name": "WeedKillerFixes",
+                "version": "1.1.0"
+            },
+            {
+                "author": "coderCleric",
+                "name": "Poltergeist",
+                "version": "1.1.1"
+            },
+            {
+                "author": "darmuh",
+                "name": "OpenLib",
+                "version": "0.2.8"
+            },
+            {
+                "author": "darmuh",
+                "name": "suitsTerminal",
+                "version": "1.5.3"
+            },
+            {
+                "author": "DarthLilo",
+                "name": "BabyManeater",
+                "version": "1.1.2"
+            },
+            {
+                "author": "DarthLilo",
+                "name": "ItemWeights",
+                "version": "1.2.1"
+            },
+            {
+                "author": "DarthLilo",
+                "name": "LevelMusicLib",
+                "version": "1.0.2"
+            },
             {
                 "author": "DarthLilo",
                 "name": "LilosScrapExtension",
@@ -15,8 +180,78 @@
             },
             {
                 "author": "DarthLilo",
+                "name": "MagnetLock",
+                "version": "1.2.0"
+            },
+            {
+                "author": "DarthLilo",
                 "name": "SkinnedRendererPatch",
                 "version": "1.1.3"
+            },
+            {
+                "author": "DarthLilo",
+                "name": "WhoVoted",
+                "version": "1.0.2"
+            },
+            {
+                "author": "Dev1A3",
+                "name": "BetterVehicleControls",
+                "version": "1.1.3"
+            },
+            {
+                "author": "Dev1A3",
+                "name": "LethalFixes",
+                "version": "1.2.4"
+            },
+            {
+                "author": "DiFFoZ",
+                "name": "BepInEx_Faster_Load_AssetBundles_Patcher",
+                "version": "0.6.5"
+            },
+            {
+                "author": "DiFFoZ",
+                "name": "CompanyCruiserFix",
+                "version": "1.0.5"
+            },
+            {
+                "author": "DiFFoZ",
+                "name": "HarmonyXTranspilerFix",
+                "version": "1.1.0"
+            },
+            {
+                "author": "DiFFoZ",
+                "name": "LethalPerformance",
+                "version": "0.4.2"
+            },
+            {
+                "author": "DiggC",
+                "name": "CruiserImproved",
+                "version": "1.4.1"
+            },
+            {
+                "author": "DistinctBlaze",
+                "name": "DistinctMoonVariety",
+                "version": "1.5.0"
+            },
+            {
+                "author": "Drasioshcorp",
+                "name": "Porcelainmaid_Chat_Suits",
+                "version": "1.1.0"
+            },
+            {
+                "author": "EliteMasterEric",
+                "name": "Coroner",
+                "version": "2.2.0"
+            },
+            {
+                "author": "EliteMasterEric",
+                "name": "SlimeTamingFix",
+                "version": "1.0.2"
+            },
+            {
+                "author": "Entity378",
+                "name": "SellBodiesFixed",
+                "version": "1.10.1"
             },
             {
                 "author": "Evaisa",
@@ -31,7 +266,72 @@
             {
                 "author": "Evaisa",
                 "name": "LethalLib",
-                "version": "0.16.0"
+                "version": "0.16.1"
+            },
+            {
+                "author": "explodingMods",
+                "name": "LethalMoonUnlocks",
+                "version": "2.1.9"
+            },
+            {
+                "author": "fivetoofive",
+                "name": "DetailedScan",
+                "version": "1.2.2"
+            },
+            {
+                "author": "FlipMods",
+                "name": "HotbarPlus",
+                "version": "1.8.0"
+            },
+            {
+                "author": "FlipMods",
+                "name": "ObjectVolumeController",
+                "version": "1.1.1"
+            },
+            {
+                "author": "FlipMods",
+                "name": "TooManyEmotes",
+                "version": "2.2.11"
+            },
+            {
+                "author": "FlipMods",
+                "name": "TooManyEmotesScrap",
+                "version": "1.0.8"
+            },
+            {
+                "author": "fumiko",
+                "name": "CullFactory",
+                "version": "1.4.3"
+            },
+            {
+                "author": "Generic_GMD",
+                "name": "Generic_Interiors",
+                "version": "1.1.1"
+            },
+            {
+                "author": "Generic_GMD",
+                "name": "Generic_Moons",
+                "version": "6.2.0"
+            },
+            {
+                "author": "Generic_GMD",
+                "name": "Generic_Scraps",
+                "version": "0.1.2"
+            },
+            {
+                "author": "Hamunii",
+                "name": "AutoHookGenPatcher",
+                "version": "1.0.4"
+            },
+            {
+                "author": "Hamunii",
+                "name": "DetourContext_Dispose_Fix",
+                "version": "1.0.3"
+            },
+            {
+                "author": "Hardy",
+                "name": "LCMaxSoundsFix",
+                "version": "1.2.0"
             },
             {
                 "author": "IAmBatby",
@@ -39,12 +339,452 @@
                 "version": "1.3.10"
             },
             {
+                "author": "IAmBatby",
+                "name": "LethalToolbox",
+                "version": "1.0.4"
+            },
+            {
+                "author": "IntegrityChaos",
+                "name": "Diversity",
+                "version": "3.0.2"
+            },
+            {
+                "author": "IntegrityChaos",
+                "name": "GraphicsAPI",
+                "version": "1.0.0"
+            },
+            {
+                "author": "IntegrityChaos",
+                "name": "LCCutscene",
+                "version": "1.0.0"
+            },
+            {
+                "author": "ironbean",
+                "name": "MeteorShowerChance",
+                "version": "1.1.1"
+            },
+            {
+                "author": "JacobG5",
+                "name": "JLL",
+                "version": "1.7.7"
+            },
+            {
+                "author": "jaspercreations",
+                "name": "Scopophobia",
+                "version": "1.1.5"
+            },
+            {
+                "author": "Jordo",
+                "name": "NeedyCats",
+                "version": "1.2.2"
+            },
+            {
+                "author": "Kittenji",
+                "name": "Groan_Tube_Scrap",
+                "version": "1.0.4"
+            },
+            {
+                "author": "KlutzyBubbles",
+                "name": "BetterEmotes",
+                "version": "1.5.4"
+            },
+            {
+                "author": "KoolKids",
+                "name": "OmegaScott",
+                "version": "0.1.0"
+            },
+            {
+                "author": "kRYstall9",
+                "name": "FastSwitchPlayerViewInRadar",
+                "version": "1.3.2"
+            },
+            {
+                "author": "LethalCompanyModding",
+                "name": "LCUltrawide_Community",
+                "version": "1.1.2"
+            },
+            {
+                "author": "LethalCompanyModding",
+                "name": "VertexLibrary",
+                "version": "1.1.0"
+            },
+            {
+                "author": "LethalMatt",
+                "name": "Bozoros",
+                "version": "2.0.3"
+            },
+            {
+                "author": "LethalMatt",
+                "name": "Outpost_31",
+                "version": "2.0.0"
+            },
+            {
+                "author": "linkoid",
+                "name": "DissonanceLagFix",
+                "version": "1.0.0"
+            },
+            {
+                "author": "Lordfirespeed",
+                "name": "OdinSerializer",
+                "version": "2022.11.9"
+            },
+            {
+                "author": "Magic_Wesley",
+                "name": "Asteroid13",
+                "version": "3.0.9"
+            },
+            {
+                "author": "Magic_Wesley",
+                "name": "WesleysInteriors",
+                "version": "1.5.16"
+            },
+            {
+                "author": "MarshMan",
+                "name": "DeezNuts",
+                "version": "1.0.0"
+            },
+            {
+                "author": "MasterAli2",
+                "name": "TeleportDecline",
+                "version": "1.1.0"
+            },
+            {
+                "author": "mattymatty",
+                "name": "AdditionalNetworking",
+                "version": "2.1.2"
+            },
+            {
+                "author": "mattymatty",
+                "name": "AsyncLoggers",
+                "version": "2.1.2"
+            },
+            {
+                "author": "mattymatty",
+                "name": "BagConfig",
+                "version": "0.0.5"
+            },
+            {
+                "author": "mattymatty",
+                "name": "LandFromOrbit",
+                "version": "1.1.2"
+            },
+            {
+                "author": "mattymatty",
+                "name": "LobbyControl",
+                "version": "2.4.10"
+            },
+            {
+                "author": "mattymatty",
+                "name": "Matty_Fixes",
+                "version": "1.1.31"
+            },
+            {
                 "author": "MaxWasUnavailable",
                 "name": "LethalModDataLib",
                 "version": "1.2.2"
+            },
+            {
+                "author": "MelanieMelicious",
+                "name": "MelanieMelicious_2_sToRy_ShIp__works_w_Wider_Ship_Mod",
+                "version": "0.4.1"
+            },
+            {
+                "author": "Monkeytype",
+                "name": "HideChat",
+                "version": "1.0.0"
+            },
+            {
+                "author": "mrov",
+                "name": "ApparatusFix",
+                "version": "0.0.1"
+            },
+            {
+                "author": "mrov",
+                "name": "LightsOut",
+                "version": "0.1.3"
+            },
+            {
+                "author": "mrov",
+                "name": "MrovLib",
+                "version": "0.2.8"
+            },
+            {
+                "author": "mrov",
+                "name": "TerminalFormatter",
+                "version": "0.2.23"
+            },
+            {
+                "author": "mrov",
+                "name": "WeatherRegistry",
+                "version": "0.2.7"
+            },
+            {
+                "author": "mrov",
+                "name": "WeatherTweaks",
+                "version": "0.5.11"
+            },
+            {
+                "author": "necrowing",
+                "name": "StopBeesOpeningDoors",
+                "version": "1.1.0"
+            },
+            {
+                "author": "Nikki",
+                "name": "Slaughterhouse",
+                "version": "1.0.4"
+            },
+            {
+                "author": "NotAtomicBomb",
+                "name": "TerminalApi",
+                "version": "1.5.5"
+            },
+            {
+                "author": "notnotnotswipez",
+                "name": "MoreCompany",
+                "version": "1.11.0"
+            },
+            {
+                "author": "Onyx_Inoculum",
+                "name": "Longer_Day",
+                "version": "1.0.0"
+            },
+            {
+                "author": "Ozone",
+                "name": "Runtime_Netcode_Patcher",
+                "version": "0.2.5"
+            },
+            {
+                "author": "Pooble",
+                "name": "LCBetterSaves",
+                "version": "1.7.3"
+            },
+            {
+                "author": "qwbarch",
+                "name": "Mirage",
+                "version": "1.11.1"
+            },
+            {
+                "author": "qwbarch",
+                "name": "MirageCore",
+                "version": "1.0.1"
+            },
+            {
+                "author": "qwbarch",
+                "name": "NAudioLame",
+                "version": "2.1.1"
+            },
+            {
+                "author": "Rattenbonkers",
+                "name": "TVLoader",
+                "version": "1.1.2"
+            },
+            {
+                "author": "Renegades",
+                "name": "FlashlightToggle",
+                "version": "1.5.0"
+            },
+            {
+                "author": "RosiePies",
+                "name": "Gordion_Sect0",
+                "version": "2.2.5"
+            },
+            {
+                "author": "RosiePies",
+                "name": "RoseLib",
+                "version": "1.0.1"
+            },
+            {
+                "author": "Rozebud",
+                "name": "FOV_Adjust",
+                "version": "1.1.1"
+            },
+            {
+                "author": "Rune580",
+                "name": "LethalCompany_InputUtils",
+                "version": "0.7.7"
+            },
+            {
+                "author": "Scintesto",
+                "name": "Monster_Plushies",
+                "version": "1.2.9"
+            },
+            {
+                "author": "Scintesto",
+                "name": "Scavenger_Plushie",
+                "version": "1.0.9"
+            },
+            {
+                "author": "sfDesat",
+                "name": "Aquatis",
+                "version": "2.2.3"
+            },
+            {
+                "author": "sfDesat",
+                "name": "Celest",
+                "version": "1.1.4"
+            },
+            {
+                "author": "sfDesat",
+                "name": "Celestial_Tint",
+                "version": "1.5.2"
+            },
+            {
+                "author": "sfDesat",
+                "name": "ViewExtension",
+                "version": "1.3.0"
+            },
+            {
+                "author": "ShaosilGaming",
+                "name": "GeneralImprovements",
+                "version": "1.4.4"
+            },
+            {
+                "author": "Sigurd",
+                "name": "CSync",
+                "version": "5.0.1"
+            },
+            {
+                "author": "SimonTendo",
+                "name": "LCGoldScrapMod",
+                "version": "1.7.3"
+            },
+            {
+                "author": "Sparble",
+                "name": "FacelessStalker",
+                "version": "1.1.9"
+            },
+            {
+                "author": "sunnobunno",
+                "name": "YippeeMod",
+                "version": "1.2.4"
+            },
+            {
+                "author": "SylviBlossom",
+                "name": "TerminalConflictFix",
+                "version": "1.2.2"
+            },
+            {
+                "author": "SZAKI",
+                "name": "EnemyFix",
+                "version": "1.0.0"
+            },
+            {
+                "author": "taffyko",
+                "name": "BetterSprayPaint",
+                "version": "2.0.9"
+            },
+            {
+                "author": "tav",
+                "name": "lethalchimp",
+                "version": "0.1.2"
+            },
+            {
+                "author": "TestAccount666",
+                "name": "ShipWindows",
+                "version": "1.10.2"
+            },
+            {
+                "author": "TestAccount666",
+                "name": "TestAccountCore",
+                "version": "1.9.1"
+            },
+            {
+                "author": "TestAccount666",
+                "name": "TestAccountFixes",
+                "version": "1.3.5"
+            },
+            {
+                "author": "tinyhoot",
+                "name": "ShipLoot",
+                "version": "1.1.0"
+            },
+            {
+                "author": "Tolian",
+                "name": "PsychSanctum",
+                "version": "1.0.2"
+            },
+            {
+                "author": "WeirdMods",
+                "name": "OIIA",
+                "version": "1.0.1"
+            },
+            {
+                "author": "WhiteSpike",
+                "name": "Maneater_Damage_Patch",
+                "version": "1.0.1"
+            },
+            {
+                "author": "WhiteSpike",
+                "name": "Scrap_Insurance",
+                "version": "1.0.2"
+            },
+            {
+                "author": "willis81808",
+                "name": "LethalSettings",
+                "version": "1.4.1"
+            },
+            {
+                "author": "x753",
+                "name": "More_Suits",
+                "version": "1.4.5"
+            },
+            {
+                "author": "xilophor",
+                "name": "LethalNetworkAPI",
+                "version": "3.3.1"
+            },
+            {
+                "author": "xilophor",
+                "name": "StaticNetcodeLib",
+                "version": "1.1.1"
+            },
+            {
+                "author": "XuXiaolan",
+                "name": "CodeRebirth",
+                "version": "0.7.18"
+            },
+            {
+                "author": "XuXiaolan",
+                "name": "ImmersiveScrap",
+                "version": "1.4.0"
+            },
+            {
+                "author": "Yorimor",
+                "name": "CustomStoryLogs",
+                "version": "1.4.5"
+            },
+            {
+                "author": "Zaggy1024",
+                "name": "OpenBodyCams",
+                "version": "3.0.3"
+            },
+            {
+                "author": "Zaggy1024",
+                "name": "PathfindingLagFix",
+                "version": "1.4.0"
+            },
+            {
+                "author": "Zehs",
+                "name": "BlahajPlush",
+                "version": "1.1.0"
+            },
+            {
+                "author": "Zehs",
+                "name": "SellMyScrap",
+                "version": "1.7.3"
+            },
+            {
+                "author": "ZG",
+                "name": "ScalingStartCredits",
+                "version": "1.0.6"
             }
         ],
-        "overrides": []
+        "overrides": [
+            {
+                "gdrive": "1_Ljd17Slrmc9nj5w52QjDbTKmcmzsVra",
+                "dropbox": "https://www.dropbox.com/scl/fi/cu9g7o9ec1f5qam5zowmg/EventServerOverrides-v1.zip?rlkey=wx0g89p2xu38hyniw1hvy22se&st=v58j9itf&dl=1"
+            }
+        ]
     },
     "reinstall": false
 }
