@@ -1,17 +1,17 @@
 {
     "author": "DarthLilo",
     "name": "Lite Modded",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "update_date": "11-10-2024",
-    "cache_timestamp": 1731276138.61047,
+    "cache_timestamp": 1731377094.7954464,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Lite%20Modded.json",
     "icon_url": "https://i.imgur.com/tHikFbm.png",
     "contents": {
         "thunderstore_packages": [
             {
-                "author": "notnotnotswipez",
-                "name": "MoreCompany",
-                "version": "1.11.0"
+                "author": "FlipMods",
+                "name": "HotbarPlus",
+                "version": "1.8.0"
             },
             {
                 "author": "mattymatty",
@@ -19,9 +19,9 @@
                 "version": "2.4.9"
             },
             {
-                "author": "FlipMods",
-                "name": "HotbarPlus",
-                "version": "1.8.0"
+                "author": "notnotnotswipez",
+                "name": "MoreCompany",
+                "version": "1.11.0"
             },
             {
                 "author": "Pooble",
@@ -32,14 +32,19 @@
                 "author": "Zehs",
                 "name": "LCBetterSavesFix",
                 "version": "1.0.0"
+            },
+            {
+                "author": "Renegades",
+                "name": "FlashlightToggle",
+                "version": "1.5.0"
+            },
+            {
+                "author": "Rune580",
+                "name": "LethalCompany_InputUtils",
+                "version": "0.4.3"
             }
         ],
-        "overrides": [
-            {
-                "gdrive": "1UDs0WaXWNulpWrlVL6f5m4lqSkgcNW1f",
-                "dropbox": "https://www.dropbox.com/scl/fi/3oj6lnjtdkwa30gp8rfvn/VanillaOverrides.zip?rlkey=udvhwvq8vu9a6ecyzo0p7iq3j&st=6rwbi3vn&dl=1"
-            }
-        ]
+        "overrides": []
     },
     "reinstall": false
 }
