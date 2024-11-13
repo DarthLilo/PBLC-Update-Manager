@@ -339,6 +339,7 @@ class Modpacks:
         Modpacks.Select(modpack_data['author'],modpack_data['name'])
 
         QueueMan.ClearQueue()
+        Modpacks.ModpackData = modpack_data
 
         # Deleting extra mods
         verify_mod_cache = []
@@ -361,7 +362,7 @@ class Modpacks:
                 QueueMan.QueuePackage(mod['author'],mod['name'],mod['version'])
                 #Modpacks.Mods.Add(author=mod['author'],mod=mod['name'],mod_version=mod['version'])
         
-        if len(QueueMan.package_queue):
+        if len(QueueMan.package_queue) or len(modpack_data['contents']['overrides']):
             Modpacks.ShowDownloadScreen()
             Modpacks.DownloadManagement.StartWorkerObject()
         
