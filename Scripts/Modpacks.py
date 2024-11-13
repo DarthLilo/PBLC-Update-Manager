@@ -307,6 +307,11 @@ class Modpacks:
 
             else: # Otherwise queue it up for download
                 QueueMan.QueuePackage(mod['author'],mod['name'],mod['version'])
+        
+        if Networking.IsURL(new_data['icon_url']):
+            Networking.DownloadURLImage(new_data['icon_url'],f"{Modpacks.Path(author,name)}/icon.png")
+        elif os.path.exists(new_data['icon_url']):
+            Modpacks.CopyIcon(author,name,new_data['icon_url'])
 
         Modpacks.DownloadManagement.StartWorkerObject(update=True,finish_func=finish_func)
         
