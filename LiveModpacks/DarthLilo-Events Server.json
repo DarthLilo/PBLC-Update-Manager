@@ -1,11 +1,11 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "update_date": "11-12-2024",
     "cache_timestamp": 1731457480.8283703,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
-    "icon_url": "https://i.imgur.com/LDF9Fz7.png",
+    "icon_url": "https://i.imgur.com/eipgtdi.png",
     "contents": {
         "thunderstore_packages": [
             {
@@ -82,6 +82,11 @@
                 "author": "Bibendi",
                 "name": "AEIOUCompany",
                 "version": "1.3.7"
+            },
+            {
+                "author": "BMX",
+                "name": "LobbyCompatibility",
+                "version": "1.3.0"
             },
             {
                 "author": "Bobbie",
@@ -560,6 +565,11 @@
             },
             {
                 "author": "qwbarch",
+                "name": "Mirage",
+                "version": "1.11.2"
+            },
+            {
+                "author": "qwbarch",
                 "name": "MirageCore",
                 "version": "1.0.1"
             },
@@ -772,22 +782,12 @@
                 "author": "ZG",
                 "name": "ScalingStartCredits",
                 "version": "1.0.6"
-            },
-            {
-                "author": "BMX",
-                "name": "LobbyCompatibility",
-                "version": "1.3.0"
-            },
-            {
-                "author": "qwbarch",
-                "name": "Mirage",
-                "version": "1.11.2"
             }
         ],
         "overrides": [
             {
-                "gdrive": "1_Ljd17Slrmc9nj5w52QjDbTKmcmzsVra",
-                "dropbox": "https://www.dropbox.com/scl/fi/cu9g7o9ec1f5qam5zowmg/EventServerOverrides-v1.zip?rlkey=wx0g89p2xu38hyniw1hvy22se&st=v58j9itf&dl=1"
+                "gdrive": "1AJmCTYVgZQTl1OMVncw82ojF65I7Xth3",
+                "dropbox": "https://www.dropbox.com/scl/fi/19dqjetlr7o07d320e1g1/EventsServerOverrides-v2.zip?rlkey=vhj0i77742csz88nf9wzd5fux&st=tq0l035v&dl=1"
             }
         ]
     },
