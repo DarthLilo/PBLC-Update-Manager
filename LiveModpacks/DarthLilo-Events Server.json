@@ -1,11 +1,11 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "update_date": "11-12-2024",
-    "cache_timestamp": 1731457480.8283703,
+    "cache_timestamp": 1731705057.9761813,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
-    "icon_url": "https://i.imgur.com/eipgtdi.png",
+    "icon_url": "https://i.imgur.com/LDF9Fz7.png",
     "contents": {
         "thunderstore_packages": [
             {
@@ -46,7 +46,7 @@
             {
                 "author": "AllToasters",
                 "name": "SpectateEnemies",
-                "version": "2.6.0"
+                "version": "2.7.0"
             },
             {
                 "author": "AntlerShed",
@@ -84,6 +84,11 @@
                 "version": "1.3.7"
             },
             {
+                "author": "blink9803",
+                "name": "DimmingFlashlights",
+                "version": "1.0.1"
+            },
+            {
                 "author": "BMX",
                 "name": "LobbyCompatibility",
                 "version": "1.3.0"
@@ -111,7 +116,7 @@
             {
                 "author": "ButteryStancakes",
                 "name": "BarberFixes",
-                "version": "1.2.0"
+                "version": "1.2.1"
             },
             {
                 "author": "ButteryStancakes",
@@ -340,6 +345,11 @@
             },
             {
                 "author": "IAmBatby",
+                "name": "DynamicInteriorVariety",
+                "version": "1.0.0"
+            },
+            {
+                "author": "IAmBatby",
                 "name": "LethalLevelLoader",
                 "version": "1.3.10"
             },
@@ -372,6 +382,11 @@
                 "author": "JacobG5",
                 "name": "JLL",
                 "version": "1.7.7"
+            },
+            {
+                "author": "JacobG5",
+                "name": "ReverbTriggerFix",
+                "version": "0.3.0"
             },
             {
                 "author": "jaspercreations",
@@ -554,9 +569,19 @@
                 "version": "1.0.0"
             },
             {
+                "author": "OpJosMods",
+                "name": "MoreEnemies",
+                "version": "1.3.1"
+            },
+            {
                 "author": "Ozone",
                 "name": "Runtime_Netcode_Patcher",
                 "version": "0.2.5"
+            },
+            {
+                "author": "Piggy",
+                "name": "JesterStompShake",
+                "version": "1.0.8"
             },
             {
                 "author": "Pooble",
@@ -590,8 +615,8 @@
             },
             {
                 "author": "RosiePies",
-                "name": "Gordion_Sect0",
-                "version": "2.2.5"
+                "name": "Gordion_Saga",
+                "version": "0.0.1"
             },
             {
                 "author": "RosiePies",
@@ -776,7 +801,7 @@
             {
                 "author": "Zehs",
                 "name": "SellMyScrap",
-                "version": "1.7.3"
+                "version": "1.8.0"
             },
             {
                 "author": "ZG",
@@ -786,8 +811,8 @@
         ],
         "overrides": [
             {
-                "gdrive": "1AJmCTYVgZQTl1OMVncw82ojF65I7Xth3",
-                "dropbox": "https://www.dropbox.com/scl/fi/19dqjetlr7o07d320e1g1/EventsServerOverrides-v2.zip?rlkey=vhj0i77742csz88nf9wzd5fux&st=tq0l035v&dl=1"
+                "gdrive": "1F4ISBDTc4AfuuFMs2MjCSgiCFwCpPwdo",
+                "dropbox": "https://www.dropbox.com/scl/fi/le1iwjybyftdj72p2gd7z/EventsServerOverrides-v3.zip?rlkey=a9bndfjc7l5r0gbc7bnhijxww&st=wx6dsy02&dl=1"
             }
         ]
     },
