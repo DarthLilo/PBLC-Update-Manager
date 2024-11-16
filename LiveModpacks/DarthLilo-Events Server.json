@@ -1,7 +1,7 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "update_date": "11-15-2024",
     "cache_timestamp": 1731714867.2643688,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
@@ -811,8 +811,8 @@
         ],
         "overrides": [
             {
-                "gdrive": "1_Ljd17Slrmc9nj5w52QjDbTKmcmzsVra",
-                "dropbox": "https://www.dropbox.com/scl/fi/cu9g7o9ec1f5qam5zowmg/EventServerOverrides-v1.zip?rlkey=wx0g89p2xu38hyniw1hvy22se&st=v58j9itf&dl=1"
+                "gdrive": "1hXJKjqN13pTmf-SytSWnBTNKek46BxCt",
+                "dropbox": "https://www.dropbox.com/scl/fi/z7wejpxt8qov705i2l036/EventsServerOverrides-v4.zip?rlkey=1a8ovdswlz628e1l1jzecnhxl&st=k89b30or&dl=0"
             }
         ]
     },
