@@ -1,17 +1,17 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.0.1",
-    "update_date": "11-12-2024",
-    "cache_timestamp": 1731457480.8283703,
+    "version": "1.0.7",
+    "update_date": "11-16-2024",
+    "cache_timestamp": 1731801146.3528059,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
-    "icon_url": "https://i.imgur.com/LDF9Fz7.png",
+    "icon_url": "https://i.imgur.com/eipgtdi.png",
     "contents": {
         "thunderstore_packages": [
             {
                 "author": "4902",
                 "name": "Cruiser_Additions",
-                "version": "1.4.0"
+                "version": "1.4.1"
             },
             {
                 "author": "4902",
@@ -46,7 +46,7 @@
             {
                 "author": "AllToasters",
                 "name": "SpectateEnemies",
-                "version": "2.6.0"
+                "version": "2.7.0"
             },
             {
                 "author": "AntlerShed",
@@ -84,6 +84,16 @@
                 "version": "1.3.7"
             },
             {
+                "author": "blink9803",
+                "name": "DimmingFlashlights",
+                "version": "1.0.1"
+            },
+            {
+                "author": "BMX",
+                "name": "LobbyCompatibility",
+                "version": "1.3.0"
+            },
+            {
                 "author": "Bobbie",
                 "name": "NAudio",
                 "version": "2.2.2"
@@ -106,7 +116,7 @@
             {
                 "author": "ButteryStancakes",
                 "name": "BarberFixes",
-                "version": "1.2.0"
+                "version": "1.2.1"
             },
             {
                 "author": "ButteryStancakes",
@@ -116,7 +126,7 @@
             {
                 "author": "ButteryStancakes",
                 "name": "Chameleon",
-                "version": "1.2.1"
+                "version": "1.2.2"
             },
             {
                 "author": "ButteryStancakes",
@@ -335,6 +345,11 @@
             },
             {
                 "author": "IAmBatby",
+                "name": "DynamicInteriorVariety",
+                "version": "1.0.0"
+            },
+            {
+                "author": "IAmBatby",
                 "name": "LethalLevelLoader",
                 "version": "1.3.10"
             },
@@ -367,6 +382,11 @@
                 "author": "JacobG5",
                 "name": "JLL",
                 "version": "1.7.7"
+            },
+            {
+                "author": "JacobG5",
+                "name": "ReverbTriggerFix",
+                "version": "0.3.0"
             },
             {
                 "author": "jaspercreations",
@@ -486,7 +506,7 @@
             {
                 "author": "MelanieMelicious",
                 "name": "MelanieMelicious_2_sToRy_ShIp__works_w_Wider_Ship_Mod",
-                "version": "0.4.1"
+                "version": "0.4.2"
             },
             {
                 "author": "Monkeytype",
@@ -516,7 +536,7 @@
             {
                 "author": "mrov",
                 "name": "WeatherRegistry",
-                "version": "0.2.7"
+                "version": "0.2.8"
             },
             {
                 "author": "mrov",
@@ -531,7 +551,7 @@
             {
                 "author": "Nikki",
                 "name": "Slaughterhouse",
-                "version": "1.0.4"
+                "version": "1.0.6"
             },
             {
                 "author": "NotAtomicBomb",
@@ -549,14 +569,29 @@
                 "version": "1.0.0"
             },
             {
+                "author": "OpJosMods",
+                "name": "MoreEnemies",
+                "version": "1.3.1"
+            },
+            {
                 "author": "Ozone",
                 "name": "Runtime_Netcode_Patcher",
                 "version": "0.2.5"
             },
             {
+                "author": "Piggy",
+                "name": "JesterStompShake",
+                "version": "1.0.8"
+            },
+            {
                 "author": "Pooble",
                 "name": "LCBetterSaves",
                 "version": "1.7.3"
+            },
+            {
+                "author": "qwbarch",
+                "name": "Mirage",
+                "version": "1.12.0"
             },
             {
                 "author": "qwbarch",
@@ -580,8 +615,8 @@
             },
             {
                 "author": "RosiePies",
-                "name": "Gordion_Sect0",
-                "version": "2.2.5"
+                "name": "Gordion_Saga",
+                "version": "0.0.2"
             },
             {
                 "author": "RosiePies",
@@ -642,6 +677,11 @@
                 "author": "SimonTendo",
                 "name": "LCGoldScrapMod",
                 "version": "1.7.3"
+            },
+            {
+                "author": "SmoothReserve",
+                "name": "SmoothReserves_Decor",
+                "version": "1.1.3"
             },
             {
                 "author": "Sparble",
@@ -766,28 +806,18 @@
             {
                 "author": "Zehs",
                 "name": "SellMyScrap",
-                "version": "1.7.3"
+                "version": "1.8.0"
             },
             {
                 "author": "ZG",
                 "name": "ScalingStartCredits",
                 "version": "1.0.6"
-            },
-            {
-                "author": "BMX",
-                "name": "LobbyCompatibility",
-                "version": "1.3.0"
-            },
-            {
-                "author": "qwbarch",
-                "name": "Mirage",
-                "version": "1.11.2"
             }
         ],
         "overrides": [
             {
-                "gdrive": "1_Ljd17Slrmc9nj5w52QjDbTKmcmzsVra",
-                "dropbox": "https://www.dropbox.com/scl/fi/cu9g7o9ec1f5qam5zowmg/EventServerOverrides-v1.zip?rlkey=wx0g89p2xu38hyniw1hvy22se&st=v58j9itf&dl=1"
+                "gdrive": "1Xt_N0aQta7GllVNN86PwDbs346ZjpLlW",
+                "dropbox": "https://www.dropbox.com/scl/fi/syuxojyjxv1vvatfxdvhh/EventsServerOverrides-v5.zip?rlkey=2kh7bol37lauwbk7jbkuy4xvj&st=get9599h&dl=1"
             }
         ]
     },
