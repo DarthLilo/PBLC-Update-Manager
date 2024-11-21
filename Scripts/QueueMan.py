@@ -15,7 +15,7 @@ class QueueMan():
     package_length = 0
     package_progression = 0
 
-    package_queue = []
+    package_queue = queue.Queue()
 
     def __init__(self):
         QueueMan.max_threads = int(Config.Read("performance","max_download_threads","value"))
@@ -35,7 +35,7 @@ class QueueMan():
             "name":name,
             "version":version
         }
-        QueueMan.package_queue.append(package)
+        QueueMan.package_queue.put(package)
 
         try:
             package_dependencies = Cache.Get(author,name,version)['dependencies']
@@ -56,7 +56,10 @@ class QueueMan():
     def QueueCleanup(downloads):
         queued_files = {}
 
-        for download in downloads:
+        #for download in downloads:
+        while not downloads.empty():
+            download = downloads.get()
+
             package_name = f"{download['author']}-{download['name']}"
             new_version  = version.parse(download['version'])
 
@@ -117,7 +120,7 @@ class QueueMan():
     def ClearQueue():
         QueueMan.package_length = 0
         QueueMan.package_progression = 0
-        QueueMan.package_queue.clear()
+        QueueMan.package_queue = queue.Queue()
             
     class DownloadFile:
 
@@ -180,6 +183,3 @@ class QueueMan():
         
         def update_percentage(self,value):
             if callable(self.emit_method): self.emit_method(self.worker_index,value)
-
-    
-    # Might have to create special download function in the queue manager to avoid circular imports from modpacks.py, shitty but it is what it is

@@ -37,6 +37,25 @@ class ModFrame(QFrame):
         else:
             self.main_theme_color = "#c3c3c3"
 
+        if winaccent.system_uses_light_theme:
+            self.setStyleSheet(
+            """
+            QFrame {
+                background-color:#d2d2d2;
+                border-radius: 10px;
+            }
+            """
+        )
+        else:
+            self.setStyleSheet(
+            """
+            QFrame {
+                background-color:#292929;
+                border-radius: 10px;
+            }
+            """
+        )
+
         self.setLayout(self._layout)
         self.setFrameShape(QFrame.Shape.StyledPanel)
         self.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Fixed)

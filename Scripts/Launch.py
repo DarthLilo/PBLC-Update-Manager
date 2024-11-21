@@ -1,8 +1,10 @@
 from .Logging import Logging
 from .Modpacks import Modpacks
 from .Filetree import Filetree
+from .Assets import Assets
 from .Thunderstore import Thunderstore
-import os, shutil, subprocess
+import os, subprocess, win10toast
+from PyQt6.QtCore import QTimer
 
 class Launch:
 
@@ -64,4 +66,13 @@ class Launch:
 
         subprocess.Popen(launch_command,shell=True)
 
+        QTimer.singleShot(0, Launch.ShowNotif)
+        
+        
         return True
+    
+    def ShowNotif():
+        notif = win10toast.ToastNotifier()
+        notif.show_toast(
+            "Starting Modpack!",f'Starting [{Launch.author}-{Launch.name}]!',Assets.getResource(Assets.ResourceTypes.app_icon),threaded=True
+        )

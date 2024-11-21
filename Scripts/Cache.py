@@ -53,14 +53,14 @@ class Cache():
         Logging.New("Beginning package index process, this might take a while...")
         if callable(cache_status_func): cache_status_func(f"Caching mods...")
         Cache.Packages.clear()
-        with open(Cache.LethalCompanyPackageIndex, 'r', encoding='utf-8') as file:
-            data = json.load(file)
-            for entry in data:
-                key = (entry['owner'], entry['name'])
-                #Logging.New(f"Caching {key}...")
-                Cache.Packages[key] = entry
-            
-            Logging.New("Finished Caching")
+        if os.path.exists(Cache.LethalCompanyPackageIndex):
+            with open(Cache.LethalCompanyPackageIndex, 'r', encoding='utf-8') as file:
+                data = json.load(file)
+                for entry in data:
+                    key = (entry['owner'], entry['name'])
+                    Cache.Packages[key] = entry
+                Logging.New("Finished Caching")
+        return
     
     def SaveIndex():
         """Saves the current memory index into a file"""

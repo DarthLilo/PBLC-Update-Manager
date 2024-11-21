@@ -47,11 +47,11 @@ class ModpackFrame(QFrame):
             self.setStyleSheet(
             """
             QWidget#ModpackFrameWidget {
-                background-color:#222222;
+                background-color:#323232;
                 border-radius: 10px;
             }
             QFrame#ModpackFrameWidget::hover{
-                background-color:#353535;
+                background-color:#474747;
                 border-radius: 10px;
             }
             """

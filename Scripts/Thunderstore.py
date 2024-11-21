@@ -72,16 +72,17 @@ class Thunderstore:
             bepinex = Thunderstore.DownloadPackage("BepInEx","BepInExPack",bepinex_version,download_folder)
             bepinex = Filetree.DecompressZip(bepinex)
 
-            try:
-                for file in os.listdir(bepinex+"/BepInExPack"):
-                    shutil.move(f"{bepinex}/BepInExPack/{file}",os.path.join(download_folder,file))
-            except FileNotFoundError:
+            if os.path.exists(bepinex):
+                try:
+                    for file in os.listdir(bepinex+"/BepInExPack"):
+                        shutil.move(f"{bepinex}/BepInExPack/{file}",os.path.join(download_folder,file))
+                except FileNotFoundError:
+                    shutil.rmtree(bepinex)
+                    Thunderstore.DownloadBepInEx(download_folder,loop_count)
+            
+                os.makedirs(f"{download_folder}/BepInEx/plugins")
+                
                 shutil.rmtree(bepinex)
-                Thunderstore.DownloadBepInEx(download_folder,loop_count)
-            
-            os.makedirs(f"{download_folder}/BepInEx/plugins")
-            
-            shutil.rmtree(bepinex)
 
             return
         

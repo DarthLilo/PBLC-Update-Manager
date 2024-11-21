@@ -6,8 +6,9 @@ from .Util import Util
 from .Networking import Networking
 from .QueueMan import QueueMan
 from .Filetree import Filetree
+from .Assets import Assets
 from time import sleep
-import os, json, shutil, threading, gdown, traceback
+import os, json, shutil, threading, gdown, traceback, win10toast
 from packaging import version
 
 from PyQt6.QtCore import QObject, pyqtSignal
@@ -107,6 +108,8 @@ class Modpacks:
     
     def LoadActiveMods(author,name):
         plugins_folder = f"{Cache.SelectedModpack}/BepInEx/plugins"
+        if not os.path.exists(plugins_folder):
+            return
         for file in os.listdir(plugins_folder):
             if os.path.isdir(f"{plugins_folder}/{file}") and os.path.exists(f"{plugins_folder}/{file}/mod.json"):
                 Modpacks.Mods.LoadMod(f"{plugins_folder}/{file}")
@@ -114,6 +117,8 @@ class Modpacks:
     def GetModCount(author,name):
         mod_count = 0
         plugins_folder = f"{Modpacks.Path(author,name)}/BepInEx/plugins"
+        if not os.path.exists(plugins_folder):
+            return 0
         for file in os.listdir(plugins_folder):
             if os.path.isdir(f"{plugins_folder}/{file}") and os.path.exists(f"{plugins_folder}/{file}/mod.json"):
                 mod_count += 1
@@ -122,6 +127,10 @@ class Modpacks:
     def ListMods(author,name):
         mods = []
         plugins_folder = f"{Modpacks.Path(author,name)}/BepInEx/plugins"
+        
+        if not os.path.exists(plugins_folder):
+            return []
+        
         for file in os.listdir(plugins_folder):
             if os.path.isdir(f"{plugins_folder}/{file}") and os.path.exists(f"{plugins_folder}/{file}/mod.json"):
                 mod_json_data = Util.OpenJson(f"{plugins_folder}/{file}/mod.json")
@@ -218,6 +227,11 @@ class Modpacks:
         if callable(closeSignalFunc): closeSignalFunc()
         if callable(finish_func): finish_func()
 
+        notif = win10toast.ToastNotifier()
+        notif.show_toast(
+            "Modpack Finished!",f'The modpack [{modpack_data['author']}-{modpack_data['name']}] has finished installing!',Assets.getResource(Assets.ResourceTypes.app_icon)
+        )
+
         #Modpacks._screenFinishUpdate()
 
     def ScanForUpdates():
@@ -250,7 +264,11 @@ class Modpacks:
     def ImportVerify(modpack, showdownloadfunc=None,cacheloadingfunc=None,cachestatusfunc=None,finish_func=None):
         """Given a URL or a filepath it will import/update a modpack!"""
         
-        modpack_data = Util.UrlPathDecoder(modpack)
+        try:
+            modpack_data = Util.UrlPathDecoder(modpack)
+        except Exception as e:
+            Logging.New("Error when getting modpack data from provided location, please verify your internet connection and try again!")
+            return
 
         if Time.IsOlder(os.path.getmtime(f"{Cache.CacheFolder}/lethal_company_package_index.json"),modpack_data['cache_timestamp']):
             if callable(cacheloadingfunc): cacheloadingfunc()
@@ -367,13 +385,20 @@ class Modpacks:
                 QueueMan.QueuePackage(mod['author'],mod['name'],mod['version'])
                 #Modpacks.Mods.Add(author=mod['author'],mod=mod['name'],mod_version=mod['version'])
         
-        if len(QueueMan.package_queue) or len(modpack_data['contents']['overrides']):
+        if QueueMan.package_queue.not_empty or len(modpack_data['contents']['overrides']):
             Modpacks.ShowDownloadScreen()
             Modpacks.DownloadManagement.StartWorkerObject()
         
         Modpacks.DeselectModpack()
         Modpacks.RefreshModpacks()
-        
+
+    def SelectedModpackData():
+        """Returns the author and name of the currently selected modpack as a tuple"""
+        if Cache.SelectedModpack:
+            return os.path.basename(Cache.SelectedModpack).split("-")
+        else:
+            return ("","")
+
     class DownloadManagement:
         def StartWorkerObject(update=False,finish_func=None,screen_type=0):
 
@@ -382,6 +407,8 @@ class Modpacks:
             worker_object.thread_display_update.connect(Modpacks.UpdateThreadDisplay)
             worker_object.close_download_screen.connect(Modpacks.CloseDownloadScreenFunc)
             worker_object.loading_screen_trigger.connect(Modpacks.CacheLoadingScreenFunc)
+            worker_object.set_global_percent.connect(Modpacks.SetGlobalPercent)
+            
             if callable(finish_func):
                 worker_object.finish_func.connect(finish_func)
 
@@ -618,6 +645,7 @@ class QueueWorkerObject(QObject):
     close_download_screen = pyqtSignal()
     loading_screen_trigger = pyqtSignal(str)
     finish_func = pyqtSignal()
+    set_global_percent = pyqtSignal(float)
 
     def run(self,update=False, screen_type=0):
 
@@ -627,16 +655,8 @@ class QueueWorkerObject(QObject):
                                                    thread_display_method=self.thread_display_update.emit,
                                                    close_download_method=self.close_download_screen.emit,
                                                    loading_screen_method=self.loading_screen_trigger.emit,
-                                                   set_global_percent_method=Modpacks.SetGlobalPercent,
+                                                   set_global_percent_method=self.set_global_percent.emit,
                                                    finish_func=self.finish_func.emit,update=update)
             
-            #threading.Thread(target=QueueMan.Start(overrides_function=Modpacks.DownloadOverrides,
-            #                                       emit_method=self.progress_output.emit,
-            #                                       thread_display_method=self.thread_display_update.emit,
-            #                                       close_download_method=self.close_download_screen.emit,
-            #                                       loading_screen_method=self.loading_screen_trigger.emit,
-            #                                       set_global_percent_method=Modpacks.SetGlobalPercent,
-            #                                       finish_func=self.finish_func.emit,update=update),daemon=True).start()
         elif screen_type == 1:
-            #threading.Thread(target=QueueMan.Start(finish_func=self.finish_func.emit,update=update),daemon=True).start()
             QueueMan.Start(finish_func=self.finish_func.emit,update=update)

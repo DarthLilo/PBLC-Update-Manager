@@ -10,7 +10,7 @@ from ..Filetree import Filetree
 from ..Logging import Logging
 from ..Util import Util
 
-import winsound
+import winsound, os
 
 class ClickableLabel(QLabel):
     """Activates a function \"whenClicked\" when the label is clicked and transmits the event and an dictionary package of data!"""
@@ -66,6 +66,14 @@ class ClickableLabel(QLabel):
         edit_action.setIcon(QIcon(Assets.getResource(Assets.IconTypes.edit,True)))
         edit_action.triggered.connect(lambda: self._edit_screen_func(self.click_data,update_modcount_func=self.parent().UpdateFrameModCount))
 
+        update_action = QAction("Update", self)
+        update_action.setIcon(QIcon(Assets.getResource(Assets.IconTypes.refresh,True)))
+        update_action.triggered.connect(self.updateModpack)
+
+        folder_action = QAction("Folder", self)
+        folder_action.setIcon(QIcon(Assets.getResource(Assets.IconTypes.folder,True)))
+        folder_action.triggered.connect(self.openFolder)
+
         verify_action = QAction("Verify", self)
         verify_action.setIcon(QIcon(Assets.getResource(Assets.IconTypes.file,True)))
         verify_action.triggered.connect(self.VerifyModpack)
@@ -76,6 +84,8 @@ class ClickableLabel(QLabel):
         
         context_menu.addAction(play_action)
         context_menu.addAction(edit_action)
+        context_menu.addAction(update_action)
+        context_menu.addAction(folder_action)
         context_menu.addAction(verify_action)
         context_menu.addAction(delete_action)
 
@@ -109,6 +119,17 @@ class ClickableLabel(QLabel):
             return
         Modpacks.Delete(self._author,self._name)
         Modpacks.RefreshModpacks()
+    
+    def openFolder(self):
+        os.startfile(Modpacks.Path(self._author,self._name))
+    
+    def updateModpack(self):
+        if not Filetree.IsLethalRunning(LethalRunning):
+            dlg = ConfirmUpdate("Check for and install updates if available?")
+            result = dlg.exec()
+            if result:
+                Modpacks.UpdateVerify(self._author,self._name)
+                Modpacks.DeselectModpack()
 
     
     def mouseReleaseEvent(self, event):
@@ -147,3 +168,22 @@ class EditVersion(QDialog):
 
         if file_name:
             self.new_version.setText(file_name)
+
+class ConfirmUpdate(QDialog):
+    def __init__(self,message):
+        super().__init__()
+
+        self.setWindowTitle("Modpack Update")
+        self.setWindowIcon(QIcon(Assets.getResource(Assets.ResourceTypes.app_icon)))
+
+        Buttons = (
+            QDialogButtonBox.StandardButton.Yes | QDialogButtonBox.StandardButton.No
+        )
+        self.button_box = QDialogButtonBox(Buttons)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+
+        layout = QVBoxLayout(self)
+        self.message = QLabel(message)
+        layout.addWidget(self.message)
+        layout.addWidget(self.button_box)

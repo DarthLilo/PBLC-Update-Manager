@@ -51,7 +51,11 @@ class Networking:
     def DownloadFromUrl(url,location,print_length=None,feedback_func=None):
         Logging.New(f"Downloading [{url}]...")
 
-        package_request = requests.get(url,stream=True)
+        try:
+            package_request = requests.get(url,stream=True)
+        except Exception as e:
+            Logging.New(f"Error when downloading {url}, please verify your internet connection and try again!")
+            return
         download_percentage = 0
 
         total_size_in_bytes = int(package_request.headers.get('content-length',0))
@@ -110,7 +114,11 @@ class Networking:
     
     def CheckForUpdatesManager():
         Logging.New("Checking for PBLC Updates")
-        github_api_response = json.loads(request.urlopen(Networking.github_repo_latest_release).read().decode())
+        try:
+            github_api_response = json.loads(request.urlopen(Networking.github_repo_latest_release).read().decode())
+        except Exception as e:
+            Logging.New("Error when checking for updates, please verify your connection to the internet!")
+            return
         latest_manager =  str(github_api_response['tag_name'])
 
         if Networking.CompareVersions(latest_manager,Networking.PBLCVersion):

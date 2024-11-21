@@ -78,6 +78,14 @@ class Config():
                     "description": "Decides how many threads",
                     "type": "int"
                 }
+            },
+            "advanced": {
+                "overrite_protocol_key": {
+                    "value": False,
+                    "default": False,
+                    "description": "Overwrites the shell protocol key for \"ror2mm\" to allow PBLC to work with thunderstore's website, this setting will automatically deactivate after being enabled!",
+                    "type": "bool"
+                }
             }
 
         }

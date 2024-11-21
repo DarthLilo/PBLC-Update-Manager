@@ -31,7 +31,7 @@ class UI(QWidget):
         self._screen_add_import_modpack = None
         self._selected_modpack = None
         self._screen_download_threads = UIElements.ModpackDownloadScreen()
-
+        
         Networking.CheckForUpdatesManager()
 
         #Cache Loading
@@ -146,6 +146,7 @@ class UI(QWidget):
         self.screen_container.removeWidget(self._screen_loading)
         self.screen_container.addWidget(self._screen_modpack_selection)
         self._screen_modpack_selection.rescanModpacks(Modpacks.List())
+        Cache.SelectedModpack = ""
 
     def FadeToModpackSelection(self, prev_menu=None):
         if not self._screen_modpack_selection:

@@ -14,7 +14,7 @@ else:
 
 
 ReleaseTag = "Stable"
-PBLCVersion = "1.0.5"
+PBLCVersion = "1.0.6"
 ProgramDataFolder = os.path.normpath(f"{CurFolder}/ProgramData")
 LoggingFolder = os.path.normpath(f"{ProgramDataFolder}/Logs")
 ModpacksFolder = os.path.normpath(f"{ProgramDataFolder}/Modpacks")
@@ -30,11 +30,22 @@ Scripts.Filetree.VerifyList([ProgramDataFolder,LoggingFolder,ModpacksFolder,Cach
 
 
 ############################### Start Subsystems ########################
-
-
 Scripts.Logging(LoggingFolder,PBLCVersion)
-Scripts.Assets(AssetsFolder)
 Scripts.Config(ProgramDataFolder)
+
+Scripts.Registry.EnsureProtocolHandler()
+
+if len(sys.argv) > 1:
+    url = sys.argv[1]
+else:
+    url = None
+
+server = Scripts.ProtocolHandler.send_url_to_instance(url)
+if not server:
+    Scripts.Logging.New("App already running, closing!")
+    sys.exit()
+
+Scripts.Assets(AssetsFolder)
 Scripts.QueueMan()
 LethalCompanyFolder = Scripts.Filetree.LocateLethalCompany()
 Scripts.Cache(CacheFolder)
@@ -61,8 +72,8 @@ class PBLCWindow(QMainWindow):
             if response:
                 subprocess.Popen(f"{CurFolder}/lib/python_install.bat")
             else:
-                sys.exit()
                 return
+            sys.exit()
 
         ### LOAD MENU BAR
         menu = self.menuBar()
@@ -137,6 +148,7 @@ class PythonInstalled(QDialog):
 # ACTUALLY START THE WINDOW
 
 app = QApplication(sys.argv)
+app.setStyle('Fusion')
 window = PBLCWindow()
 window.show()
 
