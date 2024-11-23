@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.0.7",
-    "update_date": "11-16-2024",
-    "cache_timestamp": 1731801146.3528059,
+    "version": "1.0.8",
+    "update_date": "11-22-2024",
+    "cache_timestamp": 1732324728.426098,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/eipgtdi.png",
     "contents": {
@@ -61,7 +61,7 @@
             {
                 "author": "AtomicStudio",
                 "name": "Moved_Magnet_Switch",
-                "version": "1.2.0"
+                "version": "1.3.0"
             },
             {
                 "author": "AudioKnight",
@@ -106,7 +106,7 @@
             {
                 "author": "BunyaPineTree",
                 "name": "ModelReplacementAPI",
-                "version": "2.4.11"
+                "version": "2.4.12"
             },
             {
                 "author": "ButteryStancakes",
@@ -311,7 +311,7 @@
             {
                 "author": "fumiko",
                 "name": "CullFactory",
-                "version": "1.4.3"
+                "version": "1.5.0"
             },
             {
                 "author": "Generic_GMD",
@@ -456,7 +456,7 @@
             {
                 "author": "Magic_Wesley",
                 "name": "WesleysInteriors",
-                "version": "1.5.16"
+                "version": "1.6.2"
             },
             {
                 "author": "MarshMan",
@@ -506,7 +506,7 @@
             {
                 "author": "MelanieMelicious",
                 "name": "MelanieMelicious_2_sToRy_ShIp__works_w_Wider_Ship_Mod",
-                "version": "0.4.2"
+                "version": "0.5.4"
             },
             {
                 "author": "Monkeytype",
@@ -536,7 +536,7 @@
             {
                 "author": "mrov",
                 "name": "WeatherRegistry",
-                "version": "0.2.8"
+                "version": "0.2.9"
             },
             {
                 "author": "mrov",
@@ -547,11 +547,6 @@
                 "author": "necrowing",
                 "name": "StopBeesOpeningDoors",
                 "version": "1.1.0"
-            },
-            {
-                "author": "Nikki",
-                "name": "Slaughterhouse",
-                "version": "1.0.6"
             },
             {
                 "author": "NotAtomicBomb",
@@ -591,7 +586,7 @@
             {
                 "author": "qwbarch",
                 "name": "Mirage",
-                "version": "1.12.0"
+                "version": "1.12.2"
             },
             {
                 "author": "qwbarch",
@@ -616,7 +611,7 @@
             {
                 "author": "RosiePies",
                 "name": "Gordion_Saga",
-                "version": "0.0.2"
+                "version": "0.1.0"
             },
             {
                 "author": "RosiePies",
@@ -684,6 +679,11 @@
                 "version": "1.1.3"
             },
             {
+                "author": "SolidStone",
+                "name": "SolidLib",
+                "version": "1.2.2"
+            },
+            {
                 "author": "Sparble",
                 "name": "FacelessStalker",
                 "version": "1.1.9"
@@ -692,6 +692,11 @@
                 "author": "sunnobunno",
                 "name": "YippeeMod",
                 "version": "1.2.4"
+            },
+            {
+                "author": "SurfacedTeam",
+                "name": "Surfaced",
+                "version": "1.4.2"
             },
             {
                 "author": "SylviBlossom",
@@ -816,8 +821,8 @@
         ],
         "overrides": [
             {
-                "gdrive": "1Xt_N0aQta7GllVNN86PwDbs346ZjpLlW",
-                "dropbox": "https://www.dropbox.com/scl/fi/syuxojyjxv1vvatfxdvhh/EventsServerOverrides-v5.zip?rlkey=2kh7bol37lauwbk7jbkuy4xvj&st=get9599h&dl=1"
+                "gdrive":"12Jmob3iTMCKK0hpSiauf4BbwXLsq3maw",
+                "dropbox":"https://www.dropbox.com/scl/fi/nsqgpyjvik582y42exztt/EventsServerOverrides-v6.zip?rlkey=0z5rv5whcwyz7y07h7p43z8j9&st=ywpdofh8&dl=1"
             }
         ]
     },
