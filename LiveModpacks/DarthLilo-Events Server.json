@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.0.8",
-    "update_date": "11-22-2024",
-    "cache_timestamp": 1732324728.426098,
+    "version": "1.0.9",
+    "update_date": "11-23-2024",
+    "cache_timestamp": 1732410052.5963376,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/eipgtdi.png",
     "contents": {
@@ -431,7 +431,7 @@
             {
                 "author": "LethalMatt",
                 "name": "Bozoros",
-                "version": "2.0.3"
+                "version": "2.1.1"
             },
             {
                 "author": "LethalMatt",
@@ -506,7 +506,7 @@
             {
                 "author": "MelanieMelicious",
                 "name": "MelanieMelicious_2_sToRy_ShIp__works_w_Wider_Ship_Mod",
-                "version": "0.5.4"
+                "version": "0.5.5"
             },
             {
                 "author": "Monkeytype",
@@ -610,13 +610,13 @@
             },
             {
                 "author": "RosiePies",
-                "name": "Gordion_Saga",
-                "version": "0.1.0"
+                "name": "RoseLib",
+                "version": "1.0.1"
             },
             {
                 "author": "RosiePies",
-                "name": "RoseLib",
-                "version": "1.0.1"
+                "name": "Rosies_Moons",
+                "version": "2.0.8"
             },
             {
                 "author": "Rozebud",
@@ -781,7 +781,7 @@
             {
                 "author": "XuXiaolan",
                 "name": "CodeRebirth",
-                "version": "0.7.18"
+                "version": "0.8.2"
             },
             {
                 "author": "XuXiaolan",
@@ -817,12 +817,32 @@
                 "author": "ZG",
                 "name": "ScalingStartCredits",
                 "version": "1.0.6"
+            },
+            {
+                "author": "ricebin",
+                "name": "PreCrashCurlyMouthwashing",
+                "version": "0.1.0"
+            },
+            {
+                "author": "Jhonbeta",
+                "name": "LethalLifeMoreSuits",
+                "version": "0.1.6"
+            },
+            {
+                "author": "Jhonbeta",
+                "name": "Leon98MoreSuits",
+                "version": "0.1.0"
+            },
+            {
+                "author": "VIRGINMASSAGE",
+                "name": "curly",
+                "version": "0.1.1"
             }
         ],
         "overrides": [
             {
-                "gdrive":"12Jmob3iTMCKK0hpSiauf4BbwXLsq3maw",
-                "dropbox":"https://www.dropbox.com/scl/fi/nsqgpyjvik582y42exztt/EventsServerOverrides-v6.zip?rlkey=0z5rv5whcwyz7y07h7p43z8j9&st=ywpdofh8&dl=1"
+                "gdrive": "1bumVBKvmWMIaxMz--i1mWPmcXCkokCjS",
+                "dropbox": "https://www.dropbox.com/scl/fi/2y46if47ibkq96dwljj5v/EventsServerOverrides-v7.zip?rlkey=zqcxvtxiwlym07mk19p17o0hz&st=hnqvl2oe&dl=1"
             }
         ]
     },
