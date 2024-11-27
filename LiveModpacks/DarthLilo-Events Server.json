@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.0.7",
-    "update_date": "11-16-2024",
-    "cache_timestamp": 1731801146.3528059,
+    "version": "1.1.0",
+    "update_date": "11-23-2024",
+    "cache_timestamp": 1732410052.5963376,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/eipgtdi.png",
     "contents": {
@@ -39,11 +39,6 @@
                 "version": "0.2.1"
             },
             {
-                "author": "Alice",
-                "name": "DungeonGenerationPlus",
-                "version": "1.2.0"
-            },
-            {
                 "author": "AllToasters",
                 "name": "SpectateEnemies",
                 "version": "2.7.0"
@@ -61,7 +56,7 @@
             {
                 "author": "AtomicStudio",
                 "name": "Moved_Magnet_Switch",
-                "version": "1.2.0"
+                "version": "1.3.0"
             },
             {
                 "author": "AudioKnight",
@@ -106,7 +101,7 @@
             {
                 "author": "BunyaPineTree",
                 "name": "ModelReplacementAPI",
-                "version": "2.4.11"
+                "version": "2.4.12"
             },
             {
                 "author": "ButteryStancakes",
@@ -239,11 +234,6 @@
                 "version": "1.4.1"
             },
             {
-                "author": "DistinctBlaze",
-                "name": "DistinctMoonVariety",
-                "version": "1.5.0"
-            },
-            {
                 "author": "Drasioshcorp",
                 "name": "Porcelainmaid_Chat_Suits",
                 "version": "1.1.0"
@@ -311,7 +301,7 @@
             {
                 "author": "fumiko",
                 "name": "CullFactory",
-                "version": "1.4.3"
+                "version": "1.5.0"
             },
             {
                 "author": "Generic_GMD",
@@ -394,6 +384,16 @@
                 "version": "1.1.5"
             },
             {
+                "author": "Jhonbeta",
+                "name": "Leon98MoreSuits",
+                "version": "0.1.0"
+            },
+            {
+                "author": "Jhonbeta",
+                "name": "LethalLifeMoreSuits",
+                "version": "0.1.6"
+            },
+            {
                 "author": "Jordo",
                 "name": "NeedyCats",
                 "version": "1.2.2"
@@ -431,7 +431,7 @@
             {
                 "author": "LethalMatt",
                 "name": "Bozoros",
-                "version": "2.0.3"
+                "version": "2.1.1"
             },
             {
                 "author": "LethalMatt",
@@ -456,7 +456,7 @@
             {
                 "author": "Magic_Wesley",
                 "name": "WesleysInteriors",
-                "version": "1.5.16"
+                "version": "1.6.2"
             },
             {
                 "author": "MarshMan",
@@ -506,7 +506,7 @@
             {
                 "author": "MelanieMelicious",
                 "name": "MelanieMelicious_2_sToRy_ShIp__works_w_Wider_Ship_Mod",
-                "version": "0.4.2"
+                "version": "0.5.5"
             },
             {
                 "author": "Monkeytype",
@@ -536,7 +536,7 @@
             {
                 "author": "mrov",
                 "name": "WeatherRegistry",
-                "version": "0.2.8"
+                "version": "0.2.9"
             },
             {
                 "author": "mrov",
@@ -547,11 +547,6 @@
                 "author": "necrowing",
                 "name": "StopBeesOpeningDoors",
                 "version": "1.1.0"
-            },
-            {
-                "author": "Nikki",
-                "name": "Slaughterhouse",
-                "version": "1.0.6"
             },
             {
                 "author": "NotAtomicBomb",
@@ -591,7 +586,7 @@
             {
                 "author": "qwbarch",
                 "name": "Mirage",
-                "version": "1.12.0"
+                "version": "1.12.2"
             },
             {
                 "author": "qwbarch",
@@ -614,14 +609,19 @@
                 "version": "1.5.0"
             },
             {
-                "author": "RosiePies",
-                "name": "Gordion_Saga",
-                "version": "0.0.2"
+                "author": "ricebin",
+                "name": "PreCrashCurlyMouthwashing",
+                "version": "0.1.0"
             },
             {
                 "author": "RosiePies",
                 "name": "RoseLib",
                 "version": "1.0.1"
+            },
+            {
+                "author": "RosiePies",
+                "name": "Rosies_Moons",
+                "version": "2.0.8"
             },
             {
                 "author": "Rozebud",
@@ -739,6 +739,11 @@
                 "version": "1.0.2"
             },
             {
+                "author": "VIRGINMASSAGE",
+                "name": "curly",
+                "version": "0.1.1"
+            },
+            {
                 "author": "WeirdMods",
                 "name": "OIIA",
                 "version": "1.0.1"
@@ -776,7 +781,7 @@
             {
                 "author": "XuXiaolan",
                 "name": "CodeRebirth",
-                "version": "0.7.18"
+                "version": "0.8.2"
             },
             {
                 "author": "XuXiaolan",
@@ -816,8 +821,8 @@
         ],
         "overrides": [
             {
-                "gdrive": "1Xt_N0aQta7GllVNN86PwDbs346ZjpLlW",
-                "dropbox": "https://www.dropbox.com/scl/fi/syuxojyjxv1vvatfxdvhh/EventsServerOverrides-v5.zip?rlkey=2kh7bol37lauwbk7jbkuy4xvj&st=get9599h&dl=1"
+                "gdrive": "1SsTCdR2ztsBisrVow_rk6XwuBjOO9y3n",
+                "dropbox": "https://www.dropbox.com/scl/fi/mp5tl8u9859wv5ydy5peu/EventsServerOverrides-v8.zip?rlkey=oqd07oy0gexztggsqcr50c7rs&st=z4jw895k&dl=1"
             }
         ]
     },
