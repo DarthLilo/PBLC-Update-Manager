@@ -1,4 +1,4 @@
-import os, sys, shutil, subprocess
+import os, sys, shutil, subprocess, traceback
 
 def getCurrentPathLoc():
 
@@ -11,7 +11,7 @@ def getCurrentPathLoc():
 
 def clean_old_version():
     current_location = getCurrentPathLoc()
-    delete_list = ["ProgramAssets","PBLC Update Manager.exe","PBLC Update Manager Console.exe","python3.dll","python310.dll"]
+    delete_list = ["ProgramAssets","PBLC Update Manager.exe","PBLC Update Manager Console.exe"]
     for item in delete_list:
         if os.path.isdir(os.path.join(current_location,item)):
             try:
@@ -19,12 +19,14 @@ def clean_old_version():
                 print(f"Removed {item}")
             except:
                 print(f"Unable to remove {item}")
+                print(traceback.format_exc())
         else:
             try:
                 os.remove(os.path.join(current_location,item))
                 print(f"Removed {item}")
             except:
                 print(f"Unable to remove {item}")
+                print(traceback.format_exc())
     
 
 def migrate_update_files(source,destination):
@@ -33,26 +35,23 @@ def migrate_update_files(source,destination):
 
     print(source,destination)
 
-    for file in files:
-        if os.path.isdir(file):
-            file_path = os.path.join(source,file)
-            for sub_file in os.listdir(file_path):
-                sub_file_path = os.path.join(source,file,sub_file)
-                sub_destination_path = os.path.join(destination,file,sub_file)
-                print(sub_file_path)
-                try:
-                    shutil.move(sub_file_path,sub_destination_path)
-                    print(f"Copied {sub_file}")
-                except PermissionError:
-                    print(f"Permission error when copying {sub_file}")
-                    continue
-        else:
-            file_path = os.path.join(source,file)
-            destination_path = os.path.join(destination,file)
+    for root, dirs, files in os.walk(source):
+        for file in files:
+            rel_path = os.path.relpath(root,source)
+            dest_dir_path = os.path.join(destination,rel_path)
+
+            os.makedirs(dest_dir_path, exist_ok=True)
+
+            src_path = os.path.join(root,file)
+            final_path = os.path.join(dest_dir_path,file)
+
             try:
-                shutil.move(file_path,destination_path)
+                shutil.move(src_path,final_path)
             except PermissionError:
-                continue
+                print(f"PermissionError: Couldn't move {src_path}, skipping...")
+            except Exception as e:
+                print(f"Unknown error when handling {src_path}")
+                print(traceback.format_exc())
 
 temp_download_folder = os.path.join(getCurrentPathLoc(),"download_cache")
 target_directory = temp_download_folder
