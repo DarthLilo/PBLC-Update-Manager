@@ -1,8 +1,8 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.1.1",
-    "update_date": "11-29-2024",
+    "version": "1.1.2",
+    "update_date": "11-12-2024",
     "cache_timestamp": 1732920558.157447,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/eipgtdi.png",
@@ -317,11 +317,6 @@
                 "author": "Generic_GMD",
                 "name": "Generic_Scraps",
                 "version": "0.1.2"
-            },
-            {
-                "author": "giosuel",
-                "name": "Imperium",
-                "version": "0.2.8"
             },
             {
                 "author": "Hamunii",
