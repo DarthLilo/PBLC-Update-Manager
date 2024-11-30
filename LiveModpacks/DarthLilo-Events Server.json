@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.1.0",
-    "update_date": "11-23-2024",
-    "cache_timestamp": 1732410052.5963376,
+    "version": "1.1.1",
+    "update_date": "11-29-2024",
+    "cache_timestamp": 1732920558.157447,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/eipgtdi.png",
     "contents": {
@@ -21,7 +21,7 @@
             {
                 "author": "AdiBTW",
                 "name": "LoadstoneNightly",
-                "version": "0.1.16"
+                "version": "0.1.17"
             },
             {
                 "author": "AinaVT",
@@ -94,6 +94,11 @@
                 "version": "2.2.2"
             },
             {
+                "author": "Bobbie",
+                "name": "UniTask",
+                "version": "2.5.0"
+            },
+            {
                 "author": "Booos",
                 "name": "StupidAssKitty",
                 "version": "1.0.7"
@@ -116,12 +121,12 @@
             {
                 "author": "ButteryStancakes",
                 "name": "ButteryFixes",
-                "version": "1.10.8"
+                "version": "1.10.9"
             },
             {
                 "author": "ButteryStancakes",
                 "name": "Chameleon",
-                "version": "1.2.2"
+                "version": "1.2.4"
             },
             {
                 "author": "ButteryStancakes",
@@ -156,12 +161,12 @@
             {
                 "author": "darmuh",
                 "name": "OpenLib",
-                "version": "0.2.8"
+                "version": "0.2.9"
             },
             {
                 "author": "darmuh",
                 "name": "suitsTerminal",
-                "version": "1.5.3"
+                "version": "1.5.5"
             },
             {
                 "author": "DarthLilo",
@@ -222,11 +227,6 @@
                 "author": "DiFFoZ",
                 "name": "HarmonyXTranspilerFix",
                 "version": "1.1.0"
-            },
-            {
-                "author": "DiFFoZ",
-                "name": "LethalPerformance",
-                "version": "0.4.2"
             },
             {
                 "author": "DiggC",
@@ -319,6 +319,11 @@
                 "version": "0.1.2"
             },
             {
+                "author": "giosuel",
+                "name": "Imperium",
+                "version": "0.2.8"
+            },
+            {
                 "author": "Hamunii",
                 "name": "AutoHookGenPatcher",
                 "version": "1.0.4"
@@ -337,11 +342,6 @@
                 "author": "IAmBatby",
                 "name": "DynamicInteriorVariety",
                 "version": "1.0.0"
-            },
-            {
-                "author": "IAmBatby",
-                "name": "LethalLevelLoader",
-                "version": "1.3.10"
             },
             {
                 "author": "IAmBatby",
@@ -421,7 +421,7 @@
             {
                 "author": "LethalCompanyModding",
                 "name": "LCUltrawide_Community",
-                "version": "1.1.2"
+                "version": "1.1.3"
             },
             {
                 "author": "LethalCompanyModding",
@@ -431,7 +431,7 @@
             {
                 "author": "LethalMatt",
                 "name": "Bozoros",
-                "version": "2.1.1"
+                "version": "2.1.2"
             },
             {
                 "author": "LethalMatt",
@@ -525,18 +525,8 @@
             },
             {
                 "author": "mrov",
-                "name": "MrovLib",
-                "version": "0.2.8"
-            },
-            {
-                "author": "mrov",
                 "name": "TerminalFormatter",
                 "version": "0.2.23"
-            },
-            {
-                "author": "mrov",
-                "name": "WeatherRegistry",
-                "version": "0.2.9"
             },
             {
                 "author": "mrov",
@@ -585,13 +575,18 @@
             },
             {
                 "author": "qwbarch",
-                "name": "Mirage",
-                "version": "1.12.2"
+                "name": "BarchLib",
+                "version": "1.0.2"
             },
             {
                 "author": "qwbarch",
                 "name": "MirageCore",
                 "version": "1.0.1"
+            },
+            {
+                "author": "qwbarch",
+                "name": "MirageLegacy",
+                "version": "1.8.2"
             },
             {
                 "author": "qwbarch",
@@ -621,7 +616,7 @@
             {
                 "author": "RosiePies",
                 "name": "Rosies_Moons",
-                "version": "2.0.8"
+                "version": "2.1.9"
             },
             {
                 "author": "Rozebud",
@@ -721,7 +716,7 @@
             {
                 "author": "TestAccount666",
                 "name": "TestAccountCore",
-                "version": "1.9.1"
+                "version": "1.10.0"
             },
             {
                 "author": "TestAccount666",
@@ -781,7 +776,7 @@
             {
                 "author": "XuXiaolan",
                 "name": "CodeRebirth",
-                "version": "0.8.2"
+                "version": "0.8.7"
             },
             {
                 "author": "XuXiaolan",
@@ -811,18 +806,43 @@
             {
                 "author": "Zehs",
                 "name": "SellMyScrap",
-                "version": "1.8.0"
+                "version": "1.8.1"
             },
             {
                 "author": "ZG",
                 "name": "ScalingStartCredits",
                 "version": "1.0.6"
+            },
+            {
+                "author": "IAmBatby",
+                "name": "LethalLevelLoader",
+                "version": "1.3.12"
+            },
+            {
+                "author": "DiFFoZ",
+                "name": "LethalPerformance",
+                "version": "0.4.3"
+            },
+            {
+                "author": "mrov",
+                "name": "MrovLib",
+                "version": "0.2.10"
+            },
+            {
+                "author": "mrov",
+                "name": "WeatherRegistry",
+                "version": "0.3.2"
+            },
+            {
+                "author": "enbee",
+                "name": "Vi",
+                "version": "0.1.1"
             }
         ],
         "overrides": [
             {
-                "gdrive": "1SsTCdR2ztsBisrVow_rk6XwuBjOO9y3n",
-                "dropbox": "https://www.dropbox.com/scl/fi/mp5tl8u9859wv5ydy5peu/EventsServerOverrides-v8.zip?rlkey=oqd07oy0gexztggsqcr50c7rs&st=z4jw895k&dl=1"
+                "gdrive": "1ImbAOouzo5TwaL1_hmhEVtbUhyH5MY5T",
+                "dropbox": "https://www.dropbox.com/scl/fi/dzilqltit7tdk1sdz834k/EventsServerOverrides-v9.zip?rlkey=0qnvfwhstd4vzngvryupl73l2&st=w1qtwu00&dl=1"
             }
         ]
     },
