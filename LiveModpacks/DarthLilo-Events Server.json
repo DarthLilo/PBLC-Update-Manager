@@ -1,8 +1,8 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.1.3",
-    "update_date": "11-30-2024",
+    "version": "1.1.4",
+    "update_date": "11-12-2024",
     "cache_timestamp": 1733009515.938783,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/eipgtdi.png",
@@ -737,12 +737,21 @@
                 "author": "ZG",
                 "name": "ScalingStartCredits",
                 "version": "1.0.6"
+            },
+            {
+                "author": "DiFFoZ",
+                "name": "CompanyCruiserFix",
+                "version": "1.0.5"
             }
         ],
         "overrides": [
             {
                 "gdrive": "1ImbAOouzo5TwaL1_hmhEVtbUhyH5MY5T",
                 "dropbox": "https://www.dropbox.com/scl/fi/dzilqltit7tdk1sdz834k/EventsServerOverrides-v9.zip?rlkey=0qnvfwhstd4vzngvryupl73l2&st=w1qtwu00&dl=1"
+            },
+            {
+                "gdrive":"1Skeud5XYXBUt6lfOpA4WNTlniOYj7AHP",
+                "dropbox": "https://www.dropbox.com/scl/fi/nio7ap1iwjrnqvsyx3on2/TempOverride.zip?rlkey=us6teqnlwfqljawgmlyrg8mhn&st=evn4m9b7&dl=1"
             }
         ]
     },
