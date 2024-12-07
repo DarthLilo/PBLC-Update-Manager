@@ -1,7 +1,7 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.1.5",
+    "version": "1.1.6",
     "update_date": "12-06-2024",
     "cache_timestamp": 1733518603.3574576,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
@@ -156,7 +156,7 @@
             {
                 "author": "darmuh",
                 "name": "suitsTerminal",
-                "version": "1.5.7"
+                "version": "1.5.5"
             },
             {
                 "author": "DarthLilo",
