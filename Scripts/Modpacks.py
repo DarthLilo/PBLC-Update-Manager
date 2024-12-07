@@ -318,10 +318,9 @@ class Modpacks:
         for mod in new_data['contents']['thunderstore_packages']:
 
             if Modpacks.Mods.Installed(mod['author'],mod['name']): # If the mod is already installed update it
-                if Networking.CompareVersions(mod['version'],Modpacks.Mods.GetVersion(mod['author'],mod['name'])):
+                if Modpacks.Mods.GetVersion(mod['author'],mod['name']) != mod['version']:
                     Modpacks.Mods.Delete(mod['author'],mod['name'])
                     QueueMan.QueuePackage(mod['author'],mod['name'],mod['version'])
-                #Modpacks.Mods.Update(mod['author'],mod['name'],mod['version'])
 
             else: # Otherwise queue it up for download
                 QueueMan.QueuePackage(mod['author'],mod['name'],mod['version'])
