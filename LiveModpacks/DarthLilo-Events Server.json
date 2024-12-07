@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.1.4",
-    "update_date": "11-12-2024",
-    "cache_timestamp": 1733009515.938783,
+    "version": "1.1.5",
+    "update_date": "12-06-2024",
+    "cache_timestamp": 1733518603.3574576,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/eipgtdi.png",
     "contents": {
@@ -11,7 +11,7 @@
             {
                 "author": "4902",
                 "name": "Cruiser_Additions",
-                "version": "1.4.1"
+                "version": "1.4.2"
             },
             {
                 "author": "4902",
@@ -106,12 +106,12 @@
             {
                 "author": "ButteryStancakes",
                 "name": "BarberFixes",
-                "version": "1.2.1"
+                "version": "1.2.2"
             },
             {
                 "author": "ButteryStancakes",
                 "name": "ButteryFixes",
-                "version": "1.10.9"
+                "version": "1.10.10"
             },
             {
                 "author": "ButteryStancakes",
@@ -151,12 +151,12 @@
             {
                 "author": "darmuh",
                 "name": "OpenLib",
-                "version": "0.2.9"
+                "version": "0.2.10"
             },
             {
                 "author": "darmuh",
                 "name": "suitsTerminal",
-                "version": "1.5.5"
+                "version": "1.5.7"
             },
             {
                 "author": "DarthLilo",
@@ -210,13 +210,18 @@
             },
             {
                 "author": "DiFFoZ",
+                "name": "CompanyCruiserFix",
+                "version": "1.0.5"
+            },
+            {
+                "author": "DiFFoZ",
                 "name": "HarmonyXTranspilerFix",
                 "version": "1.1.0"
             },
             {
                 "author": "DiFFoZ",
                 "name": "LethalPerformance",
-                "version": "0.4.3"
+                "version": "0.5.0"
             },
             {
                 "author": "DiggC",
@@ -271,7 +276,7 @@
             {
                 "author": "FlipMods",
                 "name": "TooManyEmotes",
-                "version": "2.2.11"
+                "version": "2.2.13"
             },
             {
                 "author": "FlipMods",
@@ -311,7 +316,7 @@
             {
                 "author": "IAmBatby",
                 "name": "LethalLevelLoader",
-                "version": "1.3.12"
+                "version": "1.3.13"
             },
             {
                 "author": "IAmBatby",
@@ -436,7 +441,7 @@
             {
                 "author": "mattymatty",
                 "name": "AsyncLoggers",
-                "version": "2.1.2"
+                "version": "2.1.3"
             },
             {
                 "author": "mattymatty",
@@ -496,7 +501,7 @@
             {
                 "author": "mrov",
                 "name": "WeatherRegistry",
-                "version": "0.3.3"
+                "version": "0.3.5"
             },
             {
                 "author": "mrov",
@@ -571,12 +576,12 @@
             {
                 "author": "RosiePies",
                 "name": "Gordion_Sect0",
-                "version": "2.3.1"
+                "version": "2.3.2"
             },
             {
                 "author": "RosiePies",
                 "name": "Sector0_Interior",
-                "version": "2.1.2"
+                "version": "2.1.3"
             },
             {
                 "author": "Rozebud",
@@ -706,7 +711,7 @@
             {
                 "author": "XuXiaolan",
                 "name": "CodeRebirth",
-                "version": "0.8.7"
+                "version": "0.8.11"
             },
             {
                 "author": "Yorimor",
@@ -737,21 +742,12 @@
                 "author": "ZG",
                 "name": "ScalingStartCredits",
                 "version": "1.0.6"
-            },
-            {
-                "author": "DiFFoZ",
-                "name": "CompanyCruiserFix",
-                "version": "1.0.5"
             }
         ],
         "overrides": [
             {
-                "gdrive": "1ImbAOouzo5TwaL1_hmhEVtbUhyH5MY5T",
-                "dropbox": "https://www.dropbox.com/scl/fi/dzilqltit7tdk1sdz834k/EventsServerOverrides-v9.zip?rlkey=0qnvfwhstd4vzngvryupl73l2&st=w1qtwu00&dl=1"
-            },
-            {
-                "gdrive":"1Skeud5XYXBUt6lfOpA4WNTlniOYj7AHP",
-                "dropbox": "https://www.dropbox.com/scl/fi/nio7ap1iwjrnqvsyx3on2/TempOverride.zip?rlkey=us6teqnlwfqljawgmlyrg8mhn&st=evn4m9b7&dl=1"
+                "gdrive":"1KJIBMi7-S0HfWm2Q9Jsozaem5EwOqWa3",
+                "dropbox": "https://www.dropbox.com/scl/fi/yiteqvpwt0hb3nbyeb1fq/EventsServerOverrides-10.zip?rlkey=02rqh7d31ndasjs8nxvr4wr08&st=4ipggcaq&dl=1"
             }
         ]
     },
