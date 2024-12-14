@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.1.6",
-    "update_date": "12-06-2024",
-    "cache_timestamp": 1733518603.3574576,
+    "version": "1.1.7",
+    "update_date": "12-07-2024",
+    "cache_timestamp": 1733606874.3912919,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/eipgtdi.png",
     "contents": {
@@ -116,7 +116,7 @@
             {
                 "author": "ButteryStancakes",
                 "name": "Chameleon",
-                "version": "1.2.4"
+                "version": "1.3.0"
             },
             {
                 "author": "ButteryStancakes",
@@ -501,7 +501,7 @@
             {
                 "author": "mrov",
                 "name": "WeatherRegistry",
-                "version": "0.3.5"
+                "version": "0.3.6"
             },
             {
                 "author": "mrov",
