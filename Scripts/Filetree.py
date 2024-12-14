@@ -67,19 +67,19 @@ class Filetree():
         override_folders = ["patchers","core","config"]
         package_files = []
 
-        if sub_dir in override_folders: #OVERRIDE FOLDER HANDLING
+        if sub_dir.lower() in override_folders: #OVERRIDE FOLDER HANDLING
             for root, dirs, files in os.walk(sub_dir_path):
                 for file in files:
                     package_files.append(os.path.relpath(os.path.join(root,file),folder))
             shutil.copytree(sub_dir_path,os.path.join(bepinex_folder,sub_dir),dirs_exist_ok=True)
             shutil.rmtree(sub_dir_path)
 
-        elif sub_dir == "plugins": #PLUGINS FOLDER HANDLING
+        elif sub_dir.lower() == "plugins": #PLUGINS FOLDER HANDLING
             for filename in os.listdir(sub_dir_path):
                 shutil.move(os.path.join(sub_dir_path,filename),folder)
             shutil.rmtree(sub_dir_path)
         
-        elif sub_dir == "BepInEx":
+        elif sub_dir.lower() == "bepinex":
             for new_sub_dir in os.listdir(sub_dir_path):
                 new_sub_dir_path = os.path.join(sub_dir_path,new_sub_dir)
                 package_files.extend(Filetree.FileSortAlgorithm(new_sub_dir,new_sub_dir_path,folder,bepinex_folder))
