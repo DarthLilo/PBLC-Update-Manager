@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.1.8",
-    "update_date": "12-13-2024",
-    "cache_timestamp": 1734131897.8083737,
+    "version": "1.1.9",
+    "update_date": "12-14-2024",
+    "cache_timestamp": 1734229666.6357393,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/eipgtdi.png",
     "contents": {
@@ -52,6 +52,11 @@
                 "author": "AntlerShed",
                 "name": "EnemySkinRegistry",
                 "version": "1.4.6"
+            },
+            {
+                "author": "AtomicStudio",
+                "name": "Atomics_Cosmetics",
+                "version": "1.3.2"
             },
             {
                 "author": "AudioKnight",
@@ -147,6 +152,11 @@
                 "author": "coderCleric",
                 "name": "Poltergeist",
                 "version": "1.1.1"
+            },
+            {
+                "author": "COREsEND",
+                "name": "Castellum_Carnis",
+                "version": "1.0.2"
             },
             {
                 "author": "darmuh",
@@ -292,6 +302,11 @@
                 "author": "Generic_GMD",
                 "name": "Generic_Interiors",
                 "version": "1.1.1"
+            },
+            {
+                "author": "giosuel",
+                "name": "Imperium",
+                "version": "0.2.8"
             },
             {
                 "author": "Hamunii",
@@ -757,11 +772,6 @@
                 "author": "ZG",
                 "name": "ScalingStartCredits",
                 "version": "1.0.6"
-            },
-            {
-                "author": "AtomicStudio",
-                "name": "Atomics_Cosmetics",
-                "version": "1.3.2"
             }
         ],
         "overrides": [
