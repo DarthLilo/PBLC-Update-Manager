@@ -1,7 +1,7 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "update_date": "01-03-2025",
     "cache_timestamp": 1735948494.8091977,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
@@ -307,11 +307,6 @@
                 "author": "Generic_GMD",
                 "name": "Generic_Interiors",
                 "version": "1.6.1"
-            },
-            {
-                "author": "giosuel",
-                "name": "Imperium",
-                "version": "0.2.8"
             },
             {
                 "author": "Hamunii",
