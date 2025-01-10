@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.2.3",
-    "update_date": "01-03-2025",
-    "cache_timestamp": 1735948494.8091977,
+    "version": "1.2.4",
+    "update_date": "1-10-2025",
+    "cache_timestamp": 1736538258.4914527,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/eipgtdi.png",
     "contents": {
@@ -115,18 +115,8 @@
             },
             {
                 "author": "ButteryStancakes",
-                "name": "ButteryFixes",
-                "version": "1.10.13"
-            },
-            {
-                "author": "ButteryStancakes",
                 "name": "Chameleon",
                 "version": "1.4.2"
-            },
-            {
-                "author": "ButteryStancakes",
-                "name": "EnemySoundFixes",
-                "version": "1.6.0"
             },
             {
                 "author": "ButteryStancakes",
@@ -152,11 +142,6 @@
                 "author": "coderCleric",
                 "name": "Poltergeist",
                 "version": "1.1.1"
-            },
-            {
-                "author": "COREsEND",
-                "name": "Castellum_Carnis",
-                "version": "1.0.3"
             },
             {
                 "author": "darmuh",
@@ -242,11 +227,6 @@
                 "author": "DiggC",
                 "name": "CruiserImproved",
                 "version": "1.4.1"
-            },
-            {
-                "author": "DobieWan",
-                "name": "SpookyCompany",
-                "version": "1.0.0"
             },
             {
                 "author": "EliteMasterEric",
@@ -505,16 +485,6 @@
             },
             {
                 "author": "mrov",
-                "name": "MrovLib",
-                "version": "0.2.13"
-            },
-            {
-                "author": "mrov",
-                "name": "TerminalFormatter",
-                "version": "0.2.23"
-            },
-            {
-                "author": "mrov",
                 "name": "WeatherRegistry",
                 "version": "0.3.15"
             },
@@ -695,11 +665,6 @@
             },
             {
                 "author": "TestAccount666",
-                "name": "TestAccountCore",
-                "version": "1.13.1"
-            },
-            {
-                "author": "TestAccount666",
                 "name": "TestAccountFixes",
                 "version": "1.3.5"
             },
@@ -744,11 +709,6 @@
                 "version": "1.1.1"
             },
             {
-                "author": "XuXiaolan",
-                "name": "CodeRebirth",
-                "version": "0.11.0"
-            },
-            {
                 "author": "Yorimor",
                 "name": "CustomStoryLogs",
                 "version": "1.4.5"
@@ -777,6 +737,51 @@
                 "author": "ZG",
                 "name": "ScalingStartCredits",
                 "version": "1.0.6"
+            },
+            {
+                "author": "ButteryStancakes",
+                "name": "ButteryFixes",
+                "version": "1.10.14"
+            },
+            {
+                "author": "COREsEND",
+                "name": "Castellum_Carnis",
+                "version": "1.0.4"
+            },
+            {
+                "author": "XuXiaolan",
+                "name": "CodeRebirth",
+                "version": "0.12.3"
+            },
+            {
+                "author": "ButteryStancakes",
+                "name": "EnemySoundFixes",
+                "version": "1.6.1"
+            },
+            {
+                "author": "mrov",
+                "name": "MrovLib",
+                "version": "0.2.16"
+            },
+            {
+                "author": "DobieWan",
+                "name": "SpookyCompany",
+                "version": "1.1.2"
+            },
+            {
+                "author": "mrov",
+                "name": "TerminalFormatter",
+                "version": "0.2.25"
+            },
+            {
+                "author": "TestAccount666",
+                "name": "TestAccountCore",
+                "version": "1.14.0"
+            },
+            {
+                "author": "LethalCompanyModding",
+                "name": "Doorbelle",
+                "version": "1.0.2"
             }
         ],
         "overrides": [
