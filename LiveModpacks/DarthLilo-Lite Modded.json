@@ -1,22 +1,157 @@
 {
     "author": "DarthLilo",
     "name": "Lite Modded",
-    "version": "1.0.1",
-    "update_date": "11-10-2024",
-    "cache_timestamp": 1731377094.7954464,
+    "version": "1.0.2",
+    "update_date": "1-24-2025",
+    "cache_timestamp": 1737754975.7007656,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Lite%20Modded.json",
-    "icon_url": "https://i.imgur.com/tHikFbm.png",
+    "icon_url": "https://i.imgur.com/K0VqSCc.png",
     "contents": {
         "thunderstore_packages": [
             {
+                "author": "bctix",
+                "name": "FPSCounter",
+                "version": "1.4.0"
+            },
+            {
+                "author": "Bobbie",
+                "name": "NAudio",
+                "version": "2.2.2"
+            },
+            {
+                "author": "ButteryStancakes",
+                "name": "EnemySoundFixes",
+                "version": "1.6.2"
+            },
+            {
+                "author": "ButteryStancakes",
+                "name": "MeleeFixes",
+                "version": "1.3.1"
+            },
+            {
+                "author": "coderCleric",
+                "name": "Poltergeist",
+                "version": "1.1.1"
+            },
+            {
+                "author": "Dev1A3",
+                "name": "BetterVehicleControls",
+                "version": "1.1.3"
+            },
+            {
+                "author": "DiFFoZ",
+                "name": "BepInEx_Faster_Load_AssetBundles_Patcher",
+                "version": "0.6.5"
+            },
+            {
+                "author": "DiFFoZ",
+                "name": "CompanyCruiserFix",
+                "version": "1.0.5"
+            },
+            {
+                "author": "DiFFoZ",
+                "name": "HarmonyXTranspilerFix",
+                "version": "1.1.0"
+            },
+            {
+                "author": "DiFFoZ",
+                "name": "LethalPerformance",
+                "version": "0.5.0"
+            },
+            {
+                "author": "Evaisa",
+                "name": "FixPluginTypesSerialization",
+                "version": "1.1.1"
+            },
+            {
+                "author": "Evaisa",
+                "name": "HookGenPatcher",
+                "version": "0.0.5"
+            },
+            {
+                "author": "Evaisa",
+                "name": "LethalLib",
+                "version": "0.16.2"
+            },
+            {
                 "author": "FlipMods",
-                "name": "HotbarPlus",
-                "version": "1.8.0"
+                "name": "TooManyEmotes",
+                "version": "2.2.14"
+            },
+            {
+                "author": "Hamunii",
+                "name": "AutoHookGenPatcher",
+                "version": "1.0.4"
+            },
+            {
+                "author": "Hamunii",
+                "name": "DetourContext_Dispose_Fix",
+                "version": "1.0.3"
+            },
+            {
+                "author": "Kittenji",
+                "name": "Groan_Tube_Scrap",
+                "version": "1.0.4"
+            },
+            {
+                "author": "kRYstall9",
+                "name": "FastSwitchPlayerViewInRadar",
+                "version": "1.3.2"
+            },
+            {
+                "author": "LethalCompanyModding",
+                "name": "LCUltrawide_Community",
+                "version": "1.1.3"
+            },
+            {
+                "author": "LethalCompanyModding",
+                "name": "VertexLibrary",
+                "version": "1.1.0"
+            },
+            {
+                "author": "Lordfirespeed",
+                "name": "OdinSerializer",
+                "version": "2022.11.9"
+            },
+            {
+                "author": "MasterAli2",
+                "name": "TeleportDecline",
+                "version": "1.1.0"
+            },
+            {
+                "author": "mattymatty",
+                "name": "AsyncLoggers",
+                "version": "2.1.3"
+            },
+            {
+                "author": "mattymatty",
+                "name": "LandFromOrbit",
+                "version": "1.1.2"
             },
             {
                 "author": "mattymatty",
                 "name": "LobbyControl",
-                "version": "2.4.9"
+                "version": "2.4.10"
+            },
+            {
+                "author": "mattymatty",
+                "name": "Matty_Fixes",
+                "version": "1.1.31"
+            },
+            {
+                "author": "MaxWasUnavailable",
+                "name": "LethalModDataLib",
+                "version": "1.2.2"
+            },
+            {
+                "author": "mrov",
+                "name": "ApparatusFix",
+                "version": "0.0.1"
+            },
+            {
+                "author": "mrov",
+                "name": "LightsOut",
+                "version": "0.1.3"
             },
             {
                 "author": "notnotnotswipez",
@@ -24,14 +159,29 @@
                 "version": "1.11.0"
             },
             {
+                "author": "Piggy",
+                "name": "JesterStompShake",
+                "version": "1.0.11"
+            },
+            {
                 "author": "Pooble",
                 "name": "LCBetterSaves",
                 "version": "1.7.3"
             },
             {
-                "author": "Zehs",
-                "name": "LCBetterSavesFix",
-                "version": "1.0.0"
+                "author": "qwbarch",
+                "name": "Concentus",
+                "version": "2.3.0"
+            },
+            {
+                "author": "qwbarch",
+                "name": "MirageCore",
+                "version": "1.0.3"
+            },
+            {
+                "author": "qwbarch",
+                "name": "OpusDotNet",
+                "version": "1.0.30"
             },
             {
                 "author": "Renegades",
@@ -41,10 +191,100 @@
             {
                 "author": "Rune580",
                 "name": "LethalCompany_InputUtils",
-                "version": "0.4.3"
+                "version": "0.7.7"
+            },
+            {
+                "author": "Sigurd",
+                "name": "CSync",
+                "version": "5.0.1"
+            },
+            {
+                "author": "taffyko",
+                "name": "BetterSprayPaint",
+                "version": "2.0.9"
+            },
+            {
+                "author": "TheFluff",
+                "name": "FairAI",
+                "version": "1.4.3"
+            },
+            {
+                "author": "WhiteSpike",
+                "name": "Maneater_Damage_Patch",
+                "version": "1.0.1"
+            },
+            {
+                "author": "willis81808",
+                "name": "LethalSettings",
+                "version": "1.4.1"
+            },
+            {
+                "author": "xilophor",
+                "name": "StaticNetcodeLib",
+                "version": "1.1.1"
+            },
+            {
+                "author": "Zaggy1024",
+                "name": "PathfindingLagFix",
+                "version": "1.4.0"
+            },
+            {
+                "author": "Zehs",
+                "name": "LCBetterSavesFix",
+                "version": "1.0.0"
+            },
+            {
+                "author": "ButteryStancakes",
+                "name": "ButteryFixes",
+                "version": "1.10.19"
+            },
+            {
+                "author": "FlipMods",
+                "name": "HotbarPlus",
+                "version": "1.8.1"
+            },
+            {
+                "author": "IAmBatby",
+                "name": "LethalLevelLoader",
+                "version": "1.4.6"
+            },
+            {
+                "author": "qwbarch",
+                "name": "Mirage",
+                "version": "1.16.0"
+            },
+            {
+                "author": "Zingar",
+                "name": "Atlas_Abyss",
+                "version": "1.2.6"
+            },
+            {
+                "author": "MelanieMelicious",
+                "name": "MelanieMelicious_2_sToRy_ShIp__works_w_Wider_Ship_Mod",
+                "version": "1.0.2"
+            },
+            {
+                "author": "LethalCompanyModding",
+                "name": "Doorbelle",
+                "version": "1.0.2"
+            },
+            {
+                "author": "TestAccount666",
+                "name": "ShipWindows",
+                "version": "1.11.0"
+            },
+            {
+                "author": "fumiko",
+                "name": "CullFactory",
+                "version": "1.7.0"
             }
         ],
-        "overrides": []
+        "overrides": [
+            {
+                "gdrive": "1xWz7jSVWc6reGCtEaboe246WPE7LgMsE",
+                "dropbox": "https://www.dropbox.com/scl/fi/i9hwyr1qrmg3smn4usyfl/VanillaOverrides-v2.zip?rlkey=le98cy76j8n8wv267xbhr1wjc&st=hfgg1wna&dl=1"
+            }
+        ]
     },
     "reinstall": false
 }
