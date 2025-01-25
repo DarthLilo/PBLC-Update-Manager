@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Lite Modded",
-    "version": "1.0.2",
-    "update_date": "1-24-2025",
-    "cache_timestamp": 1737754975.7007656,
+    "version": "1.0.3",
+    "update_date": "01-25-2025",
+    "cache_timestamp": 1737835913.7887719,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Lite%20Modded.json",
     "icon_url": "https://i.imgur.com/K0VqSCc.png",
     "contents": {
@@ -20,6 +20,11 @@
             },
             {
                 "author": "ButteryStancakes",
+                "name": "ButteryFixes",
+                "version": "1.10.19"
+            },
+            {
+                "author": "ButteryStancakes",
                 "name": "EnemySoundFixes",
                 "version": "1.6.2"
             },
@@ -32,6 +37,11 @@
                 "author": "coderCleric",
                 "name": "Poltergeist",
                 "version": "1.1.1"
+            },
+            {
+                "author": "darksnakex",
+                "name": "DanceHealingOnShip",
+                "version": "2.7.0"
             },
             {
                 "author": "Dev1A3",
@@ -61,7 +71,7 @@
             {
                 "author": "Evaisa",
                 "name": "FixPluginTypesSerialization",
-                "version": "1.1.1"
+                "version": "1.1.2"
             },
             {
                 "author": "Evaisa",
@@ -75,8 +85,23 @@
             },
             {
                 "author": "FlipMods",
+                "name": "HotbarPlus",
+                "version": "1.8.1"
+            },
+            {
+                "author": "FlipMods",
                 "name": "TooManyEmotes",
                 "version": "2.2.14"
+            },
+            {
+                "author": "fumiko",
+                "name": "CullFactory",
+                "version": "1.7.0"
+            },
+            {
+                "author": "Generic_GMD",
+                "name": "Generic_Interiors",
+                "version": "1.6.1"
             },
             {
                 "author": "Hamunii",
@@ -89,6 +114,21 @@
                 "version": "1.0.3"
             },
             {
+                "author": "Hardy",
+                "name": "LCMaxSoundsFix",
+                "version": "1.2.0"
+            },
+            {
+                "author": "IAmBatby",
+                "name": "LethalLevelLoader",
+                "version": "1.4.6"
+            },
+            {
+                "author": "JacobG5",
+                "name": "JLL",
+                "version": "1.9.0"
+            },
+            {
                 "author": "Kittenji",
                 "name": "Groan_Tube_Scrap",
                 "version": "1.0.4"
@@ -97,6 +137,11 @@
                 "author": "kRYstall9",
                 "name": "FastSwitchPlayerViewInRadar",
                 "version": "1.3.2"
+            },
+            {
+                "author": "LethalCompanyModding",
+                "name": "Doorbelle",
+                "version": "1.0.2"
             },
             {
                 "author": "LethalCompanyModding",
@@ -144,6 +189,11 @@
                 "version": "1.2.2"
             },
             {
+                "author": "MelanieMelicious",
+                "name": "MelanieMelicious_2_sToRy_ShIp__works_w_Wider_Ship_Mod",
+                "version": "1.0.2"
+            },
+            {
                 "author": "mrov",
                 "name": "ApparatusFix",
                 "version": "0.0.1"
@@ -172,6 +222,11 @@
                 "author": "qwbarch",
                 "name": "Concentus",
                 "version": "2.3.0"
+            },
+            {
+                "author": "qwbarch",
+                "name": "Mirage",
+                "version": "1.16.0"
             },
             {
                 "author": "qwbarch",
@@ -204,9 +259,19 @@
                 "version": "2.0.9"
             },
             {
+                "author": "TestAccount666",
+                "name": "ShipWindows",
+                "version": "1.11.0"
+            },
+            {
                 "author": "TheFluff",
                 "name": "FairAI",
                 "version": "1.4.3"
+            },
+            {
+                "author": "Treyotech",
+                "name": "Treys_Health_Text",
+                "version": "1.3.3"
             },
             {
                 "author": "WhiteSpike",
@@ -217,6 +282,11 @@
                 "author": "willis81808",
                 "name": "LethalSettings",
                 "version": "1.4.1"
+            },
+            {
+                "author": "xilophor",
+                "name": "LethalNetworkAPI",
+                "version": "3.3.2"
             },
             {
                 "author": "xilophor",
@@ -234,49 +304,9 @@
                 "version": "1.0.0"
             },
             {
-                "author": "ButteryStancakes",
-                "name": "ButteryFixes",
-                "version": "1.10.19"
-            },
-            {
-                "author": "FlipMods",
-                "name": "HotbarPlus",
-                "version": "1.8.1"
-            },
-            {
-                "author": "IAmBatby",
-                "name": "LethalLevelLoader",
-                "version": "1.4.6"
-            },
-            {
-                "author": "qwbarch",
-                "name": "Mirage",
-                "version": "1.16.0"
-            },
-            {
                 "author": "Zingar",
                 "name": "Atlas_Abyss",
                 "version": "1.2.6"
-            },
-            {
-                "author": "MelanieMelicious",
-                "name": "MelanieMelicious_2_sToRy_ShIp__works_w_Wider_Ship_Mod",
-                "version": "1.0.2"
-            },
-            {
-                "author": "LethalCompanyModding",
-                "name": "Doorbelle",
-                "version": "1.0.2"
-            },
-            {
-                "author": "TestAccount666",
-                "name": "ShipWindows",
-                "version": "1.11.0"
-            },
-            {
-                "author": "fumiko",
-                "name": "CullFactory",
-                "version": "1.7.0"
             }
         ],
         "overrides": [
