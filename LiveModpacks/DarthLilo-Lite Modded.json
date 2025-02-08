@@ -1,7 +1,7 @@
 {
     "author": "DarthLilo",
     "name": "Lite Modded",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "update_date": "02-07-2025",
     "cache_timestamp": 1738918030.1055286,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Lite%20Modded.json",
@@ -152,11 +152,6 @@
                 "author": "Generic_GMD",
                 "name": "Generic_Interiors",
                 "version": "1.6.3"
-            },
-            {
-                "author": "giosuel",
-                "name": "Imperium",
-                "version": "0.2.8"
             },
             {
                 "author": "Hamunii",
