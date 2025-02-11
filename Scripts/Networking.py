@@ -144,7 +144,19 @@ class Networking:
 
         Logging.New("Download finished")
         Filetree.DecompressZip(target_zip,temp_download_folder)
-        subprocess.Popen(["python",f"{Networking.CurFolder}/Updater.py"])
+
+        py_result = subprocess.run(['py','--version'],capture_output=True,text=True)
+        python_result = subprocess.run(['python','--version'],capture_output=True,text=True)
+
+        if python_result.returncode == 0:
+                subprocess.Popen(["python",f"{Networking.CurFolder}/Updater.py"])
+                return True
+        elif py_result.returncode == 0:
+            subprocess.Popen(["py",f"{Networking.CurFolder}/Updater.py"])
+            return True
+        
+        else:
+            pass
         sys.exit()
 
         return

@@ -148,10 +148,17 @@ class Filetree():
     
     def IsPythonInstalled():
         try:
-            result = subprocess.run(['python','--version'],capture_output=True,text=True)
-            if result.returncode == 0:
-                Logging.New(f"Python is installed running version {result.stdout.strip()}")
+            py_result = subprocess.run(['py','--version'],capture_output=True,text=True)
+            python_result = subprocess.run(['python','--version'],capture_output=True,text=True)
+
+            if python_result.returncode == 0:
+                Logging.New(f"Python is installed running version {python_result.stdout.strip()}")
                 return True
+
+            elif py_result.returncode == 0:
+                Logging.New(f"Python is installed running version {py_result.stdout.strip()}")
+                return True
+            
             else:
                 Logging.New("Python is not installed",'error')
                 return False
