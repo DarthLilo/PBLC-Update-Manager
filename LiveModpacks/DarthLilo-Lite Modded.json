@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Lite Modded",
-    "version": "1.0.7",
-    "update_date": "02-14-2025",
-    "cache_timestamp": 1739583499.305255,
+    "version": "1.0.8",
+    "update_date": "02-21-2025",
+    "cache_timestamp": 1740167338.783609,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Lite%20Modded.json",
     "icon_url": "https://i.imgur.com/K0VqSCc.png",
     "contents": {
@@ -37,11 +37,6 @@
                 "author": "Bobbie",
                 "name": "NAudio",
                 "version": "2.2.2"
-            },
-            {
-                "author": "ButteryStancakes",
-                "name": "ButteryFixes",
-                "version": "1.11.2"
             },
             {
                 "author": "ButteryStancakes",
@@ -145,11 +140,6 @@
             },
             {
                 "author": "FlipMods",
-                "name": "HotbarPlus",
-                "version": "1.8.2"
-            },
-            {
-                "author": "FlipMods",
                 "name": "TooManyEmotes",
                 "version": "2.2.14"
             },
@@ -217,11 +207,6 @@
                 "author": "LethalCompanyModding",
                 "name": "Doorbelle",
                 "version": "1.0.2"
-            },
-            {
-                "author": "LethalCompanyModding",
-                "name": "LCUltrawide_Community",
-                "version": "1.2.1"
             },
             {
                 "author": "LethalCompanyModding",
@@ -350,11 +335,6 @@
             },
             {
                 "author": "qwbarch",
-                "name": "Mirage",
-                "version": "1.18.1"
-            },
-            {
-                "author": "qwbarch",
                 "name": "MirageCore",
                 "version": "1.0.3"
             },
@@ -372,21 +352,6 @@
                 "author": "Rozebud",
                 "name": "FOV_Adjust",
                 "version": "1.1.1"
-            },
-            {
-                "author": "Rune580",
-                "name": "LethalCompany_InputUtils",
-                "version": "0.7.7"
-            },
-            {
-                "author": "sfDesat",
-                "name": "Aquatis",
-                "version": "2.2.4"
-            },
-            {
-                "author": "sfDesat",
-                "name": "Celest",
-                "version": "1.1.5"
             },
             {
                 "author": "sfDesat",
@@ -477,12 +442,52 @@
                 "author": "Zingar",
                 "name": "Atlas_Abyss",
                 "version": "1.2.6"
+            },
+            {
+                "author": "sfDesat",
+                "name": "Aquatis",
+                "version": "2.2.5"
+            },
+            {
+                "author": "sfDesat",
+                "name": "Celest",
+                "version": "1.1.6"
+            },
+            {
+                "author": "ButteryStancakes",
+                "name": "ButteryFixes",
+                "version": "1.12.0"
+            },
+            {
+                "author": "FlipMods",
+                "name": "HotbarPlus",
+                "version": "1.8.3"
+            },
+            {
+                "author": "LethalCompanyModding",
+                "name": "LCUltrawide_Community",
+                "version": "1.2.2"
+            },
+            {
+                "author": "Rune580",
+                "name": "LethalCompany_InputUtils",
+                "version": "0.7.10"
+            },
+            {
+                "author": "ButteryStancakes",
+                "name": "MaskFixes",
+                "version": "1.2.1"
+            },
+            {
+                "author": "qwbarch",
+                "name": "Mirage",
+                "version": "1.18.2"
             }
         ],
         "overrides": [
             {
-                "gdrive":"15Fu8NA8oSAKuhIF2W3FAcukTqK5xA9Hl",
-                "dropbox":"https://www.dropbox.com/scl/fi/r19ob8mf39kl68arzwhon/VanillaOverrides-v4.zip?rlkey=srj45lpmpfy12tms7j1q8qpma&st=938241ui&dl=1"
+                "gdrive":"15Ii-b9vxeoIQypGhKA65Hf5IGRGfhGXX",
+                "dropbox":"https://www.dropbox.com/scl/fi/5hrwf3an422i6xi0kauys/VanillaOverrides-v5.zip?rlkey=wkjlkqktv4qszix0mc96ipexu&st=udczntmg&dl=1"
             }
         ]
     },
