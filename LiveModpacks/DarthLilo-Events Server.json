@@ -1,13 +1,18 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.3.0",
-    "update_date": "2-28-2025",
-    "cache_timestamp": 1740781388.7767525,
+    "version": "1.3.1",
+    "update_date": "03-01-2025",
+    "cache_timestamp": 1740871182.040393,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/eipgtdi.png",
     "contents": {
         "thunderstore_packages": [
+            {
+                "author": "404_Dom",
+                "name": "Doms_Basic_Suit_Colors",
+                "version": "1.4.4"
+            },
             {
                 "author": "4902",
                 "name": "Cruiser_Additions",
@@ -17,6 +22,11 @@
                 "author": "4902",
                 "name": "No_Console_Spam",
                 "version": "1.6.0"
+            },
+            {
+                "author": "ActusDev",
+                "name": "Radiation_Leak",
+                "version": "1.0.5"
             },
             {
                 "author": "AdiBTW",
@@ -119,6 +129,16 @@
                 "version": "2.7.0"
             },
             {
+                "author": "darmuh",
+                "name": "OpenLib",
+                "version": "0.3.2"
+            },
+            {
+                "author": "darmuh",
+                "name": "suitsTerminal",
+                "version": "1.6.2"
+            },
+            {
                 "author": "DarthLilo",
                 "name": "BabyManeater",
                 "version": "1.1.2"
@@ -215,6 +235,21 @@
             },
             {
                 "author": "FlipMods",
+                "name": "ReservedFlashlightSlot",
+                "version": "2.0.10"
+            },
+            {
+                "author": "FlipMods",
+                "name": "ReservedItemSlotCore",
+                "version": "2.0.44"
+            },
+            {
+                "author": "FlipMods",
+                "name": "ReservedWalkieSlot",
+                "version": "2.0.7"
+            },
+            {
+                "author": "FlipMods",
                 "name": "TooManyEmotes",
                 "version": "2.3.1"
             },
@@ -242,6 +277,11 @@
                 "author": "Hardy",
                 "name": "LCMaxSoundsFix",
                 "version": "1.2.0"
+            },
+            {
+                "author": "HQHQTeam",
+                "name": "VLog",
+                "version": "2.1.9"
             },
             {
                 "author": "IAmBatby",
@@ -464,6 +504,11 @@
                 "version": "1.5.0"
             },
             {
+                "author": "Renegades",
+                "name": "WalkieUse",
+                "version": "1.5.0"
+            },
+            {
                 "author": "Rozebud",
                 "name": "FOV_Adjust",
                 "version": "1.1.1"
@@ -474,24 +519,24 @@
                 "version": "0.7.10"
             },
             {
+                "author": "ScienceBird",
+                "name": "MoreCupboards",
+                "version": "1.2.1"
+            },
+            {
                 "author": "Scintesto",
                 "name": "Monster_Plushies",
                 "version": "1.2.9"
             },
             {
+                "author": "Scoops",
+                "name": "LethalSponge",
+                "version": "1.0.3"
+            },
+            {
                 "author": "scorpiomods",
                 "name": "Snazzy_Jazzy_Suits",
                 "version": "1.1.2"
-            },
-            {
-                "author": "sfDesat",
-                "name": "Aquatis",
-                "version": "2.2.5"
-            },
-            {
-                "author": "sfDesat",
-                "name": "Celest",
-                "version": "1.1.6"
             },
             {
                 "author": "sfDesat",
@@ -507,6 +552,11 @@
                 "author": "SimonTendo",
                 "name": "LCGoldScrapMod",
                 "version": "2.0.7"
+            },
+            {
+                "author": "sunnobunno",
+                "name": "YippeeMod",
+                "version": "1.2.4"
             },
             {
                 "author": "SylviBlossom",
@@ -547,11 +597,6 @@
                 "author": "UltimateBanana",
                 "name": "BananaCorpSuitPackStreamers",
                 "version": "2.0.2"
-            },
-            {
-                "author": "Verity",
-                "name": "TooManySuits",
-                "version": "2.0.1"
             },
             {
                 "author": "VincentvonHelsing",
@@ -626,8 +671,8 @@
         ],
         "overrides": [
             {
-                "gdrive": "1aHdfS31Gi1vcsMlK3ra98a7MzXVn9x5z",
-                "dropbox": "https://www.dropbox.com/scl/fi/jijtpubqgpocox0ome41u/EventsServerOverrides-v14.zip?rlkey=c0j111wc1jh2cledt4esgmygd&st=dwjiv7qy&dl=1"
+                "gdrive": "1GDPlTVI6bjKuCudRSwFIYHGOp8FpvQ8H",
+                "dropbox": "https://www.dropbox.com/scl/fi/mrqadv6oslae1jbfe680d/EventsServerOverrides-v15.zip?rlkey=o1413afvnytrbvjqct93cz56m&st=al5xtktn&dl=1"
             }
         ]
     },
