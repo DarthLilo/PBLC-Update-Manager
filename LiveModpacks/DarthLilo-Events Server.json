@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.3.2",
-    "update_date": "03-01-2025",
-    "cache_timestamp": 1740871182.040393,
+    "version": "1.3.3",
+    "update_date": "03-02-2025",
+    "cache_timestamp": 1740956277.951376,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/eipgtdi.png",
     "contents": {
@@ -354,11 +354,6 @@
                 "version": "2.1.0"
             },
             {
-                "author": "Magic_Wesley",
-                "name": "Wesleys_Moons",
-                "version": "5.1.2"
-            },
-            {
                 "author": "MarshMan",
                 "name": "DeezNuts",
                 "version": "1.0.0"
@@ -569,6 +564,16 @@
                 "version": "1.11.0"
             },
             {
+                "author": "TestAccount666",
+                "name": "TestAccountCore",
+                "version": "1.14.2"
+            },
+            {
+                "author": "TestAccount666",
+                "name": "TestAccountFixes",
+                "version": "1.3.5"
+            },
+            {
                 "author": "TheFluff",
                 "name": "FairAI",
                 "version": "1.4.3"
@@ -664,14 +669,9 @@
                 "version": "1.2.6"
             },
             {
-                "author": "TestAccount666",
-                "name": "TestAccountFixes",
-                "version": "1.3.5"
-            },
-            {
-                "author": "TestAccount666",
-                "name": "TestAccountCore",
-                "version": "1.1.0"
+                "author": "Magic_Wesley",
+                "name": "Wesleys_Moons",
+                "version": "5.1.4"
             }
         ],
         "overrides": [
