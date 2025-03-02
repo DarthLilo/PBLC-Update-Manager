@@ -1,7 +1,7 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.3.1",
+    "version": "1.3.2",
     "update_date": "03-01-2025",
     "cache_timestamp": 1740871182.040393,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
@@ -22,11 +22,6 @@
                 "author": "4902",
                 "name": "No_Console_Spam",
                 "version": "1.6.0"
-            },
-            {
-                "author": "ActusDev",
-                "name": "Radiation_Leak",
-                "version": "1.0.5"
             },
             {
                 "author": "AdiBTW",
@@ -667,6 +662,16 @@
                 "author": "Zingar",
                 "name": "Atlas_Abyss",
                 "version": "1.2.6"
+            },
+            {
+                "author": "TestAccount666",
+                "name": "TestAccountFixes",
+                "version": "1.3.5"
+            },
+            {
+                "author": "TestAccount666",
+                "name": "TestAccountCore",
+                "version": "1.1.0"
             }
         ],
         "overrides": [
