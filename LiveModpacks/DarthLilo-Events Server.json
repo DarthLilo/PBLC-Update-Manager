@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.3.3",
-    "update_date": "03-02-2025",
-    "cache_timestamp": 1740956277.951376,
+    "version": "1.3.4",
+    "update_date": "03-08-2025",
+    "cache_timestamp": 1741472798.1646419,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/eipgtdi.png",
     "contents": {
@@ -81,7 +81,7 @@
             {
                 "author": "ButteryStancakes",
                 "name": "ButteryFixes",
-                "version": "1.12.2"
+                "version": "1.13.0"
             },
             {
                 "author": "ButteryStancakes",
@@ -186,12 +186,12 @@
             {
                 "author": "DiFFoZ",
                 "name": "LethalPerformance",
-                "version": "0.5.1"
+                "version": "0.6.0"
             },
             {
                 "author": "DiggC",
                 "name": "CruiserImproved",
-                "version": "1.4.1"
+                "version": "1.5.0"
             },
             {
                 "author": "EliteMasterEric",
@@ -256,7 +256,7 @@
             {
                 "author": "Generic_GMD",
                 "name": "Generic_Interiors",
-                "version": "1.6.3"
+                "version": "1.6.4"
             },
             {
                 "author": "Hamunii",
@@ -296,7 +296,7 @@
             {
                 "author": "JacobG5",
                 "name": "JLL",
-                "version": "1.9.2"
+                "version": "1.9.3"
             },
             {
                 "author": "JacobG5",
@@ -354,6 +354,11 @@
                 "version": "2.1.0"
             },
             {
+                "author": "Magic_Wesley",
+                "name": "Wesleys_Moons",
+                "version": "5.1.5"
+            },
+            {
                 "author": "MarshMan",
                 "name": "DeezNuts",
                 "version": "1.0.0"
@@ -371,7 +376,7 @@
             {
                 "author": "mattymatty",
                 "name": "AsyncLoggers",
-                "version": "2.1.3"
+                "version": "2.1.4"
             },
             {
                 "author": "mattymatty",
@@ -401,7 +406,7 @@
             {
                 "author": "MelanieMelicious",
                 "name": "MelanieMelicious_2_sToRy_ShIp__works_w_Wider_Ship_Mod",
-                "version": "1.1.0"
+                "version": "1.1.1"
             },
             {
                 "author": "Monkeytype",
@@ -511,7 +516,7 @@
             {
                 "author": "ScienceBird",
                 "name": "MoreCupboards",
-                "version": "1.2.1"
+                "version": "1.2.4"
             },
             {
                 "author": "Scintesto",
@@ -521,7 +526,7 @@
             {
                 "author": "Scoops",
                 "name": "LethalSponge",
-                "version": "1.0.3"
+                "version": "1.0.8"
             },
             {
                 "author": "scorpiomods",
@@ -626,7 +631,7 @@
             {
                 "author": "x753",
                 "name": "More_Suits",
-                "version": "1.5.1"
+                "version": "1.5.2"
             },
             {
                 "author": "xilophor",
@@ -667,17 +672,12 @@
                 "author": "Zingar",
                 "name": "Atlas_Abyss",
                 "version": "1.2.6"
-            },
-            {
-                "author": "Magic_Wesley",
-                "name": "Wesleys_Moons",
-                "version": "5.1.4"
             }
         ],
         "overrides": [
             {
-                "gdrive": "1GDPlTVI6bjKuCudRSwFIYHGOp8FpvQ8H",
-                "dropbox": "https://www.dropbox.com/scl/fi/mrqadv6oslae1jbfe680d/EventsServerOverrides-v15.zip?rlkey=o1413afvnytrbvjqct93cz56m&st=al5xtktn&dl=1"
+                "gdrive":"1gvnWU0yjdRhCrIwfUa60dpMs5JB7fqmm",
+                "dropbox":"https://www.dropbox.com/s/ffc0ndrmh7i4k3o/EventsServerOverrides%20v16.zip?st=hcvz7wgl&dl=1"
             }
         ]
     },
