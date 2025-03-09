@@ -33,7 +33,7 @@ class Launch:
         
         return True
     
-    def Start(author,name):
+    def Start(author,name,extra=False):
 
         if not Filetree.VerifyLethalPath(Launch.LethalCompanyPath):
             Logging.New("Error finding Lethal Company path! Please set one manually in config!")
@@ -49,9 +49,9 @@ class Launch:
         Launch.modpack_path = modpack_path
         
         Logging.New("Preforming update checks...")
-        Modpacks.UpdateVerify(author,name,Launch.actualLaunch)
+        Modpacks.UpdateVerify(author,name,lambda: Launch.actualLaunch(extra))
     
-    def actualLaunch():
+    def actualLaunch(extra=False):
 
 
         Launch.Setup()
@@ -63,6 +63,13 @@ class Launch:
             '--doorstop-enable', 'true',
             '--doorstop-target', f"{Launch.modpack_path}/BepInEx/core/BepInEx.Preloader.dll"
         ]
+
+        if extra:
+            launch_command = [
+                f"{Launch.LethalCompanyPath}/Lethal Company.exe",
+                '--doorstop-enable', 'true',
+                '--doorstop-target', f"{Launch.modpack_path}/BepInEx/core/BepInEx.Preloader.dll"
+            ]
 
         subprocess.Popen(launch_command,shell=True)
 

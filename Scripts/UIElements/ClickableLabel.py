@@ -62,6 +62,10 @@ class ClickableLabel(QLabel):
         play_action.setIcon(QIcon(Assets.getResource(Assets.IconTypes.play,True)))
         play_action.triggered.connect(lambda: Launch.Start(self._author,self._name))
 
+        play_extra_action = QAction("Play Extra", self)
+        play_extra_action.setIcon(QIcon(Assets.getResource(Assets.IconTypes.play,True)))
+        play_extra_action.triggered.connect(lambda: Launch.Start(self._author,self._name,True))
+
         edit_action = QAction("Edit", self)
         edit_action.setIcon(QIcon(Assets.getResource(Assets.IconTypes.edit,True)))
         edit_action.triggered.connect(lambda: self._edit_screen_func(self.click_data,update_modcount_func=self.parent().UpdateFrameModCount))
@@ -83,6 +87,7 @@ class ClickableLabel(QLabel):
         delete_action.triggered.connect(self.deleteModpack)
         
         context_menu.addAction(play_action)
+        context_menu.addAction(play_extra_action)
         context_menu.addAction(edit_action)
         context_menu.addAction(update_action)
         context_menu.addAction(folder_action)
