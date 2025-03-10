@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.3.6",
+    "version": "1.3.7",
     "update_date": "03-09-2025",
-    "cache_timestamp": 1741557309.679588,
+    "cache_timestamp": 1741569756.224585,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/eipgtdi.png",
     "contents": {
@@ -164,6 +164,11 @@
                 "version": "1.0.2"
             },
             {
+                "author": "DaXcess",
+                "name": "LethalCompanyVR",
+                "version": "1.3.10"
+            },
+            {
                 "author": "Dev1A3",
                 "name": "BetterVehicleControls",
                 "version": "1.1.3"
@@ -232,11 +237,6 @@
                 "author": "FlipMods",
                 "name": "ReservedFlashlightSlot",
                 "version": "2.0.10"
-            },
-            {
-                "author": "FlipMods",
-                "name": "ReservedItemSlotCore",
-                "version": "2.0.44"
             },
             {
                 "author": "FlipMods",
@@ -516,7 +516,7 @@
             {
                 "author": "ScienceBird",
                 "name": "MoreCupboards",
-                "version": "1.3.0"
+                "version": "1.3.1"
             },
             {
                 "author": "Scintesto",
@@ -547,6 +547,11 @@
                 "author": "SimonTendo",
                 "name": "LCGoldScrapMod",
                 "version": "2.0.7"
+            },
+            {
+                "author": "slenered",
+                "name": "ShipLoot_VR_Fix",
+                "version": "1.0.0"
             },
             {
                 "author": "sunnobunno",
@@ -674,20 +679,15 @@
                 "version": "1.2.6"
             },
             {
-                "author": "DaXcess",
-                "name": "LethalCompanyVR",
-                "version": "1.3.10"
-            },
-            {
-                "author": "slenered",
-                "name": "ShipLoot_VR_Fix",
-                "version": "1.0.0"
+                "author": "FlipMods",
+                "name": "ReservedItemSlotCore",
+                "version": "2.0.47"
             }
         ],
         "overrides": [
             {
-                "gdrive":"1gvnWU0yjdRhCrIwfUa60dpMs5JB7fqmm",
-                "dropbox":"https://www.dropbox.com/s/ffc0ndrmh7i4k3o/EventsServerOverrides%20v16.zip?st=hcvz7wgl&dl=1"
+                "gdrive": "https://drive.google.com/file/d/1WF-zcPkpvMmdFX3dFq288KhQeD2-sbJl/view?usp=sharing",
+                "dropbox":"https://www.dropbox.com/s/y6fgj2svy2onf6d/EventsServerOverrides%20v17.zip?st=0osykgca&dl=1"
             }
         ]
     },
