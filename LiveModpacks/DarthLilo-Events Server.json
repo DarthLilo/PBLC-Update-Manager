@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.3.7",
-    "update_date": "03-09-2025",
-    "cache_timestamp": 1741569756.224585,
+    "version": "1.3.8",
+    "update_date": "03-22-2025",
+    "cache_timestamp": 1742666544.399876,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/eipgtdi.png",
     "contents": {
@@ -16,7 +16,7 @@
             {
                 "author": "4902",
                 "name": "Cruiser_Additions",
-                "version": "1.4.5"
+                "version": "1.4.6"
             },
             {
                 "author": "4902",
@@ -46,7 +46,7 @@
             {
                 "author": "AudioKnight",
                 "name": "StarlancerAIFix",
-                "version": "3.8.4"
+                "version": "3.9.0"
             },
             {
                 "author": "bctix",
@@ -81,17 +81,17 @@
             {
                 "author": "ButteryStancakes",
                 "name": "ButteryFixes",
-                "version": "1.13.0"
+                "version": "1.13.1"
             },
             {
                 "author": "ButteryStancakes",
                 "name": "EnemySoundFixes",
-                "version": "1.6.5"
+                "version": "1.6.6"
             },
             {
                 "author": "ButteryStancakes",
                 "name": "MaskFixes",
-                "version": "1.2.2"
+                "version": "1.3.1"
             },
             {
                 "author": "ButteryStancakes",
@@ -117,11 +117,6 @@
                 "author": "CritterNation",
                 "name": "CatGlowSuits",
                 "version": "1.0.0"
-            },
-            {
-                "author": "darksnakex",
-                "name": "DanceHealingOnShip",
-                "version": "2.7.0"
             },
             {
                 "author": "darmuh",
@@ -176,7 +171,7 @@
             {
                 "author": "DiFFoZ",
                 "name": "BepInEx_Faster_Load_AssetBundles_Patcher",
-                "version": "0.6.5"
+                "version": "1.0.0"
             },
             {
                 "author": "DiFFoZ",
@@ -191,7 +186,7 @@
             {
                 "author": "DiFFoZ",
                 "name": "LethalPerformance",
-                "version": "1.0.0"
+                "version": "1.0.1"
             },
             {
                 "author": "DiggC",
@@ -216,7 +211,7 @@
             {
                 "author": "Evaisa",
                 "name": "LethalLib",
-                "version": "0.16.2"
+                "version": "0.16.4"
             },
             {
                 "author": "fivetoofive",
@@ -240,13 +235,18 @@
             },
             {
                 "author": "FlipMods",
+                "name": "ReservedItemSlotCore",
+                "version": "2.0.48"
+            },
+            {
+                "author": "FlipMods",
                 "name": "ReservedWalkieSlot",
                 "version": "2.0.7"
             },
             {
                 "author": "FlipMods",
                 "name": "TooManyEmotes",
-                "version": "2.3.1"
+                "version": "2.3.2"
             },
             {
                 "author": "fumiko",
@@ -371,7 +371,7 @@
             {
                 "author": "mattymatty",
                 "name": "AdditionalNetworking",
-                "version": "2.2.1"
+                "version": "2.2.2"
             },
             {
                 "author": "mattymatty",
@@ -381,7 +381,7 @@
             {
                 "author": "mattymatty",
                 "name": "BagConfig",
-                "version": "0.0.5"
+                "version": "1.0.0"
             },
             {
                 "author": "mattymatty",
@@ -391,7 +391,7 @@
             {
                 "author": "mattymatty",
                 "name": "LobbyControl",
-                "version": "2.4.10"
+                "version": "2.5.6"
             },
             {
                 "author": "mattymatty",
@@ -406,7 +406,7 @@
             {
                 "author": "MelanieMelicious",
                 "name": "MelanieMelicious_2_sToRy_ShIp__works_w_Wider_Ship_Mod",
-                "version": "1.1.1"
+                "version": "1.1.4"
             },
             {
                 "author": "Monkeytype",
@@ -426,7 +426,7 @@
             {
                 "author": "mrov",
                 "name": "MrovLib",
-                "version": "0.2.23"
+                "version": "0.2.24"
             },
             {
                 "author": "mrov",
@@ -516,7 +516,7 @@
             {
                 "author": "ScienceBird",
                 "name": "MoreCupboards",
-                "version": "1.3.1"
+                "version": "1.3.2"
             },
             {
                 "author": "Scintesto",
@@ -526,7 +526,7 @@
             {
                 "author": "Scoops",
                 "name": "LethalSponge",
-                "version": "1.0.9"
+                "version": "1.1.8"
             },
             {
                 "author": "scorpiomods",
@@ -546,7 +546,7 @@
             {
                 "author": "SimonTendo",
                 "name": "LCGoldScrapMod",
-                "version": "2.0.7"
+                "version": "2.1.2"
             },
             {
                 "author": "slenered",
@@ -597,6 +597,11 @@
                 "author": "TKronix",
                 "name": "DoorlessStorage",
                 "version": "1.0.0"
+            },
+            {
+                "author": "Toskan4134",
+                "name": "LethalRegeneration",
+                "version": "1.3.0"
             },
             {
                 "author": "Treyotech",
@@ -656,7 +661,7 @@
             {
                 "author": "Zaggy1024",
                 "name": "OpenBodyCams",
-                "version": "3.0.3"
+                "version": "3.0.5"
             },
             {
                 "author": "Zaggy1024",
@@ -677,11 +682,6 @@
                 "author": "Zingar",
                 "name": "Atlas_Abyss",
                 "version": "1.2.6"
-            },
-            {
-                "author": "FlipMods",
-                "name": "ReservedItemSlotCore",
-                "version": "2.0.47"
             }
         ],
         "overrides": [
