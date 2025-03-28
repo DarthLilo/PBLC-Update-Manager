@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.3.8",
-    "update_date": "03-22-2025",
-    "cache_timestamp": 1742666544.399876,
+    "version": "1.3.9",
+    "update_date": "03-28-2025",
+    "cache_timestamp": 1743191890.0553544,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/eipgtdi.png",
     "contents": {
@@ -81,7 +81,7 @@
             {
                 "author": "ButteryStancakes",
                 "name": "ButteryFixes",
-                "version": "1.13.1"
+                "version": "1.13.2"
             },
             {
                 "author": "ButteryStancakes",
@@ -106,7 +106,7 @@
             {
                 "author": "coderCleric",
                 "name": "Poltergeist",
-                "version": "1.1.1"
+                "version": "1.2.1"
             },
             {
                 "author": "Corgin_Devs",
@@ -211,7 +211,7 @@
             {
                 "author": "Evaisa",
                 "name": "LethalLib",
-                "version": "0.16.4"
+                "version": "1.0.1"
             },
             {
                 "author": "fivetoofive",
@@ -256,7 +256,7 @@
             {
                 "author": "Generic_GMD",
                 "name": "Generic_Interiors",
-                "version": "1.6.4"
+                "version": "2.0.0"
             },
             {
                 "author": "Hamunii",
@@ -416,7 +416,7 @@
             {
                 "author": "mrov",
                 "name": "ApparatusFix",
-                "version": "0.0.1"
+                "version": "0.0.3"
             },
             {
                 "author": "mrov",
@@ -481,7 +481,7 @@
             {
                 "author": "qwbarch",
                 "name": "Mirage",
-                "version": "1.19.0"
+                "version": "1.20.1"
             },
             {
                 "author": "qwbarch",
@@ -546,7 +546,7 @@
             {
                 "author": "SimonTendo",
                 "name": "LCGoldScrapMod",
-                "version": "2.1.2"
+                "version": "2.2.0"
             },
             {
                 "author": "slenered",
@@ -586,7 +586,7 @@
             {
                 "author": "TheFluff",
                 "name": "FairAI",
-                "version": "1.4.3"
+                "version": "1.4.6"
             },
             {
                 "author": "tinyhoot",
@@ -666,7 +666,7 @@
             {
                 "author": "Zaggy1024",
                 "name": "PathfindingLagFix",
-                "version": "2.1.1"
+                "version": "2.2.0"
             },
             {
                 "author": "Zaggy1024",
@@ -686,8 +686,8 @@
         ],
         "overrides": [
             {
-                "gdrive": "https://drive.google.com/file/d/1WF-zcPkpvMmdFX3dFq288KhQeD2-sbJl/view?usp=sharing",
-                "dropbox":"https://www.dropbox.com/s/y6fgj2svy2onf6d/EventsServerOverrides%20v17.zip?st=0osykgca&dl=1"
+                "gdrive":"1rTGXlLlOiv5ncysufN7QR0FSxlOSHmWQ",
+                "dropbox":"https://www.dropbox.com/scl/fi/g3qj9kbols5t0cu7pjai4/EventsServerOverrides-v18.zip?rlkey=nq0wjxfl3qeo3lup94m706t9f&st=fr6gaztr&dl=1"
             }
         ]
     },
