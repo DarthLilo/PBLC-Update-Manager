@@ -13,7 +13,7 @@ else:
     CurFolder = os.path.dirname(__file__)
 
 
-ReleaseTag = "Stable"
+ReleaseTag = "Development - REPO BRANCH"
 PBLCVersion = "1.1.7"
 ProgramDataFolder = os.path.normpath(f"{CurFolder}/ProgramData")
 LoggingFolder = os.path.normpath(f"{ProgramDataFolder}/Logs")

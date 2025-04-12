@@ -10,6 +10,7 @@ from ..Filetree import Filetree
 from .ClickableLabel import ClickableLabel
 from PIL import Image, ImageQt
 from packaging import version
+from .HoverButton import HoverButton
 
 import os, winaccent, winsound
 
@@ -70,16 +71,16 @@ class ModpackInfoFrame(QFrame):
         self.modpack_info_line.setFrameShape(QFrame.Shape.HLine)
         self.modpack_info_layout.addWidget(self.modpack_info_line)
 
-        self.launch_modpack_button = QPushButton()
+        self.launch_modpack_button = HoverButton()
         self.launch_modpack_button.setIcon(QIcon(Assets.getResource(Assets.IconTypes.play,True)))
         self.launch_modpack_button.setIconSize(QSize(40,40))
         self.modpack_info_layout.addWidget(self.launch_modpack_button)
 
         self.quick_action_container = QWidget()
         self.quick_action_layout = QHBoxLayout(self.quick_action_container)
-        self.open_modpack_dir = QPushButton()
-        self.update_modpack = QPushButton()
-        self.delete_modpack = QPushButton()
+        self.open_modpack_dir = HoverButton()
+        self.update_modpack = HoverButton()
+        self.delete_modpack = HoverButton()
 
         self.open_modpack_dir.setIcon(QIcon(Assets.getResource(Assets.IconTypes.folder,True)))
         self.update_modpack.setIcon(QIcon(Assets.getResource(Assets.IconTypes.refresh,True)))
@@ -106,7 +107,7 @@ class ModpackInfoFrame(QFrame):
         self.mod_count_label.setPalette(self.mod_count_label_grey)
         self.modpack_info_layout.addWidget(self.mod_count_label)
 
-        self.back_button = QPushButton("Back")
+        self.back_button = HoverButton("Back")
         self.back_button.clicked.connect(self.goBackInteract)
         self.modpack_info_layout.addWidget(self.back_button)
 
