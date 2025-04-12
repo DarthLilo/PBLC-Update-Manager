@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QLabel, QMenu, QDialog, QDialogButtonBox, QVBoxLayout, QLineEdit, QPushButton, QFileDialog
-from PyQt6.QtGui import QAction, QIcon
-from PyQt6.QtCore import QEvent
+from PyQt6.QtGui import QAction, QIcon, QCursor
+from PyQt6.QtCore import QEvent, Qt
 
 from .LethalRunning import LethalRunning
 from ..Assets import Assets
@@ -32,6 +32,8 @@ class ClickableLabel(QLabel):
         self._mod_count = mod_count
         self._modpack_context_menu = modpack_context_menu
         self._edit_screen_func = edit_screen_func
+        self.default_cursor = self.cursor()
+        self.hover_cursor = QCursor(Qt.CursorShape.PointingHandCursor)
         self.click_data = {
             "author": self._author,
             "name": self._name,
@@ -42,6 +44,12 @@ class ClickableLabel(QLabel):
         }
         if callable(hoverEvent):
             self.installEventFilter(self)
+    
+    def enterEvent(self, event):
+        self.setCursor(self.hover_cursor)
+    
+    def leaveEvent(self, a0):
+        self.setCursor(self.default_cursor)
     
     def eventFilter(self, object, event):
         if event.type() == QEvent.Type.Enter:
