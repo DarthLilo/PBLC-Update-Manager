@@ -1,8 +1,8 @@
-from PyQt6.QtWidgets import QLabel, QMenu, QDialog, QDialogButtonBox, QVBoxLayout, QLineEdit, QPushButton, QFileDialog
+from PyQt6.QtWidgets import QLabel, QMenu, QDialog, QDialogButtonBox, QVBoxLayout, QLineEdit, QPushButton, QFileDialog, QSizePolicy
 from PyQt6.QtGui import QAction, QIcon, QCursor
-from PyQt6.QtCore import QEvent, Qt
+from PyQt6.QtCore import QEvent, Qt, QPropertyAnimation, QEasingCurve, QRect
 
-from .LethalRunning import LethalRunning
+from .GameRunning import GameRunning
 from ..Assets import Assets
 from ..Launch import Launch
 from ..Modpacks import Modpacks
@@ -128,7 +128,7 @@ class ClickableLabel(QLabel):
 
 
     def deleteModpack(self):
-        if Filetree.IsLethalRunning(LethalRunning):
+        if Filetree.IsGameRunning(GameRunning):
             return
         Modpacks.Delete(self._author,self._name)
         Modpacks.RefreshModpacks()
@@ -137,12 +137,70 @@ class ClickableLabel(QLabel):
         os.startfile(Modpacks.Path(self._author,self._name))
     
     def updateModpack(self):
-        if not Filetree.IsLethalRunning(LethalRunning):
+        if not Filetree.IsGameRunning(GameRunning):
             dlg = ConfirmUpdate("Check for and install updates if available?")
             result = dlg.exec()
             if result:
                 Modpacks.UpdateVerify(self._author,self._name)
                 Modpacks.DeselectModpack()
+
+    
+    def mouseReleaseEvent(self, event):
+        self._whenClicked(event, self.click_data)
+
+class ClickableLabelGame(QLabel):
+    """Activates a function \"whenClicked\" when the label is clicked and transmits the event and an dictionary package of data!"""
+    def __init__(self, whenClicked, 
+                 hoverEvent=None, parent=None, 
+                 xyCords=(0,0), game="Game", game_id="game_id",
+                 icon_path="", **kwargs):
+        QLabel.__init__(self,parent,**kwargs)
+        self._whenClicked = whenClicked
+        self._hoverEvent = hoverEvent
+        self._xyCords = xyCords
+        self._game = game
+        self._icon_path = icon_path
+        self._game_id = game_id
+        self.default_cursor = self.cursor()
+        self.hover_cursor = QCursor(Qt.CursorShape.PointingHandCursor)
+        self.click_data = {
+            "game": self._game,
+            "icon": self._icon_path,
+            "game_id": self._game_id,
+            "xyCords": self._xyCords
+        }
+
+        self.setScaledContents(True)
+        self.animation = QPropertyAnimation(self,b"geometry")
+        self.animation.setDuration(200)
+        self.animation_default_geo = QRect(10,10,250,375)#self.setGeometry(10,10,250,375)
+        self.animation_expanded_geo = QRect(5,5,260,390)
+
+        if callable(hoverEvent):
+            self.installEventFilter(self)
+    
+    def enterEvent(self, event):
+        self.setCursor(self.hover_cursor)
+        self.animation.setStartValue(self.animation_default_geo)
+        self.animation.setEndValue(self.animation_expanded_geo)
+        self.animation.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self.animation.start()
+
+
+    def leaveEvent(self, a0):
+        self.setCursor(self.default_cursor)
+        self.animation.setStartValue(self.animation_expanded_geo)
+        self.animation.setEndValue(self.animation_default_geo)
+        self.animation.setEasingCurve(QEasingCurve.Type.OutQuart)
+        self.animation.start()
+    
+    def eventFilter(self, object, event):
+        if event.type() == QEvent.Type.Enter:
+            self._hoverEvent(True)
+            return True
+        elif event.type() == QEvent.Type.Leave:
+            self._hoverEvent(False)
+        return False
 
     
     def mouseReleaseEvent(self, event):

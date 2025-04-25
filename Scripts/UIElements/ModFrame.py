@@ -6,12 +6,13 @@ from PyQt6.QtGui import QColor, QPalette, QPixmap, QFont, QIcon
 
 from .ClickableLabel import ClickableLabel
 from .AnimatedToggle import AnimatedToggle
-from .LethalRunning import LethalRunning
+from .GameRunning import GameRunning
 from ..Assets import Assets
 from ..Modpacks import Modpacks
 from ..Cache import Cache
 from ..Networking import Networking
 from ..Filetree import Filetree
+from ..Game import Game
 
 import os, random, threading, winaccent
 
@@ -157,7 +158,7 @@ class ModFrame(QFrame):
     
     def update_state(self, event):
         
-        if Filetree.IsLethalRunning(LethalRunning):
+        if Filetree.IsGameRunning(GameRunning):
             return
         
         Modpacks.Mods.Toggle(self.mod_author,self.mod_name)
@@ -196,7 +197,7 @@ class ModFrame(QFrame):
         modifiers = event.modifiers()
 
         if modifiers == Qt.KeyboardModifier.NoModifier and button == Qt.MouseButton.LeftButton:
-            Networking.OpenURL(f"https://thunderstore.io/c/lethal-company/p/{data['author']}/{data['name']}/")
+            Networking.OpenURL(f"https://thunderstore.io/c/{Game.ts_url_prefix}/p/{data['author']}/{data['name']}/")
         return
     
     def HoverEvent(self, hover):
@@ -206,7 +207,7 @@ class ModFrame(QFrame):
             self.mod_name_label.setPalette(self.mod_name_label_defualt)
     
     def CheckForUpdates(self):
-        if Filetree.IsLethalRunning(LethalRunning):
+        if Filetree.IsGameRunning(GameRunning):
             return
         
         has_updates = Modpacks.Mods.CheckForUpdates(self.mod_author,self.mod_name)
@@ -244,7 +245,7 @@ class ModFrame(QFrame):
         Modpacks.Mods.Update(author,name,version,text_output_func=Modpacks.SetCacheStatus,finished_func=Modpacks.CacheToModpack)
     
     def DeleteMod(self):
-        if Filetree.IsLethalRunning(LethalRunning):
+        if Filetree.IsGameRunning(GameRunning):
             return
         
         Modpacks.Mods.Delete(self.mod_author,self.mod_name,self.mod_version)

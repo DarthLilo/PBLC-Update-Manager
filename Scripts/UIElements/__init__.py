@@ -12,4 +12,4 @@ from .LoadingScreenCacheUpdate import LoadingScreenCacheUpdate
 from .ModpackSelection import ModpackSelection
 from .FaderWidget import FaderWidget
 from .AddImportModpack import AddImportModpack
-from .LethalRunning import LethalRunning
+from .GameRunning import GameRunning

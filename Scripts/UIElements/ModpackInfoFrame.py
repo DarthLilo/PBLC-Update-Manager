@@ -2,7 +2,7 @@ from PyQt6.QtCore import QSize, Qt, pyqtProperty, QRect
 from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QSizePolicy, QVBoxLayout, QLineEdit, QLabel, QFrame, QSpacerItem, QHBoxLayout, QCompleter, QComboBox, QPushButton, QDialog, QDialogButtonBox, QFileDialog
 from PyQt6.QtGui import QMovie, QAction, QIcon, QFontDatabase, QFont, QPixmap, QColor
 
-from .LethalRunning import LethalRunning
+from .GameRunning import GameRunning
 from ..Assets import Assets
 from ..Launch import Launch
 from ..Modpacks import Modpacks
@@ -159,7 +159,7 @@ class ModpackInfoFrame(QFrame):
         os.startfile(Modpacks.Path(self._modpack_author,self._modpack_name))
     
     def updateModpack(self):
-        if not Filetree.IsLethalRunning(LethalRunning):
+        if not Filetree.IsGameRunning(GameRunning):
             dlg = ConfirmUpdate("Check for and install updates if available?")
             result = dlg.exec()
             if result:
@@ -167,7 +167,7 @@ class ModpackInfoFrame(QFrame):
                 Modpacks.DeselectModpack()
     
     def deleteModpack(self):
-        if not Filetree.IsLethalRunning(LethalRunning):
+        if not Filetree.IsGameRunning(GameRunning):
             dlg = ConfirmUpdate("Are you sure you want to delete this modpack?")
             result = dlg.exec()
             if result:

@@ -1,7 +1,7 @@
 import sys, os, json, time, random
 
 from PyQt6.QtCore import QSize, Qt, pyqtProperty, QLoggingCategory
-from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QSizePolicy, QDialog, QDialogButtonBox, QLabel, QVBoxLayout
+from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QSizePolicy, QDialog, QDialogButtonBox, QLabel, QVBoxLayout, QMessageBox
 from PyQt6.QtGui import QMovie, QAction, QIcon, QFontDatabase
 import Scripts, subprocess
 
@@ -13,14 +13,14 @@ else:
     CurFolder = os.path.dirname(__file__)
 
 
-ReleaseTag = "Development - REPO BRANCH"
-PBLCVersion = "1.1.7"
+ReleaseTag = "Stable"
+PBLCVersion = "1.2.0"
 ProgramDataFolder = os.path.normpath(f"{CurFolder}/ProgramData")
 LoggingFolder = os.path.normpath(f"{ProgramDataFolder}/Logs")
 ModpacksFolder = os.path.normpath(f"{ProgramDataFolder}/Modpacks")
 CacheFolder = os.path.normpath(f"{ProgramDataFolder}/Cache")
 AssetsFolder = os.path.normpath(f"{CurFolder}/ProgramAssets")
-LethalCompanyFolder = ""
+GamesFolder = os.path.normpath(f"{AssetsFolder}/games")
 
 
 ############################### Verify Folders ##########################
@@ -47,12 +47,12 @@ if not server:
 
 Scripts.Assets(AssetsFolder)
 Scripts.QueueMan()
-LethalCompanyFolder = Scripts.Filetree.LocateLethalCompany()
 Scripts.Cache(CacheFolder)
 Scripts.Modpacks(ModpacksFolder)
-Scripts.Launch(LethalCompanyFolder,Scripts.Filetree.LocateSteam())
+Scripts.Launch(Scripts.Filetree.LocateSteam())
 Scripts.Networking.PBLCVersion = PBLCVersion
 Scripts.Networking.CurFolder = CurFolder
+Scripts.Game(GamesFolder)
 
 #########################################################################
 
@@ -98,8 +98,12 @@ class PBLCWindow(QMainWindow):
 
         #Start UI
         pblc_layout = QGridLayout()
-        self.main_menu = Scripts.UI()
-        
+
+
+        self.main_menu = Scripts.UI.GameSelectionMenu(self.triggerMainMenu)
+        for game in Scripts.Game.data_library:
+            game_data = Scripts.Game.data_library[game]
+            self.main_menu.addGame(Scripts.Assets.getGameCover(game),game_data['name'],game_data['developer'],game)
         pblc_layout.addWidget(self.main_menu)
 
         layout_container = QWidget()
@@ -107,6 +111,38 @@ class PBLCWindow(QMainWindow):
 
         self.setCentralWidget(layout_container)
     
+    def triggerMainMenu(self):
+        
+        self.main_menu = Scripts.UI(self.backToGameSelection)
+        self.setCentralWidget(self.main_menu)
+    
+    def backToGameSelection(self):
+        self.main_menu = Scripts.UI.GameSelectionMenu(self.triggerMainMenu)
+        for game in Scripts.Game.data_library:
+            game_data = Scripts.Game.data_library[game]
+            self.main_menu.addGame(Scripts.Assets.getGameCover(game),game_data['name'],game_data['developer'],game)
+        Scripts.Game.game_id = None
+
+
+        self.setCentralWidget(self.main_menu)
+
+    
+    def OpenConfigScreen(self):
+        config_menu = Scripts.UIElements.ConfigMenu()
+
+        config_data = Scripts.Config.Get()
+
+        for category in config_data:
+            config_menu.addCategory(category)
+
+            for option in config_data[category]:
+                option_container = config_data[category][option]
+                config_menu.addSetting(category,option_container['type'],option,option_container['description'],option_container['values'] if 'values' in option_container else [],option_container['value'])
+            config_menu.addSpacer(category)
+
+
+        config_menu.exec()
+
     def closeEvent(self, event):
         if Scripts.Config.Read("general","major_task_running",'value') == False or Scripts.Config.Read("general","major_task_running",'value') == "False":
             event.accept()
@@ -114,17 +150,33 @@ class PBLCWindow(QMainWindow):
             event.ignore()
     
     def DownloadCache(self):
+        if Scripts.Game.game_id == None:
+            self.NoGameSelected()
+            return
         self.main_menu.ShowLoadingScreenCacheUpdate()
         Scripts.Cache.Update(self.main_menu.ShowModpackSelectionScreen,cache_status_func=self.main_menu._screen_loading_cache_update.setStatus)
     
     def ClearCache(self):
+        if Scripts.Game.game_id == None:
+            self.NoGameSelected()
+            return
         Scripts.Cache.FileCache.Clear()
 
     def CheckForUpdates(self):
         Scripts.Networking.CheckForUpdatesManager()
 
     def OpenConfig(self):
-        self.main_menu.OpenConfigScreen()
+        self.OpenConfigScreen()
+    
+    def NoGameSelected(self):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Warning)
+        msg.setText("Please select a game first before using the cache!")
+        msg.setWindowTitle("No Game Selected")
+        msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+        msg.setWindowIcon(QIcon(Scripts.Assets.getResource(Scripts.Assets.ResourceTypes.app_icon)))
+
+        result = msg.exec()
 
 class PythonInstalled(QDialog):
     def __init__(self):

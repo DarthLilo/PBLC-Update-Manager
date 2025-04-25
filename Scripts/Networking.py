@@ -8,6 +8,7 @@ from .Logging import Logging
 from .Maths import Maths
 from .Assets import Assets
 from .Filetree import Filetree
+from .Game import Game
 from PIL import Image
 from io import BytesIO
 
@@ -28,11 +29,11 @@ class Networking:
 
         # Splits URL into a list
         url_segments = str(url).split("/")
-        verify_link_requirements = ["thunderstore.io","c","lethal-company","p"]
+        verify_link_requirements = ["thunderstore.io","c",Game.ts_url_prefix,"p"]
 
         # Verifies that the minimum requirements are present in the split link
         if set(verify_link_requirements) <= set(url_segments):
-            Logging.New(f"[{url}] is a valid Lethal Company Thunderstore package link!")
+            Logging.New(f"[{url}] is a valid {Game.game_id} Thunderstore package link!")
             return url_segments
 
         return False

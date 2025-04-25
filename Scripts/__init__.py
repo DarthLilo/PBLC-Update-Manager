@@ -14,4 +14,5 @@ from .UI import UI
 from . import UIElements
 from .Assets import Assets
 from .Registry import Registry
+from .Game import Game
 from .ProtocolHandler import ProtocolHandler

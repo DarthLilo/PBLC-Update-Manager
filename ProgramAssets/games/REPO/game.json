@@ -1,0 +1,12 @@
+{
+    "package_index": "repo_package_index.json",
+    "package_cache": "repo_package_cache.pk1",
+    "ts_url_prefix": "repo",
+    "config_value": "repo_path",
+    "steam_id": "3241660",
+    "developer": "semiwork",
+    "name": "R.E.P.O",
+    "main_modpack": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-EventsRepo.json",
+    "main_modpack_author": "DarthLilo",
+    "main_modpack_name": "EventsRepo"
+}

@@ -4,7 +4,7 @@ from PyQt6.QtGui import QMovie, QAction, QIcon, QFontDatabase, QFont, QPixmap, Q
 
 from .ModListScrollMenu import ModListSrollMenu
 from .ModpackInfoFrame import ModpackInfoFrame
-from .LethalRunning import LethalRunning
+from .GameRunning import GameRunning
 from ..Assets import Assets
 from ..Modpacks import Modpacks
 from ..Filetree import Filetree
@@ -92,7 +92,7 @@ class EditModpackMenu(QWidget):
         self._layout.addWidget(self.mod_search_frame,0,1,1,3)
     
     def AddMod(self):
-        if not Filetree.IsLethalRunning(LethalRunning):
+        if not Filetree.IsGameRunning(GameRunning):
             add_mod_dialog = AddModInputDialog()
             result = add_mod_dialog.exec()
             if result:
@@ -119,7 +119,7 @@ class EditModpackMenu(QWidget):
                 mod.determine_visibility()
 
     def CheckForUpdates(self):
-        if not Filetree.IsLethalRunning(LethalRunning):
+        if not Filetree.IsGameRunning(GameRunning):
             Modpacks.ScanForUpdates()
 
             self.RedrawModFrames()

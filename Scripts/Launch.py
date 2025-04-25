@@ -3,40 +3,45 @@ from .Modpacks import Modpacks
 from .Filetree import Filetree
 from .Assets import Assets
 from .Thunderstore import Thunderstore
+from .Game import Game
 import os, subprocess, win10toast
 from PyQt6.QtCore import QTimer
 
 class Launch:
 
-    LethalCompanyPath = ""
+    GamePath = ""
     SteamFolder = ""
     author = ""
     name = ""
     modpack_path = ""
 
-    def __init__(self, LethalCompanyFolder,SteamFolder):
+    def __init__(self, SteamFolder):
 
         Logging.New("Starting launch system...",'startup')
 
-        Launch.LethalCompanyPath = LethalCompanyFolder
         Launch.SteamFolder = SteamFolder
+        
 
         return
     
+    def SetStartupGame():
+        Launch.GamePath = Filetree.LocateGame(Game.game_id,Game.config_value,Game.steam_id)
+
+    
     def Setup():
-        if not Filetree.VerifyLethalPath(Launch.LethalCompanyPath):
-            Logging.New("Error finding Lethal Company path! Please set one manually in config!")
+        if not Filetree.VerifyGamePath(Launch.GamePath):
+            Logging.New(f"Error finding {Game.game_id} path! Please set one manually in config!")
             return False
 
-        if not Filetree.VerifyList([f"{Launch.LethalCompanyPath}/winhttp.dll",f"{Launch.LethalCompanyPath}/doorstop_config.ini",f"{Launch.LethalCompanyPath}/BepInEx/core"],create_folder=False):
-            Thunderstore.DownloadBepInEx(Launch.LethalCompanyPath)
+        if not Filetree.VerifyList([f"{Launch.GamePath}/winhttp.dll",f"{Launch.GamePath}/doorstop_config.ini",f"{Launch.GamePath}/BepInEx/core"],create_folder=False):
+            Thunderstore.DownloadBepInEx(Launch.GamePath)
         
         return True
     
     def Start(author,name,extra=False):
 
-        if not Filetree.VerifyLethalPath(Launch.LethalCompanyPath):
-            Logging.New("Error finding Lethal Company path! Please set one manually in config!")
+        if not Filetree.VerifyGamePath(Launch.GamePath):
+            Logging.New(f"Error finding {Game.game_id} path! Please set one manually in config!")
             return False
 
         modpack_path = Modpacks.Path(author,name)
@@ -59,18 +64,18 @@ class Launch:
 
         launch_command = [
             f"{Launch.SteamFolder}/Steam.exe",
-            '-applaunch', '1966720',
+            '-applaunch', Game.steam_id,
             '--doorstop-enable', 'true',
             '--doorstop-target', f"{Launch.modpack_path}/BepInEx/core/BepInEx.Preloader.dll"
         ]
 
         if extra:
             launch_command = [
-                f"{Launch.LethalCompanyPath}/Lethal Company.exe",
+                f"{Launch.GamePath}/{Game.game_id}.exe",
                 '--doorstop-enable', 'true',
                 '--doorstop-target', f"{Launch.modpack_path}/BepInEx/core/BepInEx.Preloader.dll"
             ]
-
+        
         subprocess.Popen(launch_command,shell=True)
 
         QTimer.singleShot(0, Launch.ShowNotif)
