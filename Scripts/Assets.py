@@ -35,7 +35,11 @@ class Assets():
         return new_image
     
     def getResource(icon,theme=False):
-        icon_path = f"{Assets.asset_folder}/{icon.value}"
+        try:
+            icon_path = f"{Assets.asset_folder}/{icon.value}"
+        except AttributeError:
+            return f"{Assets.asset_folder}/missing_icon.png"
+        
         if not os.path.exists(icon_path):
             Logging.New(f"Unable to find {icon.value}")
             return f"{Assets.asset_folder}/missing_icon.png"
@@ -46,6 +50,13 @@ class Assets():
             return ImageQt.toqpixmap(Assets.InvertColors(Image.open(icon_path)))
 
         return icon_path
+    
+    def getGameCover(game):
+        icon_path = f"{Assets.asset_folder}/games/{game}/game_cover.jpg"
+        if os.path.exists(icon_path):
+            return icon_path
+        else:
+            return f"{Assets.asset_folder}/missing_icon.png"
     
     def modpackIcon(path):
         if not os.path.exists(path):
@@ -89,7 +100,9 @@ class Assets():
         uninstall = "icons/uninstall.png"
         link = "icons/website.png"
         edit = "icons/edit.png"
+        back_arrow = "icons/arrow_left.png"
         missing = "missing_icon.png"
+        
     
     class ResourceTypes(str, Enum):
         lethal_font = "3270-Regular.ttf"
@@ -98,6 +111,10 @@ class Assets():
         app_icon = "pill_bottle.ico"
         loading_screen = "loading_screen.gif"
         missing = "missing_icon.png"
+    
+    class GameTypes(str, Enum):
+        lethal_company = "games/lethal_company.jpg"
+        repo = "games/repo.jpg"
 
     
     

@@ -120,14 +120,18 @@ class Config():
         
         return data
     
-    def Write(container,setting,data):
+    def Write(container,setting,data,game_override_path=False):
         """Writes new data to a config option for future use."""
 
         if container not in Config.Data:
             Config.Data[container] = Config.Library(container)
         
         if setting not in Config.Data[container]:
-            Config.Data[container][setting] = Config.Library(container,setting)
+            if game_override_path:
+                Config.Data[container][setting] = {"value": "", "default": "", "description": "Path to specific game folder, able to be overriden by the user", "type": "folder"}
+                print(Config.Data)
+            else:
+                Config.Data[container][setting] = Config.Library(container,setting)
         
         Config.Data[container][setting]['value'] = data
 

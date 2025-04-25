@@ -2,15 +2,16 @@ from .Logging import Logging
 from .Networking import Networking
 from .Filetree import Filetree
 from .Maths import Maths
+from .Game import Game
 import requests, pickle, json, os, shutil, threading
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
 class Cache():
 
+    PackageIndex = ""
+    PackageCache = ""
     CacheFolder = ""
-    LethalCompanyPackageIndex = ""
-    LethalPackageCache = ""
     ModCache = ""
     Packages = {}
     SelectedModpack = ""
@@ -21,56 +22,54 @@ class Cache():
 
         Logging.New("Starting caching system...",'startup')
         Cache.CacheFolder = CacheFolder
-        Cache.LethalCompanyPackageIndex = f"{CacheFolder}/lethal_company_package_index.json"
-        Cache.LethalPackageCache = f"{CacheFolder}/lethal_package_cache.pk1"
-        Cache.ModCache = f"{CacheFolder}/ModCache"
-
-        if not os.path.exists(Cache.LethalCompanyPackageIndex):
-            Cache.StartCache = True
-            #Cache.Download()
-         
-        if not os.path.exists(Cache.LethalPackageCache): # If no cache pk1 file is found, create one
-            Cache.StartCache = True
-            #Cache.Index()
-            #Cache.SaveIndex()
-    
-        else: # Load existing pk1 cache file
-            Cache.Packages = Cache.LoadIndex()
-        
-        if not os.path.exists(Cache.ModCache):
-            os.mkdir(Cache.ModCache)
 
         return
+    
+    def SetupCache():
+        Cache.PackageIndex = os.path.join(Cache.CacheFolder,Game.package_index)
+        Cache.PackageCache = os.path.join(Cache.CacheFolder,Game.package_cache)
+        Cache.ModCache = os.path.join(Cache.CacheFolder,"ModCache",Game.game_id)
+
+        if not os.path.exists(Cache.ModCache):
+            os.makedirs(Cache.ModCache,exist_ok=True)
+        
+        if not os.path.exists(Cache.PackageIndex) or not os.path.exists(Cache.PackageCache):
+            Cache.StartCache = True
+        else:
+            Cache.Packages = Cache.LoadIndex()
+
     
     def Download(cache_status_func=None):
         """Downloads the latest cache file from the Thunderstore CDN"""
         Logging.New("Downloading the latest cache")
 
-        Networking.DownloadFromUrl("https://thunderstore.io/c/lethal-company/api/v1/package/",f"{Cache.CacheFolder}/lethal_company_package_index.json",cache_status_func)
+        Networking.DownloadFromUrl(f"https://thunderstore.io/c/{Game.ts_url_prefix}/api/v1/package/",f"{Cache.CacheFolder}/{Game.package_index}",cache_status_func)
     
     def Index(cache_status_func=None):
         """Indexes the cache file into memory, packages can be retrieved using the [author] [name] format"""
         Logging.New("Beginning package index process, this might take a while...")
         if callable(cache_status_func): cache_status_func(f"Caching mods...")
         Cache.Packages.clear()
-        if os.path.exists(Cache.LethalCompanyPackageIndex):
-            with open(Cache.LethalCompanyPackageIndex, 'r', encoding='utf-8') as file:
+        if os.path.exists(Cache.PackageIndex):
+            with open(Cache.PackageIndex, 'r', encoding='utf-8') as file:
                 data = json.load(file)
                 for entry in data:
                     key = (entry['owner'], entry['name'])
                     Cache.Packages[key] = entry
                 Logging.New("Finished Caching")
+        
+        Cache.StartCache = False
         return
     
     def SaveIndex():
         """Saves the current memory index into a file"""
-        with open(Cache.LethalPackageCache, 'wb') as file:
+        with open(Cache.PackageCache, 'wb') as file:
             pickle.dump(Cache.Packages, file)
         Logging.New("Saved package index to pk1 file")
     
     def LoadIndex():
         """Loads the previous index into memory"""
-        with open(Cache.LethalPackageCache, 'rb') as file:
+        with open(Cache.PackageCache, 'rb') as file:
             return pickle.load(file)
         
         Logging.New("Load package index from pk1 file")
@@ -80,8 +79,8 @@ class Cache():
     def Reset():
         Cache.Packages.clear()
         try:
-            os.remove(Cache.LethalCompanyPackageIndex)
-            os.remove(Cache.LethalPackageCache)
+            os.remove(Cache.PackageIndex)
+            os.remove(Cache.PackageCache)
         except FileNotFoundError:
             Logging.New("Cache reset file not found!",'error')
     
@@ -122,7 +121,7 @@ class Cache():
         return Cache.Packages.get(key)['versions'][0]
 
     def Exists():
-        return os.path.exists(Cache.LethalCompanyPackageIndex)
+        return os.path.exists(Cache.PackageIndex)
 
     class FileCache():
 

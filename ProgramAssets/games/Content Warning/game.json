@@ -1,0 +1,12 @@
+{
+    "package_index": "content_warning_package_index.json",
+    "package_cache": "content_warning_package_cache.pk1",
+    "ts_url_prefix": "content-warning",
+    "config_value": "content_warning_path",
+    "steam_id": "2881650",
+    "developer": "Landfall",
+    "name": "Content Warning",
+    "main_modpack": "",
+    "main_modpack_author": "DarthLilo",
+    "main_modpack_name": "EventsContentWarning"
+}

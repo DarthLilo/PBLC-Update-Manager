@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QSize, Qt, pyqtProperty, QObject, pyqtSignal
-from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QSizePolicy, QVBoxLayout, QLineEdit, QLabel, QStackedWidget, QDialog, QDialogButtonBox
+from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QSizePolicy, QVBoxLayout, QLineEdit, QLabel, QStackedWidget, QDialog, QDialogButtonBox, QScrollArea
 from PyQt6.QtGui import QMovie, QAction, QIcon, QFontDatabase, QFont
 
 from . import UIElements
@@ -10,11 +10,56 @@ from .Logging import Logging
 from .Cache import Cache
 from .Config import Config
 from .Networking import Networking
+from .UIElements.GameFrame import GameFrame
+from .Game import Game
 
 import time, random, threading, os
 
+
 class UI(QWidget):
-    def __init__(self):
+
+    class GameSelectionMenu(QScrollArea):
+        def __init__(self, trigger_menu_func):
+            super().__init__()
+            self._layout_container = QWidget()
+            self._grid_layout = QGridLayout(self)
+            self._xPos = 0
+            self._yPos = 0
+            self.games = []
+            self.trigger_menu_func = trigger_menu_func
+
+            self._layout_container.setLayout(self._grid_layout)
+
+            self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+            self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+            vscrollbar = self.verticalScrollBar()
+            vscrollbar.setSingleStep(5)
+            self.setWidgetResizable(True)
+
+            self.setWidget(self._layout_container)
+        
+        def addGame(self, game_icon = "", game_name = "Game", game_developer = "Developer", game_id = "game_id"):
+            game_frame = GameFrame(game_icon=game_icon,game_name=game_name,game_developer=game_developer,game_id=game_id,xyCords=(self._xPos,self._yPos),trigger_menu_func=self.trigger_menu_func)
+            game_frame.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
+            self._grid_layout.addWidget(game_frame,self._xPos,self._yPos)
+            self.games.append(game_frame)
+            self._yPos += 1
+
+            if self._yPos >= 3:
+                self._yPos = 0
+                self._xPos += 1
+        
+        def clearGames(self):
+            self.games.clear()
+            for i in reversed(range(self._grid_layout.count())):
+                self._grid_layout.itemAt(i).widget().setParent(None)
+            self._xPos = 0
+            self._yPos = 0
+        
+        def getGames(self):
+            return self.games
+
+    def __init__(self,backToGameSelection):
         super().__init__()
         self._layout = QVBoxLayout(self)
         self.LoadFonts()
@@ -31,6 +76,7 @@ class UI(QWidget):
         self._screen_add_import_modpack = None
         self._selected_modpack = None
         self._screen_download_threads = UIElements.ModpackDownloadScreen()
+        self.backToGameSelection = backToGameSelection
         
         Networking.CheckForUpdatesManager()
 
@@ -59,6 +105,7 @@ class UI(QWidget):
         Modpacks.DeselectModpack = self.deselectModpack
         Modpacks.RefreshModpacks = self.RefreshModpacks
         Modpacks.ShowModpackSelection = self.ShowModpackSelectionScreen
+        Modpacks.SetGame()
 
         launch_worker_object = LaunchWorkerObject()
         launch_worker_object.fadeout_anim.connect(self.FadeToModpackSelection)
@@ -67,7 +114,6 @@ class UI(QWidget):
     
     def LoadFonts(self):
         lethal_font = QFontDatabase.addApplicationFont(f"{Assets.asset_folder}/3270-Regular.ttf")
-        #families = QFontDatabase.applicationFontFamilies(lethal_font)
     
 
     def deselectModpack(self):
@@ -150,7 +196,7 @@ class UI(QWidget):
 
     def FadeToModpackSelection(self, prev_menu=None):
         if not self._screen_modpack_selection:
-            self._screen_modpack_selection = UIElements.ModpackSelection(Modpacks.List(),self.ShowEditModpackScreen,self.ShowAddImportModpackScreen)
+            self._screen_modpack_selection = UIElements.ModpackSelection(Modpacks.List(),self.ShowEditModpackScreen,self.ShowAddImportModpackScreen,self.backToGameSelection)
         
         self.screen_container.removeWidget(self._screen_modpack_selection)
         self.screen_container.removeWidget(self._screen_loading)
@@ -159,11 +205,11 @@ class UI(QWidget):
         self.screen_container.addWidget(self._screen_modpack_selection)
 
         # Modpack download
-        if not Modpacks.Exists("DarthLilo","Events Server") and Config.Read("general","auto_download_modpack",'value') == "True":
+        if Game.main_modpack and not Modpacks.Exists(Game.main_modpack_author,Game.main_modpack_name) and Config.Read("general","auto_download_modpack",'value') == "True":
             dlg = ConfirmDownload("Would you like to install the main modpack?")
             result = dlg.exec()
             if result:
-                Modpacks.ImportVerify("https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",self.ShowDownloadScreen,self.ShowLoadingScreenCacheUpdate,self._screen_loading_cache_update.setStatus)
+                Modpacks.ImportVerify(Game.main_modpack,self.ShowDownloadScreen,self.ShowLoadingScreenCacheUpdate,self._screen_loading_cache_update.setStatus)
                 self.deselectModpack()
             else:
                 Config.Write("general","auto_download_modpack",False)

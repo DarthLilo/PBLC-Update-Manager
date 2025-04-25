@@ -7,6 +7,7 @@ from .Networking import Networking
 from .QueueMan import QueueMan
 from .Filetree import Filetree
 from .Assets import Assets
+from .Game import Game
 from time import sleep
 import os, json, shutil, threading, gdown, traceback, win10toast
 from packaging import version
@@ -16,6 +17,9 @@ from PyQt6.QtCore import QObject, pyqtSignal
 class Modpacks:
 
     ModpackFolder = ""
+    GameModpackFolder = ""
+    PackageIndex = ""
+    TSURLPrefix = ""
     ModpackData = {}
     UpdatePercentageFunc = None
     UpdateThreadDisplay = None
@@ -30,12 +34,34 @@ class Modpacks:
     DeselectModpack = None
     RefreshModpacks = None
     ShowModpackSelection = None
+    CurrentGame = None
 
     def __init__(self, ModpacksFolder):
         Logging.New("Starting modpack system...",'startup')
         Modpacks.ModpackFolder = ModpacksFolder
+        Modpacks.MigrateModpacks()
         return
     
+    def MigrateModpacks():
+        for folder in os.listdir(Modpacks.ModpackFolder):
+            mp_folder = os.path.join(Modpacks.ModpackFolder,folder)
+            if os.path.isdir(mp_folder) and os.path.exists(os.path.join(mp_folder,"modpack.json")):
+                lethal_folder = os.path.join(Modpacks.ModpackFolder,"Lethal Company")
+                if not os.path.exists(lethal_folder): os.makedirs(lethal_folder,exist_ok=True)
+
+                shutil.move(mp_folder,os.path.join(lethal_folder,folder))
+
+    
+    def SetGame():
+        Modpacks.CurrentGame = Game.game_id
+        Modpacks.GameModpackFolder = os.path.join(Modpacks.ModpackFolder, Modpacks.CurrentGame)
+        Modpacks.PackageIndex = Game.package_index
+        Modpacks.TSURLPrefix = Game.ts_url_prefix
+
+        # Creating game modpack folder if missing
+        if not os.path.exists(Modpacks.GameModpackFolder):
+            os.makedirs(Modpacks.GameModpackFolder,exist_ok=True)
+
     def New(author,name,modpack_version="1.0.0",online_link="",icon=""):
         
         modpack_location = Modpacks.Path(author,name)
@@ -104,7 +130,7 @@ class Modpacks:
         return
     
     def Path(author,name):
-        return f"{Modpacks.ModpackFolder}/{author}-{name}"
+        return f"{Modpacks.GameModpackFolder}/{author}-{name}"
     
     def LoadActiveMods(author,name):
         plugins_folder = f"{Cache.SelectedModpack}/BepInEx/plugins"
@@ -147,8 +173,8 @@ class Modpacks:
             "author": author,
             "name": name,
             "version": modpack_json['version'],
-            "update_date": modpack_json['update_date'],
-            "cache_timestamp": os.path.getmtime(f"{Cache.CacheFolder}/lethal_company_package_index.json"),
+            "update_date": Time.CurrentDate(),
+            "cache_timestamp": os.path.getmtime(f"{Cache.CacheFolder}/{Modpacks.PackageIndex}"),
             "online_link": modpack_json['online_link'],
             "icon_url": modpack_json['icon_url'],
             "contents": {
@@ -270,7 +296,7 @@ class Modpacks:
             Logging.New("Error when getting modpack data from provided location, please verify your internet connection and try again!")
             return
 
-        if Time.IsOlder(os.path.getmtime(f"{Cache.CacheFolder}/lethal_company_package_index.json"),modpack_data['cache_timestamp']):
+        if Time.IsOlder(os.path.getmtime(f"{Cache.CacheFolder}/{Modpacks.PackageIndex}"),modpack_data['cache_timestamp']):
             if callable(cacheloadingfunc): cacheloadingfunc()
             Cache.Update(lambda modpack_data=modpack, download_func = showdownloadfunc, finishfunc=finish_func :Modpacks.Import(modpack_data,download_func,finishfunc),  cache_status_func=cachestatusfunc)
         else:
@@ -340,10 +366,10 @@ class Modpacks:
 
     def List():
         modpack_json_paths = []
-        for file in os.listdir(Modpacks.ModpackFolder):
-            if os.path.isdir(f"{Modpacks.ModpackFolder}/{file}") and os.path.exists(f"{Modpacks.ModpackFolder}/{file}/modpack.json"):
-                modpack_json = Util.OpenJson(f"{Modpacks.ModpackFolder}/{file}/modpack.json")
-                modpack_icon = f"{Modpacks.ModpackFolder}/{file}/icon.png"
+        for file in os.listdir(Modpacks.GameModpackFolder):
+            if os.path.isdir(f"{Modpacks.GameModpackFolder}/{file}") and os.path.exists(f"{Modpacks.GameModpackFolder}/{file}/modpack.json"):
+                modpack_json = Util.OpenJson(f"{Modpacks.GameModpackFolder}/{file}/modpack.json")
+                modpack_icon = f"{Modpacks.GameModpackFolder}/{file}/icon.png"
                 modpack_json['mod_count'] = Modpacks.GetModCount(modpack_json['author'],modpack_json['name'])
                 modpack_json['icon'] = modpack_icon
                 modpack_json_paths.append(modpack_json)
@@ -445,7 +471,7 @@ class Modpacks:
             mod_json['enabled'] = True
             mod_json['files'] = files
             mod_json['has_updates'] = False
-            mod_json['url'] = f"https://thunderstore.io/c/lethal-company/p/{author}/{name}/"
+            mod_json['url'] = f"https://thunderstore.io/c/{Modpacks.TSURLPrefix}/p/{author}/{name}/"
 
             Util.WriteJson(target_mod_json,mod_json)
 
@@ -583,7 +609,7 @@ class Modpacks:
                 Modpacks.Mods.Toggle(author,name)
             
             Modpacks.Mods.Delete(author,name,Modpacks.Mods.GetVersion(author,name))
-            Modpacks.Mods.Add(f"https://thunderstore.io/c/lethal-company/p/{author}/{name}/{mod_version}",feedback_func=feedback_func,text_output_func=text_output_func)
+            Modpacks.Mods.Add(f"https://thunderstore.io/c/{Modpacks.TSURLPrefix}/p/{author}/{name}/{mod_version}",feedback_func=feedback_func,text_output_func=text_output_func)
 
             Logging.New(f"Finished updating [{author}-{name}]")
         

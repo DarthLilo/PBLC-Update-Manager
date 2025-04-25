@@ -3,6 +3,7 @@ from PyQt6.QtCore import (
 
 from PyQt6.QtWidgets import QGridLayout, QLabel, QFrame, QSizePolicy
 from PyQt6.QtGui import QColor, QPalette, QPixmap, QFont
+from PyQt6.QtCore import QPropertyAnimation, QEasingCurve, QRect
 
 from .ClickableLabel import ClickableLabel
 from ..Assets import Assets
@@ -63,6 +64,7 @@ class ModpackFrame(QFrame):
         self.setLayout(self.grid_layout)
         self.setFrameShape(QFrame.Shape.StyledPanel)
         self.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
+        
         self.draw()
         
     def generateIcons(self):
@@ -157,7 +159,7 @@ class ModpackFrame(QFrame):
             Launch.Start(data['author'],data['name'])
             #self._screen_func(data)
         return
-    
+
     def UpdateFrameModCount(self,value):
         try:
             self.modpack_mod_count_label.setText(f"({value} Mods)")

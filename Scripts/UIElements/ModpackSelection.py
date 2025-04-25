@@ -6,7 +6,7 @@ from .ModpackScrollMenu import ModpackScrollMenu
 from ..Assets import Assets
 
 class ModpackSelection(QWidget):
-    def __init__(self, modpack_jsons,edit_modpack_func, add_modpack_func):
+    def __init__(self, modpack_jsons,edit_modpack_func, add_modpack_func,back_to_game_selection):
         super().__init__()
         self._grid_layout = QGridLayout()
         self.setLayout(self._grid_layout)
@@ -37,6 +37,12 @@ class ModpackSelection(QWidget):
 
         self.modpack_frame = ModpackScrollMenu()
         self._grid_layout.addWidget(self.modpack_frame,2,0,1,12)
+
+        self.back_to_games = QPushButton("Back to Game Selection")
+        self.back_to_games.setIcon(QIcon(Assets.getResource(Assets.IconTypes.back_arrow,True)))
+        self.back_to_games.clicked.connect(back_to_game_selection)
+        self._grid_layout.addWidget(self.back_to_games,3,0,1,1)
+        self.back_to_games.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Fixed)
 
         for modpack in modpack_jsons:
             self.modpack_frame.addModpack(modpack_icon=modpack['icon'],

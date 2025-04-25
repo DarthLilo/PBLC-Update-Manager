@@ -1,13 +1,14 @@
 from PyQt6.QtCore import QSize, Qt, pyqtProperty, QRect
 from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QSizePolicy, QVBoxLayout, QLineEdit, QLabel, QFrame, QSpacerItem, QHBoxLayout, QCompleter, QComboBox, QPushButton, QDialog, QDialogButtonBox
-from PyQt6.QtGui import QMovie, QAction, QIcon, QFontDatabase, QFont, QPixmap, QColor
+from PyQt6.QtGui import QMovie, QAction, QIcon, QFontDatabase, QFont, QPixmap, QColor, QCursor
 
 from .ModListScrollMenu import ModListSrollMenu
 from .ModpackInfoFrame import ModpackInfoFrame
-from .LethalRunning import LethalRunning
+from .GameRunning import GameRunning
 from ..Assets import Assets
 from ..Modpacks import Modpacks
 from ..Filetree import Filetree
+from .HoverButton import HoverButton, HoverComboBox
 
 import os
 
@@ -38,11 +39,11 @@ class EditModpackMenu(QWidget):
         self.mod_search_frame.setFrameStyle(QFrame.Shape.StyledPanel)
         self.mod_search_frame.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Fixed)
 
-        self.search_filters = QComboBox()
+        self.search_filters = HoverComboBox()
         self.search_bar = QLineEdit()
-        self.add_mod = QPushButton()
-        self.export_modpack = QPushButton()
-        self.check_for_updates = QPushButton()
+        self.add_mod = HoverButton()
+        self.export_modpack = HoverButton()
+        self.check_for_updates = HoverButton()
         self.search_bar.setPlaceholderText("Search Mods...")
         self.search_bar.textChanged.connect(self.updateModList)
         self.search_bar.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
@@ -91,7 +92,7 @@ class EditModpackMenu(QWidget):
         self._layout.addWidget(self.mod_search_frame,0,1,1,3)
     
     def AddMod(self):
-        if not Filetree.IsLethalRunning(LethalRunning):
+        if not Filetree.IsGameRunning(GameRunning):
             add_mod_dialog = AddModInputDialog()
             result = add_mod_dialog.exec()
             if result:
@@ -118,7 +119,7 @@ class EditModpackMenu(QWidget):
                 mod.determine_visibility()
 
     def CheckForUpdates(self):
-        if not Filetree.IsLethalRunning(LethalRunning):
+        if not Filetree.IsGameRunning(GameRunning):
             Modpacks.ScanForUpdates()
 
             self.RedrawModFrames()

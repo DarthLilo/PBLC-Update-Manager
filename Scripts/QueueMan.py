@@ -7,6 +7,7 @@ from .Cache import Cache
 from .Config import Config
 from .Thunderstore import Thunderstore
 from .Networking import Networking
+from .Game import Game
 from packaging import version
 
 class QueueMan():
@@ -164,7 +165,7 @@ class QueueMan():
             mod_json['enabled'] = True
             mod_json['files'] = files
             mod_json['has_updates'] = False
-            mod_json['url'] = f"https://thunderstore.io/c/lethal-company/p/{author}/{name}/"
+            mod_json['url'] = f"https://thunderstore.io/c/{Game.ts_url_prefix}/p/{author}/{name}/"
 
             Util.WriteJson(target_mod_json,mod_json)
         

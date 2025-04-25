@@ -3,6 +3,7 @@ import os, zipfile, winreg, vdf, shutil, subprocess, traceback
 from .Logging import Logging
 from .Util import Util
 from .Config import Config
+from .Game import Game
 
 
 class Filetree():
@@ -93,26 +94,28 @@ class Filetree():
             steam_install_path = str(Util.ReadReg(ep = winreg.HKEY_LOCAL_MACHINE, p = r"SOFTWARE\\Valve\\Steam", k = 'InstallPath')) # Swapping to 32 bit registry entry
 
         return steam_install_path
+    
+    def LocateGame(game,config_id,steam_id,save_path=True):
+        custom_path = Config.Read("general",config_id,"value")
+        if custom_path and os.path.exists(custom_path):
+            return custom_path
 
-    def LocateLethalCompany():
-        custom_lethal_path = Config.Read("general","lethal_company_path","value")
-        if os.path.exists(custom_lethal_path):
-            return custom_lethal_path
-
-        Logging.New("Locating Lethal Company path...")
+        Logging.New(f"Locating {game} path...")
 
         steamapps = Filetree.LocateSteam()+"\\steamapps"
         library_folders = steamapps+"\\libraryfolders.vdf"
         libdata = vdf.load(open(library_folders))
-        lethal_company_steamid = "1966720"
 
         for library in libdata['libraryfolders']:
             cur_lib = libdata['libraryfolders'][library]
             apps = cur_lib["apps"]
-            if lethal_company_steamid in apps:
-                lethal_path = os.path.normpath(f"{cur_lib['path']}/steamapps/common/Lethal Company")
-                Logging.New(f"Located Lethal Company path: {lethal_path}")
-                return lethal_path
+            if steam_id in apps:
+                game_path = os.path.normpath(f"{cur_lib['path']}/steamapps/common/{game}")
+                Logging.New(f"Located {game} path: {game_path}")
+
+                if save_path:
+                    Config.Write("general",config_id,game_path,True)
+                return game_path
     
     def DirSize(target_path):
         total_size = 0
@@ -122,8 +125,9 @@ class Filetree():
                 total_size += os.path.getsize(filepath)
         return total_size
     
-    def VerifyLethalPath(path):
-        Logging.New("Verifying Lethal Company path...")
+    def VerifyGamePath(path):
+        Logging.New("Verifying Game path...")
+        Logging.New(path)
         return os.path.exists(path)
     
     def IsProcessRunning(process_name):
@@ -139,8 +143,8 @@ class Filetree():
             Logging.New(traceback.format_exc(), 'error')
             return False
     
-    def IsLethalRunning(popup_window):
-        if Filetree.IsProcessRunning("Lethal Company.exe"):
+    def IsGameRunning(popup_window):
+        if Filetree.IsProcessRunning(f"{Game.game_id}.exe"):
             dlg = popup_window()
             result = dlg.exec()
             return True
