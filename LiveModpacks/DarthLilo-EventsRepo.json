@@ -1,0 +1,55 @@
+{
+    "author": "DarthLilo",
+    "name": "EventsRepo",
+    "version": "1.0.0",
+    "update_date": "04-25-2025",
+    "cache_timestamp": 1745621917.3932135,
+    "online_link": "",
+    "icon_url": "https://i.imgur.com/mrTO7T4.png",
+    "contents": {
+        "thunderstore_packages": [
+            {
+                "author": "darmuh",
+                "name": "FovUpdate",
+                "version": "0.2.9"
+            },
+            {
+                "author": "mattymatty",
+                "name": "AsyncLoggers",
+                "version": "2.1.4"
+            },
+            {
+                "author": "nickklmao",
+                "name": "MenuLib",
+                "version": "2.4.0"
+            },
+            {
+                "author": "nickklmao",
+                "name": "REPOConfig",
+                "version": "1.2.0"
+            },
+            {
+                "author": "Rebateman",
+                "name": "LateJoin",
+                "version": "0.1.2"
+            },
+            {
+                "author": "Traktool",
+                "name": "SharedUpgrades",
+                "version": "2.1.3"
+            },
+            {
+                "author": "x753_REPO",
+                "name": "CustomColors",
+                "version": "1.1.1"
+            },
+            {
+                "author": "zelofi",
+                "name": "MorePlayers",
+                "version": "1.0.4"
+            }
+        ],
+        "overrides": []
+    },
+    "reinstall": false
+}
