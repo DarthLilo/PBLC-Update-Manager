@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.4.2",
-    "update_date": "04-25-2025",
-    "cache_timestamp": 1745625068.5545487,
+    "version": "1.4.3",
+    "update_date": "05-29-2025",
+    "cache_timestamp": 1748574114.0140557,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/eipgtdi.png",
     "contents": {
@@ -17,11 +17,6 @@
                 "author": "4902",
                 "name": "Cruiser_Additions",
                 "version": "1.4.6"
-            },
-            {
-                "author": "4902",
-                "name": "No_Console_Spam",
-                "version": "1.6.0"
             },
             {
                 "author": "AdiBTW",
@@ -42,16 +37,6 @@
                 "author": "AllToasters",
                 "name": "SpectateEnemies",
                 "version": "2.7.0"
-            },
-            {
-                "author": "AudioKnight",
-                "name": "StarlancerAIFix",
-                "version": "3.9.0"
-            },
-            {
-                "author": "bcs4313",
-                "name": "Soul_Devourer_Enemy",
-                "version": "1.1.8"
             },
             {
                 "author": "bctix",
@@ -95,6 +80,16 @@
             },
             {
                 "author": "ButteryStancakes",
+                "name": "JetpackFixes",
+                "version": "1.5.3"
+            },
+            {
+                "author": "ButteryStancakes",
+                "name": "KickWithoutBan",
+                "version": "1.0.1"
+            },
+            {
+                "author": "ButteryStancakes",
                 "name": "MaskFixes",
                 "version": "1.3.1"
             },
@@ -107,6 +102,11 @@
                 "author": "ButteryStancakes",
                 "name": "SnowyHolidayDropship",
                 "version": "1.1.4"
+            },
+            {
+                "author": "ButteryStancakes",
+                "name": "WeedKillerFixes",
+                "version": "1.1.2"
             },
             {
                 "author": "coderCleric",
@@ -170,7 +170,7 @@
             },
             {
                 "author": "Dev1A3",
-                "name": "BetterVehicleControls",
+                "name": "YesFox",
                 "version": "1.1.3"
             },
             {
@@ -214,11 +214,6 @@
                 "version": "0.0.5"
             },
             {
-                "author": "Evaisa",
-                "name": "LethalLib",
-                "version": "1.0.1"
-            },
-            {
                 "author": "fivetoofive",
                 "name": "DetailedScan",
                 "version": "1.2.2"
@@ -257,11 +252,6 @@
                 "author": "fumiko",
                 "name": "CullFactory",
                 "version": "1.7.0"
-            },
-            {
-                "author": "Generic_GMD",
-                "name": "Generic_Interiors",
-                "version": "2.0.2"
             },
             {
                 "author": "Hamunii",
@@ -344,11 +334,6 @@
                 "version": "1.1.0"
             },
             {
-                "author": "Lordfirespeed",
-                "name": "OdinSerializer",
-                "version": "2022.11.9"
-            },
-            {
                 "author": "MagicalFlyingPurpleTreeSquid",
                 "name": "Drive_Suit",
                 "version": "1.0.3"
@@ -414,11 +399,6 @@
                 "version": "1.2.2"
             },
             {
-                "author": "MelanieMelicious",
-                "name": "MelanieMelicious_2_sToRy_ShIp__works_w_Wider_Ship_Mod",
-                "version": "1.1.10"
-            },
-            {
                 "author": "Monkeytype",
                 "name": "HideChat",
                 "version": "1.0.0"
@@ -432,11 +412,6 @@
                 "author": "mrov",
                 "name": "LightsOut",
                 "version": "0.1.3"
-            },
-            {
-                "author": "mrov",
-                "name": "MrovLib",
-                "version": "0.2.26"
             },
             {
                 "author": "mrov",
@@ -599,11 +574,6 @@
                 "version": "1.3.5"
             },
             {
-                "author": "TheFluff",
-                "name": "FairAI",
-                "version": "1.4.6"
-            },
-            {
                 "author": "tinyhoot",
                 "name": "ShipLoot",
                 "version": "1.1.0"
@@ -699,24 +669,69 @@
                 "version": "1.2.6"
             },
             {
-                "author": "ButteryStancakes",
-                "name": "KickWithoutBan",
-                "version": "1.0.1"
-            },
-            {
-                "author": "ButteryStancakes",
-                "name": "JetpackFixes",
-                "version": "1.5.3"
-            },
-            {
-                "author": "ButteryStancakes",
-                "name": "WeedKillerFixes",
-                "version": "1.1.2"
-            },
-            {
                 "author": "Dev1A3",
-                "name": "YesFox",
-                "version": "1.1.3"
+                "name": "BetterVehicleControls",
+                "version": "1.1.4"
+            },
+            {
+                "author": "TheFluff",
+                "name": "FairAI",
+                "version": "1.5.0"
+            },
+            {
+                "author": "Generic_GMD",
+                "name": "Generic_Interiors",
+                "version": "2.1.0"
+            },
+            {
+                "author": "Evaisa",
+                "name": "LethalLib",
+                "version": "1.0.3"
+            },
+            {
+                "author": "MelanieMelicious",
+                "name": "MelanieMelicious_2_sToRy_ShIp__works_w_Wider_Ship_Mod",
+                "version": "1.1.11"
+            },
+            {
+                "author": "mrov",
+                "name": "MrovLib",
+                "version": "0.2.27"
+            },
+            {
+                "author": "4902",
+                "name": "No_Console_Spam",
+                "version": "1.7.0"
+            },
+            {
+                "author": "Lordfirespeed",
+                "name": "OdinSerializer",
+                "version": "2024.2.2700"
+            },
+            {
+                "author": "bcs4313",
+                "name": "Soul_Devourer_Enemy",
+                "version": "1.2.0"
+            },
+            {
+                "author": "AudioKnight",
+                "name": "StarlancerAIFix",
+                "version": "3.9.1"
+            },
+            {
+                "author": "Fandovec03",
+                "name": "SpiderPositionFix",
+                "version": "1.5.1"
+            },
+            {
+                "author": "XuXiaolan",
+                "name": "ReXuvination",
+                "version": "1.0.2"
+            },
+            {
+                "author": "TwinDimensionalProductions",
+                "name": "CoilHeadStare",
+                "version": "1.1.0"
             }
         ],
         "overrides": [
