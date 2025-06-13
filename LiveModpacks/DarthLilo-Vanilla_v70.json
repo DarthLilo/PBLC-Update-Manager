@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Vanilla_v70",
-    "version": "1.0.0",
-    "update_date": "06-01-2025",
-    "cache_timestamp": 1748827811.6531756,
+    "version": "1.0.1",
+    "update_date": "06-13-2025",
+    "cache_timestamp": 1749832658.9853127,
     "online_link": "",
     "icon_url": "https://i.imgur.com/64Nm3Sf.png",
     "contents": {
@@ -56,17 +56,12 @@
             {
                 "author": "mattymatty",
                 "name": "LobbyControl",
-                "version": "2.5.6"
+                "version": "2.5.8"
             },
             {
                 "author": "Monkeytype",
                 "name": "HideChat",
                 "version": "1.0.0"
-            },
-            {
-                "author": "notnotnotswipez",
-                "name": "MoreCompany",
-                "version": "1.11.1"
             },
             {
                 "author": "Onyx_Inoculum",
@@ -122,6 +117,11 @@
                 "author": "Zehs",
                 "name": "LCBetterSavesFix",
                 "version": "1.0.0"
+            },
+            {
+                "author": "notnotnotswipez",
+                "name": "MoreCompany",
+                "version": "1.11.2"
             }
         ],
         "overrides": [
