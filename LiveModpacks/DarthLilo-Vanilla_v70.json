@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Vanilla_v70",
-    "version": "1.0.1",
-    "update_date": "06-13-2025",
-    "cache_timestamp": 1749832658.9853127,
+    "version": "1.0.2",
+    "update_date": "07-16-2025",
+    "cache_timestamp": 1752700861.5929008,
     "online_link": "",
     "icon_url": "https://i.imgur.com/64Nm3Sf.png",
     "contents": {
@@ -49,19 +49,14 @@
                 "version": "1.2.2"
             },
             {
-                "author": "mattymatty",
-                "name": "EntranceTeleportOptimizations",
-                "version": "0.0.3"
-            },
-            {
-                "author": "mattymatty",
-                "name": "LobbyControl",
-                "version": "2.5.8"
-            },
-            {
                 "author": "Monkeytype",
                 "name": "HideChat",
                 "version": "1.0.0"
+            },
+            {
+                "author": "notnotnotswipez",
+                "name": "MoreCompany",
+                "version": "1.11.2"
             },
             {
                 "author": "Onyx_Inoculum",
@@ -119,9 +114,54 @@
                 "version": "1.0.0"
             },
             {
-                "author": "notnotnotswipez",
-                "name": "MoreCompany",
-                "version": "1.11.2"
+                "author": "mattymatty",
+                "name": "LobbyControl",
+                "version": "2.5.9"
+            },
+            {
+                "author": "mattymatty",
+                "name": "EntranceTeleportOptimizations",
+                "version": "0.0.5"
+            },
+            {
+                "author": "FlipMods",
+                "name": "TooManyEmotes",
+                "version": "2.3.10"
+            },
+            {
+                "author": "Ozone",
+                "name": "Runtime_Netcode_Patcher",
+                "version": "0.2.5"
+            },
+            {
+                "author": "KlutzyBubbles",
+                "name": "BetterEmotes",
+                "version": "1.5.6"
+            },
+            {
+                "author": "rogan",
+                "name": "FirstPersonDeath",
+                "version": "1.3.6"
+            },
+            {
+                "author": "theunknowncod3r",
+                "name": "Scopophobia",
+                "version": "1.2.4"
+            },
+            {
+                "author": "xilophor",
+                "name": "LethalNetworkAPI",
+                "version": "3.3.1"
+            },
+            {
+                "author": "giosuel",
+                "name": "Imperium",
+                "version": "1.0.0"
+            },
+            {
+                "author": "Lordfirespeed",
+                "name": "OdinSerializer",
+                "version": "2022.11.9"
             }
         ],
         "overrides": [
