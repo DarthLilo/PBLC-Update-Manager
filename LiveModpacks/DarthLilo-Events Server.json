@@ -1,7 +1,7 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.6.0",
+    "version": "1.6.1",
     "update_date": "09-24-2025",
     "cache_timestamp": 1758757525.3482926,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
@@ -32,6 +32,11 @@
                 "author": "AinaVT",
                 "name": "LethalConfig",
                 "version": "1.4.6"
+            },
+            {
+                "author": "akronman1",
+                "name": "Niko",
+                "version": "0.2.1"
             },
             {
                 "author": "Alice",
@@ -77,6 +82,11 @@
                 "author": "Booos",
                 "name": "StupidAssKitty",
                 "version": "1.0.7"
+            },
+            {
+                "author": "BunyaPineTree",
+                "name": "ModelReplacementAPI",
+                "version": "2.4.19"
             },
             {
                 "author": "ButteryStancakes",
@@ -304,6 +314,11 @@
                 "version": "2.5.0"
             },
             {
+                "author": "giosuel",
+                "name": "Imperium",
+                "version": "1.0.0"
+            },
+            {
                 "author": "Hamunii",
                 "name": "AutoHookGenPatcher",
                 "version": "1.0.7"
@@ -357,6 +372,11 @@
                 "author": "KoolKids",
                 "name": "Jenny",
                 "version": "0.1.0"
+            },
+            {
+                "author": "Krimiss",
+                "name": "Tenna_Deltarune_Model",
+                "version": "0.1.1"
             },
             {
                 "author": "kRYstall9",
@@ -469,6 +489,16 @@
                 "version": "1.0.0"
             },
             {
+                "author": "MonoDetour",
+                "name": "MonoDetour",
+                "version": "0.6.16"
+            },
+            {
+                "author": "MonoDetour",
+                "name": "MonoDetour_BepInEx_5",
+                "version": "0.6.16"
+            },
+            {
                 "author": "mrov",
                 "name": "ApparatusFix",
                 "version": "0.0.3"
@@ -514,6 +544,16 @@
                 "version": "1.0.0"
             },
             {
+                "author": "Packs",
+                "name": "TeleportDeclineFixed",
+                "version": "1.2.0"
+            },
+            {
+                "author": "pacoito",
+                "name": "itolib",
+                "version": "0.4.3"
+            },
+            {
                 "author": "Piggy",
                 "name": "JesterStompShake",
                 "version": "1.0.11"
@@ -532,6 +572,11 @@
                 "author": "qwbarch",
                 "name": "OpusDotNet",
                 "version": "1.0.30"
+            },
+            {
+                "author": "Ramen_Hair",
+                "name": "SR2_Beatrix_Lebeau_Model",
+                "version": "1.0.0"
             },
             {
                 "author": "Renegades",
@@ -584,6 +629,11 @@
                 "version": "2.2.3"
             },
             {
+                "author": "sliceoftoast",
+                "name": "Hollow_Knight_Playermodels",
+                "version": "1.0.1"
+            },
+            {
                 "author": "SolidStone",
                 "name": "SolidLib",
                 "version": "1.2.2"
@@ -602,6 +652,11 @@
                 "author": "taffyko",
                 "name": "BetterSprayPaint",
                 "version": "2.0.9"
+            },
+            {
+                "author": "TeamXiaolan",
+                "name": "DawnLib",
+                "version": "0.2.2"
             },
             {
                 "author": "TestAccount666",
@@ -732,62 +787,12 @@
                 "author": "Zehs",
                 "name": "LCBetterSavesFix",
                 "version": "1.0.0"
-            },
-            {
-                "author": "TeamXiaolan",
-                "name": "DawnLib",
-                "version": "0.2.2"
-            },
-            {
-                "author": "MonoDetour",
-                "name": "MonoDetour",
-                "version": "0.6.16"
-            },
-            {
-                "author": "MonoDetour",
-                "name": "MonoDetour_BepInEx_5",
-                "version": "0.6.16"
-            },
-            {
-                "author": "pacoito",
-                "name": "itolib",
-                "version": "0.4.3"
-            },
-            {
-                "author": "BunyaPineTree",
-                "name": "ModelReplacementAPI",
-                "version": "2.4.19"
-            },
-            {
-                "author": "Packs",
-                "name": "TeleportDeclineFixed",
-                "version": "1.2.0"
-            },
-            {
-                "author": "akronman1",
-                "name": "Niko",
-                "version": "0.2.1"
-            },
-            {
-                "author": "Krimiss",
-                "name": "Tenna_Deltarune_Model",
-                "version": "0.1.1"
-            },
-            {
-                "author": "Ramen_Hair",
-                "name": "SR2_Beatrix_Lebeau_Model",
-                "version": "1.0.0"
-            },
-            {
-                "author": "sliceoftoast",
-                "name": "Hollow_Knight_Playermodels",
-                "version": "1.0.1"
             }
         ],
         "overrides": [
             {
-                "gdrive": "1GR7rUg3SghlhKJV_lhnyn5oXH9r0_fU_",
-                "dropbox": "https://www.dropbox.com/scl/fi/sth2hqhfndg3nvdsslzol/EventsServerOverrides-v21.zip?rlkey=bkav11914riq59jxtv23pr174&st=cof0k8r7&dl=1"
+                "gdrive": "14GKE1YK-SiPNft6b3WNRKM2glN40iy3p",
+                "dropbox": "https://www.dropbox.com/scl/fi/m3gcu9hz1fgboi7u5ix0u/EventsServerOverrides-v22.zip?rlkey=h5609r5eqtx94314hrgu36epx&st=0xtnmb0m&dl=1"
             }
         ]
     },
