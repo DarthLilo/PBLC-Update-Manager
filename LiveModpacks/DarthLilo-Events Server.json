@@ -1,7 +1,7 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.6.1",
+    "version": "1.6.2",
     "update_date": "09-24-2025",
     "cache_timestamp": 1758757525.3482926,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
@@ -312,11 +312,6 @@
                 "author": "Generic_GMD",
                 "name": "Generic_Interiors",
                 "version": "2.5.0"
-            },
-            {
-                "author": "giosuel",
-                "name": "Imperium",
-                "version": "1.0.0"
             },
             {
                 "author": "Hamunii",
@@ -791,8 +786,8 @@
         ],
         "overrides": [
             {
-                "gdrive": "14GKE1YK-SiPNft6b3WNRKM2glN40iy3p",
-                "dropbox": "https://www.dropbox.com/scl/fi/m3gcu9hz1fgboi7u5ix0u/EventsServerOverrides-v22.zip?rlkey=h5609r5eqtx94314hrgu36epx&st=0xtnmb0m&dl=1"
+                "gdrive": "19yvedaDE4qkfXY3Misgs3Mr_R-SO0nAg",
+                "dropbox": "https://www.dropbox.com/scl/fi/74wa3tbg6tq29jndotczb/EventsServerOverrides-v23.zip?rlkey=iojvqyvuthoc4c3pmrz8jn3nd&st=btk5vjcg&dl=1"
             }
         ]
     },
