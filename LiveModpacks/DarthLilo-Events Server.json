@@ -1,7 +1,7 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.6.2",
+    "version": "1.6.3",
     "update_date": "09-24-2025",
     "cache_timestamp": 1758757525.3482926,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
@@ -624,11 +624,6 @@
                 "version": "2.2.3"
             },
             {
-                "author": "sliceoftoast",
-                "name": "Hollow_Knight_Playermodels",
-                "version": "1.0.1"
-            },
-            {
                 "author": "SolidStone",
                 "name": "SolidLib",
                 "version": "1.2.2"
@@ -782,6 +777,16 @@
                 "author": "Zehs",
                 "name": "LCBetterSavesFix",
                 "version": "1.0.0"
+            },
+            {
+                "author": "Jhonbeta",
+                "name": "Leon98MoreSuits",
+                "version": "0.1.0"
+            },
+            {
+                "author": "MointPan",
+                "name": "DeltaruneGang",
+                "version": "0.2.0"
             }
         ],
         "overrides": [
