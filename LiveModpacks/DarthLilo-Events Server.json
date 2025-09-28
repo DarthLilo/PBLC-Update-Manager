@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.6.3",
-    "update_date": "09-24-2025",
-    "cache_timestamp": 1758757525.3482926,
+    "version": "1.6.4",
+    "update_date": "09-27-2025",
+    "cache_timestamp": 1759014850.9994662,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/eipgtdi.png",
     "contents": {
@@ -301,7 +301,7 @@
             {
                 "author": "FlipMods",
                 "name": "TooManyEmotes",
-                "version": "2.3.11"
+                "version": "2.3.12"
             },
             {
                 "author": "fumiko",
@@ -359,9 +359,19 @@
                 "version": "0.3.0"
             },
             {
+                "author": "Jhonbeta",
+                "name": "Leon98MoreSuits",
+                "version": "0.1.0"
+            },
+            {
                 "author": "Kittenji",
                 "name": "Groan_Tube_Scrap",
                 "version": "1.0.4"
+            },
+            {
+                "author": "KlutzyBubbles",
+                "name": "BetterEmotes",
+                "version": "1.5.7"
             },
             {
                 "author": "KoolKids",
@@ -479,6 +489,11 @@
                 "version": "2.1.1"
             },
             {
+                "author": "MointPan",
+                "name": "DeltaruneGang",
+                "version": "0.2.0"
+            },
+            {
                 "author": "Monkeytype",
                 "name": "HideChat",
                 "version": "1.0.0"
@@ -539,14 +554,19 @@
                 "version": "1.0.0"
             },
             {
+                "author": "Ozone",
+                "name": "Runtime_Netcode_Patcher",
+                "version": "0.2.5"
+            },
+            {
                 "author": "Packs",
                 "name": "TeleportDeclineFixed",
-                "version": "1.2.0"
+                "version": "1.2.1"
             },
             {
                 "author": "pacoito",
                 "name": "itolib",
-                "version": "0.4.3"
+                "version": "0.4.4"
             },
             {
                 "author": "Piggy",
@@ -646,7 +666,7 @@
             {
                 "author": "TeamXiaolan",
                 "name": "DawnLib",
-                "version": "0.2.2"
+                "version": "0.2.4"
             },
             {
                 "author": "TestAccount666",
@@ -777,22 +797,12 @@
                 "author": "Zehs",
                 "name": "LCBetterSavesFix",
                 "version": "1.0.0"
-            },
-            {
-                "author": "Jhonbeta",
-                "name": "Leon98MoreSuits",
-                "version": "0.1.0"
-            },
-            {
-                "author": "MointPan",
-                "name": "DeltaruneGang",
-                "version": "0.2.0"
             }
         ],
         "overrides": [
             {
-                "gdrive": "19yvedaDE4qkfXY3Misgs3Mr_R-SO0nAg",
-                "dropbox": "https://www.dropbox.com/scl/fi/74wa3tbg6tq29jndotczb/EventsServerOverrides-v23.zip?rlkey=iojvqyvuthoc4c3pmrz8jn3nd&st=btk5vjcg&dl=1"
+                "gdrive": "16FbD4NoiO10HvP-NdSRGKRaVDy35gpb6",
+                "dropbox": "https://www.dropbox.com/scl/fi/tr4vzr6642f40s8mu90zf/EventsServerOverrides-v24.zip?rlkey=qjiw0pnf7ad9d6zshn9i12w6b&st=jtpb70ov&dl=1"
             }
         ]
     },
