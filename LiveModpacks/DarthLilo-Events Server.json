@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.6.4",
-    "update_date": "09-27-2025",
-    "cache_timestamp": 1759014850.9994662,
+    "version": "1.6.5",
+    "update_date": "09-30-2025",
+    "cache_timestamp": 1759280378.665039,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/eipgtdi.png",
     "contents": {
@@ -306,12 +306,17 @@
             {
                 "author": "fumiko",
                 "name": "CullFactory",
-                "version": "2.0.0"
+                "version": "2.0.1"
             },
             {
                 "author": "Generic_GMD",
                 "name": "Generic_Interiors",
                 "version": "2.5.0"
+            },
+            {
+                "author": "giosuel",
+                "name": "Imperium",
+                "version": "1.0.0"
             },
             {
                 "author": "Hamunii",
@@ -666,7 +671,7 @@
             {
                 "author": "TeamXiaolan",
                 "name": "DawnLib",
-                "version": "0.2.4"
+                "version": "0.2.5"
             },
             {
                 "author": "TestAccount666",
