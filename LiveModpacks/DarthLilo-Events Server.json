@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.6.6",
-    "update_date": "09-30-2025",
-    "cache_timestamp": 1759280378.665039,
+    "version": "1.7.0",
+    "update_date": "10-03-2025",
+    "cache_timestamp": 1759532194.9915352,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/eipgtdi.png",
     "contents": {
@@ -92,11 +92,6 @@
                 "author": "ButteryStancakes",
                 "name": "BarberFixes",
                 "version": "1.3.0"
-            },
-            {
-                "author": "ButteryStancakes",
-                "name": "ButteryFixes",
-                "version": "1.15.1"
             },
             {
                 "author": "ButteryStancakes",
@@ -314,16 +309,6 @@
                 "version": "2.5.0"
             },
             {
-                "author": "Hamunii",
-                "name": "AutoHookGenPatcher",
-                "version": "1.0.7"
-            },
-            {
-                "author": "Hamunii",
-                "name": "DetourContext_Dispose_Fix",
-                "version": "1.0.5"
-            },
-            {
                 "author": "Hardy",
                 "name": "LCMaxSoundsFix",
                 "version": "1.2.0"
@@ -429,16 +414,6 @@
                 "version": "1.0.3"
             },
             {
-                "author": "Magic_Wesley",
-                "name": "WesleysInteriors",
-                "version": "3.0.8"
-            },
-            {
-                "author": "Magic_Wesley",
-                "name": "Wesleys_Moons",
-                "version": "6.1.7"
-            },
-            {
                 "author": "MarshMan",
                 "name": "DeezNuts",
                 "version": "1.0.0"
@@ -499,16 +474,6 @@
                 "version": "1.0.0"
             },
             {
-                "author": "MonoDetour",
-                "name": "MonoDetour",
-                "version": "0.6.16"
-            },
-            {
-                "author": "MonoDetour",
-                "name": "MonoDetour_BepInEx_5",
-                "version": "0.6.16"
-            },
-            {
                 "author": "mrov",
                 "name": "ApparatusFix",
                 "version": "0.0.3"
@@ -562,11 +527,6 @@
                 "author": "Packs",
                 "name": "TeleportDeclineFixed",
                 "version": "1.2.1"
-            },
-            {
-                "author": "pacoito",
-                "name": "itolib",
-                "version": "0.4.4"
             },
             {
                 "author": "Piggy",
@@ -664,11 +624,6 @@
                 "version": "2.0.9"
             },
             {
-                "author": "TeamXiaolan",
-                "name": "DawnLib",
-                "version": "0.2.5"
-            },
-            {
                 "author": "TestAccount666",
                 "name": "ShipWindows",
                 "version": "2.5.1"
@@ -677,11 +632,6 @@
                 "author": "TestAccount666",
                 "name": "TestAccountCore",
                 "version": "1.14.3"
-            },
-            {
-                "author": "TestAccount666",
-                "name": "TestAccountFixes",
-                "version": "1.3.5"
             },
             {
                 "author": "TheFluff",
@@ -797,6 +747,71 @@
                 "author": "Zehs",
                 "name": "LCBetterSavesFix",
                 "version": "1.0.0"
+            },
+            {
+                "author": "Hamunii",
+                "name": "AutoHookGenPatcher",
+                "version": "1.0.8"
+            },
+            {
+                "author": "ButteryStancakes",
+                "name": "ButteryFixes",
+                "version": "1.15.2"
+            },
+            {
+                "author": "TeamXiaolan",
+                "name": "DawnLib",
+                "version": "0.2.15"
+            },
+            {
+                "author": "Hamunii",
+                "name": "DetourContext_Dispose_Fix",
+                "version": "1.0.6"
+            },
+            {
+                "author": "MonoDetour",
+                "name": "MonoDetour",
+                "version": "0.6.18"
+            },
+            {
+                "author": "MonoDetour",
+                "name": "MonoDetour_BepInEx_5",
+                "version": "0.6.18"
+            },
+            {
+                "author": "TestAccount666",
+                "name": "TestAccountFixes",
+                "version": "1.4.0"
+            },
+            {
+                "author": "pacoito",
+                "name": "itolib",
+                "version": "0.4.6"
+            },
+            {
+                "author": "Magic_Wesley",
+                "name": "Wesleys_Ememy_Variants",
+                "version": "1.0.0"
+            },
+            {
+                "author": "Magic_Wesley",
+                "name": "WesleysInteriors",
+                "version": "4.0.9"
+            },
+            {
+                "author": "Magic_Wesley",
+                "name": "Wesleys_Weathers",
+                "version": "1.0.0"
+            },
+            {
+                "author": "mrov",
+                "name": "WeatherRegistry",
+                "version": "0.7.4"
+            },
+            {
+                "author": "Magic_Wesley",
+                "name": "Wesleys_Moons",
+                "version": "6.6.10"
             }
         ],
         "overrides": [
