@@ -1,6 +1,7 @@
 import os
 
 from .Util import Util
+from .Config import Config
 
 class Game:
 
@@ -27,6 +28,7 @@ class Game:
     def SelectGame(data):
         Game.game_id = data["game_id"]
         Game._LoadGameData()
+
     
     def _LoadGameData():
         game_id = Game.game_id
@@ -41,3 +43,6 @@ class Game:
         Game.main_modpack = cur_game["main_modpack"]
         Game.main_modpack_author = cur_game["main_modpack_author"]
         Game.main_modpack_name = cur_game["main_modpack_name"]
+
+        if not Config.ConfigExists("general",Game.config_value):
+            Config.Write("general",Game.config_value,"",True)

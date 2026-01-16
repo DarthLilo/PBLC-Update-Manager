@@ -33,8 +33,23 @@ class Launch:
             Logging.New(f"Error finding {Game.game_id} path! Please set one manually in config!")
             return False
 
-        if not Filetree.VerifyList([f"{Launch.GamePath}/winhttp.dll",f"{Launch.GamePath}/doorstop_config.ini",f"{Launch.GamePath}/BepInEx/core"],create_folder=False):
+        if not Filetree.VerifyList([
+            f"{Launch.GamePath}/winhttp.dll",
+            f"{Launch.GamePath}/doorstop_config.ini",
+            f"{Launch.GamePath}/BepInEx/core"
+            
+            ],create_folder=False):
+            Logging.New("Attempting repair on BepInEx install for base game")
             Thunderstore.DownloadBepInEx(Launch.GamePath)
+        
+        if not Filetree.VerifyList([
+            f"{Launch.modpack_path}/winhttp.dll",
+            f"{Launch.modpack_path}/doorstop_config.ini",
+            f"{Launch.modpack_path}/BepInEx/core"
+            
+            ],create_folder=False):
+            Logging.New("Attempting repair on BepInEx install for modpack")
+            Thunderstore.DownloadBepInEx(Launch.modpack_path)
         
         return True
     
@@ -66,16 +81,22 @@ class Launch:
             f"{Launch.SteamFolder}/Steam.exe",
             '-applaunch', Game.steam_id,
             '--doorstop-enable', 'true',
-            '--doorstop-target', f"{Launch.modpack_path}/BepInEx/core/BepInEx.Preloader.dll"
+            '--doorstop-target', os.path.normpath(f"{Launch.modpack_path}/BepInEx/core/BepInEx.Preloader.dll"),
+            '--doorstop-enabled', 'true',
+            '--doorstop-target-assembly', os.path.normpath(f"{Launch.modpack_path}/BepInEx/core/BepInEx.Preloader.dll")
         ]
 
         if extra:
             launch_command = [
                 f"{Launch.GamePath}/{Game.game_id}.exe",
                 '--doorstop-enable', 'true',
-                '--doorstop-target', f"{Launch.modpack_path}/BepInEx/core/BepInEx.Preloader.dll"
+                '--doorstop-target', os.path.normpath(f"{Launch.modpack_path}/BepInEx/core/BepInEx.Preloader.dll"),
+                '--doorstop-enabled', 'true',
+                '--doorstop-target-assembly', os.path.normpath(f"{Launch.modpack_path}/BepInEx/core/BepInEx.Preloader.dll")
             ]
         
+        Logging.New(f"Starting Lethal Company using launch command:\n{launch_command}",'info')
+
         subprocess.Popen(launch_command,shell=True)
 
         QTimer.singleShot(0, Launch.ShowNotif)

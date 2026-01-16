@@ -53,6 +53,7 @@ class Thunderstore:
             return author, mod, mod_version
         
         def DownloadBepInEx(download_folder,loop_count=0):
+            Logging.New("Downloading BepinEx...",'info')
             """Downloads and decompresses a BepInEx install to a specified location"""
 
             if loop_count > 20:
@@ -75,12 +76,21 @@ class Thunderstore:
             if os.path.exists(bepinex):
                 try:
                     for file in os.listdir(bepinex+"/BepInExPack"):
-                        shutil.move(f"{bepinex}/BepInExPack/{file}",os.path.join(download_folder,file))
+
+                        downloaded_filepath = os.path.join(download_folder,file)
+
+                        if os.path.exists(downloaded_filepath):
+                            if os.path.isdir(downloaded_filepath):
+                                shutil.rmtree(downloaded_filepath)
+                            else:
+                                os.remove(downloaded_filepath)
+                        
+                        shutil.move(f"{bepinex}/BepInExPack/{file}",downloaded_filepath)
                 except FileNotFoundError:
                     shutil.rmtree(bepinex)
                     Thunderstore.DownloadBepInEx(download_folder,loop_count)
             
-                os.makedirs(f"{download_folder}/BepInEx/plugins")
+                os.makedirs(f"{download_folder}/BepInEx/plugins",exist_ok=True)
                 
                 shutil.rmtree(bepinex)
 

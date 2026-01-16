@@ -129,7 +129,6 @@ class Config():
         if setting not in Config.Data[container]:
             if game_override_path:
                 Config.Data[container][setting] = {"value": "", "default": "", "description": "Path to specific game folder, able to be overriden by the user", "type": "folder"}
-                print(Config.Data)
             else:
                 Config.Data[container][setting] = Config.Library(container,setting)
         
@@ -158,3 +157,9 @@ class Config():
 
     def Get():
         return Config.Data 
+    
+    def ConfigExists(container,setting):
+        if container in Config.Data:
+            if setting in Config.Data[container]:
+                return True
+        return False

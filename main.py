@@ -14,7 +14,7 @@ else:
 
 
 ReleaseTag = "Stable"
-PBLCVersion = "1.2.0"
+PBLCVersion = "1.2.1"
 ProgramDataFolder = os.path.normpath(f"{CurFolder}/ProgramData")
 LoggingFolder = os.path.normpath(f"{ProgramDataFolder}/Logs")
 ModpacksFolder = os.path.normpath(f"{ProgramDataFolder}/Modpacks")
