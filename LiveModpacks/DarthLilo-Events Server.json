@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.8.0",
-    "update_date": "01-16-2026",
-    "cache_timestamp": 1768619807.7947843,
+    "version": "1.8.1",
+    "update_date": "01-31-2026",
+    "cache_timestamp": 1769921078.1089847,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/RUPqNH7.png",
     "contents": {
@@ -66,7 +66,7 @@
             {
                 "author": "Beaniebe",
                 "name": "Beanie_Lib",
-                "version": "1.0.2"
+                "version": "1.0.3"
             },
             {
                 "author": "Beauver",
@@ -296,7 +296,7 @@
             {
                 "author": "FlipMods",
                 "name": "ReservedItemSlotCore",
-                "version": "2.0.53"
+                "version": "2.0.54"
             },
             {
                 "author": "FlipMods",
@@ -424,11 +424,6 @@
                 "version": "1.1.4"
             },
             {
-                "author": "loaforc",
-                "name": "FacilityMeltdown",
-                "version": "2.7.3"
-            },
-            {
                 "author": "Lordfirespeed",
                 "name": "OdinSerializer",
                 "version": "2024.2.2700"
@@ -511,7 +506,7 @@
             {
                 "author": "MelanieMelicious",
                 "name": "MelanieMelicious_2_sToRy_ShIp__works_w_Wider_Ship_Mod",
-                "version": "2.1.1"
+                "version": "2.1.3"
             },
             {
                 "author": "MointPan",
@@ -546,12 +541,12 @@
             {
                 "author": "mrov",
                 "name": "MrovLib",
-                "version": "0.3.8"
+                "version": "0.4.0"
             },
             {
                 "author": "mrov",
                 "name": "TerminalFormatter",
-                "version": "0.2.32"
+                "version": "0.2.34"
             },
             {
                 "author": "mrov",
@@ -596,12 +591,7 @@
             {
                 "author": "pacoito",
                 "name": "itolib",
-                "version": "0.7.0"
-            },
-            {
-                "author": "pacoito",
-                "name": "LethalLevelLoaderUpdated",
-                "version": "1.6.0"
+                "version": "0.8.0"
             },
             {
                 "author": "Piggy",
@@ -612,16 +602,6 @@
                 "author": "Pooble",
                 "name": "LCBetterSaves",
                 "version": "1.7.3"
-            },
-            {
-                "author": "ProjectSCP",
-                "name": "PSCP106",
-                "version": "1.1.3"
-            },
-            {
-                "author": "ProjectSCP",
-                "name": "SCP939",
-                "version": "1.0.3"
             },
             {
                 "author": "qwbarch",
@@ -691,7 +671,7 @@
             {
                 "author": "SimonTendo",
                 "name": "LCGoldScrapMod",
-                "version": "2.2.5"
+                "version": "2.2.6"
             },
             {
                 "author": "Sniper1_1",
@@ -721,17 +701,22 @@
             {
                 "author": "TeamXiaolan",
                 "name": "DawnLib",
-                "version": "0.6.2"
+                "version": "0.7.7"
+            },
+            {
+                "author": "TeamXiaolan",
+                "name": "FacilityMeltdown",
+                "version": "2.8.1"
             },
             {
                 "author": "TestAccount666",
                 "name": "ShipWindows",
-                "version": "2.7.0"
+                "version": "2.8.0"
             },
             {
                 "author": "TestAccount666",
                 "name": "TestAccountCore",
-                "version": "1.16.0"
+                "version": "1.16.4"
             },
             {
                 "author": "TestAccount666",
@@ -796,7 +781,7 @@
             {
                 "author": "WhiteSpike",
                 "name": "Interactive_Terminal_API",
-                "version": "1.3.0"
+                "version": "1.3.1"
             },
             {
                 "author": "WhiteSpike",
@@ -866,8 +851,8 @@
         ],
         "overrides": [
             {
-                "gdrive": "1nG5PCFfScZkzG2ukhvFN1P_XyQ6XbE9_",
-                "dropbox": "https://www.dropbox.com/scl/fi/5xsynxvqvsuf5o8rtvaza/EventsServerOverrides-v25.zip?rlkey=z8oxk3csf1brf0xst3d27k0ko&st=tm918708&dl=1"
+            "gdrive": "1nG5PCFfScZkzG2ukhvFN1P_XyQ6XbE9_",
+            "dropbox": "https://www.dropbox.com/scl/fi/5xsynxvqvsuf5o8rtvaza/EventsServerOverrides-v25.zip?rlkey=z8oxk3csf1brf0xst3d27k0ko&st=tm918708&dl=1"
             }
         ]
     },
