@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.8.1",
-    "update_date": "01-31-2026",
-    "cache_timestamp": 1769921078.1089847,
+    "version": "1.8.2",
+    "update_date": "02-07-2026",
+    "cache_timestamp": 1770015512.0186284,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/RUPqNH7.png",
     "contents": {
@@ -355,6 +355,11 @@
             },
             {
                 "author": "IntegrityChaos",
+                "name": "GraphicsAPI",
+                "version": "1.0.0"
+            },
+            {
+                "author": "IntegrityChaos",
                 "name": "LCCutscene",
                 "version": "2.0.1"
             },
@@ -552,6 +557,11 @@
                 "author": "mrov",
                 "name": "WeatherRegistry",
                 "version": "0.7.5"
+            },
+            {
+                "author": "mr_hat",
+                "name": "NicheTweaks",
+                "version": "0.2.7"
             },
             {
                 "author": "nattaboy",
