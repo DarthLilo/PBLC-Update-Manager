@@ -1,7 +1,7 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "1.9.0",
+    "version": "1.9.1",
     "update_date": "04-07-2026",
     "cache_timestamp": 1775540972.6258605,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
@@ -512,16 +512,6 @@
                 "author": "Zaggy1024",
                 "name": "DunGenReferenceFixer",
                 "version": "0.0.1"
-            },
-            {
-                "author": "Zaggy1024",
-                "name": "PathfindingLagFix",
-                "version": "2.2.5"
-            },
-            {
-                "author": "Zaggy1024",
-                "name": "PathfindingLib",
-                "version": "2.4.1"
             },
             {
                 "author": "Zehs",
