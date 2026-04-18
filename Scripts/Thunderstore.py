@@ -57,7 +57,7 @@ class Thunderstore:
             """Downloads and decompresses a BepInEx install to a specified location"""
 
             if loop_count > 20:
-                Logging.New("Loop count over 20, cancelling!", 'error')
+                Logging.New("Loop count over 20, cancelling!", 'warning')
             
             loop_count = loop_count + 1
 

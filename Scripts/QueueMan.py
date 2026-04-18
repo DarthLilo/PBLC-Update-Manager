@@ -1,13 +1,11 @@
-from PyQt6.QtCore import QObject, pyqtSignal
-
-import queue, json, threading, time, os, random, traceback, concurrent.futures
+import queue, threading, os, concurrent.futures, traceback
 from .Logging import Logging
 from .Util import Util
 from .Cache import Cache
 from .Config import Config
 from .Thunderstore import Thunderstore
-from .Networking import Networking
 from .Game import Game
+from .Networking import Networking
 from packaging import version
 
 class QueueMan():
@@ -17,6 +15,7 @@ class QueueMan():
     package_progression = 0
 
     package_queue = queue.Queue()
+    cache_queue = queue.Queue()
 
     def __init__(self):
         QueueMan.max_threads = int(Config.Read("performance","max_download_threads","value"))
@@ -37,11 +36,14 @@ class QueueMan():
             "version":version
         }
         QueueMan.package_queue.put(package)
+        QueueMan.cache_queue.put(package)
 
         try:
             package_dependencies = Cache.Get(author,name,version)['dependencies']
         except KeyError:
-            Logging.New(f"Error getting dependencies for {author}-{name}")
+            Logging.New(f"Error getting dependencies for {author}-{name}, this is typically due to an outdated cache file!",'error')
+            Logging.New(f"Exception during depedency check:\n {traceback.format_exc()}",'warning')
+            Logging.New(f"Cache file for [{author}-{name}-{version}]: \n{Cache.Get(author,name,version)}", 'debug')
             return
         if package_dependencies:
             for dependency in package_dependencies:
@@ -82,13 +84,39 @@ class QueueMan():
 
         return queue_data
     
-    def Start(overrides_function=None,update=False, emit_method=None,thread_display_method=None,close_download_method=None,loading_screen_method=None,set_global_percent_method=None,finish_func=None):
+    def Start(overrides_function=None,update=False, worker=None, finish_func=None):
         """Starts the multithreaded download based on current queue, must be setup prior to launching download!
         This should also be run inside of its own thread to prevent program freezes!"""
 
+        # Caching Thumbnails
+        QueueMan.cache_package_progression = 0
+        worker.status_update.emit("Preparing for Download")
+        with concurrent.futures.ThreadPoolExecutor(max_workers=QueueMan.max_threads) as executor:
+            clean_queue = QueueMan.QueueCleanup(QueueMan.cache_queue)
+
+            multithread_download_queue = {}
+
+            for index, download_data in enumerate(clean_queue):
+                thread = executor.submit(QueueMan.DownloadFile,
+                                         download_data,
+                                         index % QueueMan.max_threads,
+                                         worker,
+                                         True)
+                multithread_download_queue[thread] = download_data
+            
+            for thread in concurrent.futures.as_completed(multithread_download_queue):
+                download_data = multithread_download_queue[thread]
+                try:
+                    thread.result()
+                except Exception as e:
+                    Logging.New(f"Download of {download_data} failed!", 'error')
+                else:
+                    Logging.New(f"{download_data} finished!")
+
+
         Logging.New("Starting multithreaded download")
         QueueMan.package_progression = 0
-        
+        worker.status_update.emit("Downloading Mods")
         with concurrent.futures.ThreadPoolExecutor(max_workers=QueueMan.max_threads) as executor:
             clean_queue = QueueMan.QueueCleanup(QueueMan.package_queue)
             
@@ -97,7 +125,10 @@ class QueueMan():
             multithread_download_queue = {}
 
             for index, download_data in enumerate(clean_queue):
-                thread = executor.submit(QueueMan.DownloadFile, download_data, index % QueueMan.max_threads, emit_method, thread_display_method, set_global_percent_method)
+                thread = executor.submit(QueueMan.DownloadFile, 
+                                         download_data, 
+                                         index % QueueMan.max_threads, 
+                                         worker)
                 multithread_download_queue[thread] = download_data
 
             for thread in concurrent.futures.as_completed(multithread_download_queue):
@@ -105,35 +136,49 @@ class QueueMan():
                 try:
                     thread.result()
                 except Exception as e:
-                    Logging.New(f"Download of {download_data} failed with exception {e}", 'error')
+                    Logging.New(f"Download of {download_data} failed!", 'error')
                 else:
                     Logging.New(f"{download_data} finished!")
             
             Config.Write("general","major_task_running",False)
             Logging.New("All download processes finished!")
-
+            
             if callable(overrides_function):
-                overrides_function(update,close_download_method,loading_screen_method,finish_func) # execute override function
-            elif callable(finish_func):
-                finish_func()
-
+                overrides_function(update,worker.close_download_screen,worker.loading_screen_trigger,finish_func) # execute override function
+            else:
+               worker.finish_func.emit()
 
     def ClearQueue():
         QueueMan.package_length = 0
         QueueMan.package_progression = 0
         QueueMan.package_queue = queue.Queue()
-            
+
     class DownloadFile:
 
-        def __init__(self, download_data, worker_index, emit_method, thread_display_method, set_global_percent_method):
+        def __init__(self, download_data, worker_index, worker, cache_only=False):
             self.download_data = download_data
             self.worker_index = worker_index
-            self.emit_method = emit_method
-            self.thread_display_method = thread_display_method
-            self.set_global_percent_method = set_global_percent_method
+            self.worker = worker
             self.package_prefix = f"{download_data['author']}-{download_data['name']}"
-            self.download()
+            if cache_only:
+                self.cache_thumbnail()
+            else:
+                self.download()
         
+        def cache_thumbnail(self):
+            img_path = os.path.join(Cache.ModIconCache,f"{self.download_data['author']}-{self.download_data['name']}-{self.download_data['version']}.png")
+            if os.path.exists(img_path):
+                return
+            image = Networking.GetURLImage(f"https://gcdn.thunderstore.io/live/repository/icons/{self.download_data['author']}-{self.download_data['name']}-{self.download_data['version']}.png")
+            image.save(os.path.join(Cache.ModIconCache,f"{self.download_data['author']}-{self.download_data['name']}-{self.download_data['version']}.png"))
+            QueueMan.cache_package_progression += 1
+
+            if self.worker:
+                self.worker.set_global_percent.emit(
+                    (QueueMan.cache_package_progression/QueueMan.package_length)*100
+                )
+
+
         def download(self):
             if not os.path.exists(Cache.SelectedModpack):
                 Logging.New("Please select a modpack first!")
@@ -149,12 +194,24 @@ class QueueMan():
             self.LoadMod(mod_location)
 
             QueueMan.package_progression += 1
-            if callable(self.set_global_percent_method): self.set_global_percent_method((QueueMan.package_progression/QueueMan.package_length)*100)
+            
+            if self.worker:
+                self.worker.set_global_percent.emit(
+                    (QueueMan.package_progression/QueueMan.package_length)*100
+                )
+            #if callable(self.set_global_percent_method): self.set_global_percent_method((QueueMan.package_progression/QueueMan.package_length)*100)
             
             Logging.New(f"Finished installing ({author}-{name}-{mod_version})")
         
         def UpdateThreadDisplay(self):
-            if callable(self.thread_display_method): self.thread_display_method(self.worker_index,self.download_data['author'],self.download_data['name'],self.download_data['version'])
+            if self.worker:
+                self.worker.thread_display_update.emit(
+                    self.worker_index,
+                    self.download_data['author'],
+                    self.download_data['name'],
+                    self.download_data['version']
+                )
+            #if callable(self.thread_display_method): self.thread_display_method(self.worker_index,self.download_data['author'],self.download_data['name'],self.download_data['version'])
 
         def AddPackageFiles(self,author,name,mod_version,files):
             target_mod_json = f"{Cache.SelectedModpack}/BepInEx/plugins/{author}-{name}-{mod_version}/mod.json"
@@ -183,4 +240,8 @@ class QueueMan():
             
         
         def update_percentage(self,value):
-            if callable(self.emit_method): self.emit_method(self.worker_index,value)
+            if self.worker:
+                self.worker.progress_output.emit(self.worker_index,value)
+            #if self.signals:
+            #    self.signals.progress.emit(self.worker_index, value)
+            #if callable(self.emit_method): self.emit_method(self.worker_index,value)

@@ -1,9 +1,9 @@
-import sys, os, json, time, random
+import sys, os, time, random
 
 from PyQt6.QtCore import QSize, Qt, pyqtProperty, QLoggingCategory
 from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QSizePolicy, QDialog, QDialogButtonBox, QLabel, QVBoxLayout, QMessageBox
 from PyQt6.QtGui import QMovie, QAction, QIcon, QFontDatabase
-import Scripts, subprocess
+import Scripts, subprocess, shutil
 
 ############################### Variables ###############################
 
@@ -14,7 +14,7 @@ else:
 
 
 ReleaseTag = "Stable"
-PBLCVersion = "1.2.1"
+PBLCVersion = "1.3.0"
 ProgramDataFolder = os.path.normpath(f"{CurFolder}/ProgramData")
 LoggingFolder = os.path.normpath(f"{ProgramDataFolder}/Logs")
 ModpacksFolder = os.path.normpath(f"{ProgramDataFolder}/Modpacks")
@@ -30,8 +30,8 @@ Scripts.Filetree.VerifyList([ProgramDataFolder,LoggingFolder,ModpacksFolder,Cach
 
 
 ############################### Start Subsystems ########################
-Scripts.Logging(LoggingFolder,PBLCVersion)
 Scripts.Config(ProgramDataFolder)
+Scripts.Logging(LoggingFolder,PBLCVersion,Scripts.Config.Read('debug','logging_level','value'))
 
 Scripts.Registry.EnsureProtocolHandler()
 
@@ -42,7 +42,7 @@ else:
 
 server = Scripts.ProtocolHandler.send_url_to_instance(url)
 if not server:
-    Scripts.Logging.New("App already running, closing!")
+    Scripts.Logging.New("App already running, closing!",'error')
     sys.exit()
 
 Scripts.Assets(AssetsFolder)
@@ -79,6 +79,7 @@ class PBLCWindow(QMainWindow):
         menu = self.menuBar()
         file_menu = menu.addMenu("&File")
         cache_menu = menu.addMenu("&Cache")
+        debug_menu = menu.addMenu("&Debug")
 
         download_cache = QAction("Download Cache",self)
         download_cache.triggered.connect(self.DownloadCache)
@@ -95,6 +96,18 @@ class PBLCWindow(QMainWindow):
         config_menu  =QAction("Preferences",self)
         config_menu.triggered.connect(self.OpenConfig)
         file_menu.addAction(config_menu)
+        
+        clear_bepinex = QAction("Clear BepInEx", self)
+        clear_bepinex.triggered.connect(self.ClearBepInEx)
+        debug_menu.addAction(clear_bepinex)
+
+        verify_game_install = QAction("Verify Game Install", self)
+        verify_game_install.triggered.connect(self.VerifyGameInstall)
+        debug_menu.addAction(verify_game_install)
+
+        compare_mod_files = QAction("Compare Mod Files", self)
+        compare_mod_files.triggered.connect(self.CompareModFiles)
+        debug_menu.addAction(compare_mod_files)
 
         #Start UI
         pblc_layout = QGridLayout()
@@ -165,17 +178,58 @@ class PBLCWindow(QMainWindow):
     def CheckForUpdates(self):
         Scripts.Networking.CheckForUpdatesManager()
 
+    def ClearBepInEx(self):
+        if Scripts.Game.game_id == None:
+            self.NoGameSelected()
+            return
+        try:
+            shutil.rmtree(os.path.join(Scripts.Launch.GamePath,"BepInEx"))
+            os.remove(os.path.join(Scripts.Launch.GamePath,"winhttp.dll"))
+            os.remove(os.path.join(Scripts.Launch.GamePath,"doorstop_config.ini"))
+        except FileNotFoundError:
+            pass
+        Scripts.Logging.New("Deleted BepInEx Data")
+    
+    def VerifyGameInstall(self):
+        if Scripts.Game.game_id == None:
+            self.NoGameSelected()
+            return
+        Scripts.Logging.New('Verifying Game Path')
+        Scripts.Filetree.LocateGame(Scripts.Game.game_id,Scripts.Game.config_value,Scripts.Game.steam_id)
+
+    def CompareModFiles(self):
+        if Scripts.Game.game_id == None:
+            self.NoGameSelected()
+            return
+        if not os.path.exists(Scripts.Cache.SelectedModpack):
+            self.NoModpackSelected()
+            return
+        
+        Scripts.Logging.New('Staring mod comparison...')
+        Scripts.Modpacks.CompareModpackData()
+
     def OpenConfig(self):
         self.OpenConfigScreen()
     
     def NoGameSelected(self):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Icon.Warning)
-        msg.setText("Please select a game first before using the cache!")
+        msg.setText("Please select a game first")
         msg.setWindowTitle("No Game Selected")
         msg.setStandardButtons(QMessageBox.StandardButton.Ok)
         msg.setWindowIcon(QIcon(Scripts.Assets.getResource(Scripts.Assets.ResourceTypes.app_icon)))
+        Scripts.Logging.New("No game was selected, prompting user to select one", 'debug')
 
+        result = msg.exec()
+    
+    def NoModpackSelected(self):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Warning)
+        msg.setText("Please select a modpack to begin comparison!")
+        msg.setWindowTitle("No Modpack Selected")
+        msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+        msg.setWindowIcon(QIcon(Scripts.Assets.getResource(Scripts.Assets.ResourceTypes.app_icon)))
+        Scripts.Logging.New("No modpack was selected, prompting user to select one", 'debug')
         result = msg.exec()
 
 class PythonInstalled(QDialog):

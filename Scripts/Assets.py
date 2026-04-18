@@ -41,7 +41,7 @@ class Assets():
             return f"{Assets.asset_folder}/missing_icon.png"
         
         if not os.path.exists(icon_path):
-            Logging.New(f"Unable to find {icon.value}")
+            Logging.New(f"Unable to find {icon.value}",'warning')
             return f"{Assets.asset_folder}/missing_icon.png"
 
         if theme and winaccent.system_uses_light_theme:
@@ -109,6 +109,7 @@ class Assets():
         gradient_overlay = "gradient_overlay.png"
         inactive_thread = "inactive_thread.png"
         app_icon = "pill_bottle.ico"
+        launch_hero = "launch_hero.png"
         loading_screen = "loading_screen.gif"
         missing = "missing_icon.png"
     

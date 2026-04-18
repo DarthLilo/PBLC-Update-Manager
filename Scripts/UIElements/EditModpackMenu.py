@@ -29,9 +29,6 @@ class EditModpackMenu(QWidget):
         self.modpack_info_frame = ModpackInfoFrame(modpack_name,modpack_author,modpack_version,mod_count,self.modpack_icon_pixmap,back_event)
 
         self.mod_list_frame = ModListSrollMenu()
-        for mod in Modpacks.ListMods(modpack_author,modpack_name):
-            self.mod_list_frame.addMod(mod['icon_path'],mod['name'],mod['author'],mod['mod_version'])
-        self.mod_list_frame.addSpacer()
 
 
         self.mod_search_frame_layout = QHBoxLayout()
@@ -40,6 +37,7 @@ class EditModpackMenu(QWidget):
         self.mod_search_frame.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Fixed)
 
         self.search_filters = HoverComboBox()
+        self.sort_modes = HoverComboBox()
         self.search_bar = QLineEdit()
         self.add_mod = HoverButton()
         self.export_modpack = HoverButton()
@@ -48,6 +46,7 @@ class EditModpackMenu(QWidget):
         self.search_bar.textChanged.connect(self.updateModList)
         self.search_bar.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
         self.mod_search_frame_layout.addWidget(self.search_filters)
+        self.mod_search_frame_layout.addWidget(self.sort_modes)
         self.mod_search_frame_layout.addWidget(self.search_bar)
         self.mod_search_frame_layout.addWidget(self.export_modpack)
         self.mod_search_frame_layout.addWidget(self.check_for_updates)
@@ -57,6 +56,10 @@ class EditModpackMenu(QWidget):
         self.search_filters.addItems(["All","Updatable","Disabled"])
         self.search_filters.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Expanding)
         self.search_filters.currentTextChanged.connect(self.updateModFilters)
+
+        self.sort_modes.addItems(["Name (A-Z)", "Name (Z-A)", "Date Modified (Newest)", "Date Modifed (Oldest)"])
+        self.sort_modes.setSizePolicy(QSizePolicy.Policy.Fixed,QSizePolicy.Policy.Expanding)
+        self.sort_modes.currentTextChanged.connect(self.updateModSorting)
 
         self.search_completer = QCompleter(self.mod_list_frame.getModNames())
         self.search_completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
@@ -77,19 +80,16 @@ class EditModpackMenu(QWidget):
         self.add_mod.clicked.connect(self.AddMod)
 
 
-        #mod_search_frame.setStyleSheet("""
-        #QFrame {
-        #    background: #002025;
-        #    border-radius: 40px;
-        #    opacity: 100;
-        #    border: 2px solid #ff2025;
-        #}
-        #""")
-
-
         self._layout.addWidget(self.modpack_info_frame,0, 0, 7, 1)
         self._layout.addWidget(self.mod_list_frame,1,1,6,3)
         self._layout.addWidget(self.mod_search_frame,0,1,1,3)
+
+        mods = Modpacks.ListMods(modpack_author,modpack_name)
+        mods = self.sortMods(mods)
+
+        for mod in mods:
+            self.mod_list_frame.addMod(mod['icon_path'],mod['name'],mod['author'],mod['mod_version'])
+        self.mod_list_frame.addSpacer()
     
     def AddMod(self):
         if not Filetree.IsGameRunning(GameRunning):
@@ -101,7 +101,11 @@ class EditModpackMenu(QWidget):
     def RedrawModFrames(self):
         self.deleteAllModFrames()
         self.mod_list_frame.removeSpacer()
-        for mod in Modpacks.ListMods(self.modpack_author,self.modpack_name):
+
+        mods = Modpacks.ListMods(self.modpack_author,self.modpack_name)
+        mods = self.sortMods(mods)
+
+        for mod in mods:
             self.mod_list_frame.addMod(mod['icon_path'],mod['name'],mod['author'],mod['mod_version'])
         self.mod_list_frame.addSpacer()
 
@@ -166,6 +170,26 @@ class EditModpackMenu(QWidget):
                 mod.inFilter = True
                 mod.curFilter = "All"
                 mod.determine_visibility()
+    
+    def sortMods(self,mods):
+        sort_type = self.sort_modes.currentText()
+
+        if sort_type == "Name (A-Z)":
+            return sorted(mods, key=lambda m: m['name'].lower())
+
+        elif sort_type == "Name (Z-A)":
+            return sorted(mods, key=lambda m: m['name'].lower(), reverse=True)
+
+        elif sort_type == "Date Modified (Newest)":
+            return sorted(mods, key=lambda m: os.path.getmtime(m['icon_path']), reverse=True)
+
+        elif sort_type == "Date Modified (Oldest)":
+            return sorted(mods, key=lambda m: os.path.getmtime(m['icon_path']))
+        
+        return mods
+    
+    def updateModSorting(self):
+        self.RedrawModFrames()
     
     def deleteAllModFrames(self):
         mod_removal_list = []

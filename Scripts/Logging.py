@@ -6,10 +6,12 @@ class Logging():
     LoggingFolder = ""
     CurrentLog = None
     PBLCVersion = ""
+    LoggingLevel = "info"
 
-    def __init__(self, LoggingFolder,PBLCVersion):
+    def __init__(self, LoggingFolder,PBLCVersion,LoggingLevel):
         Logging.LoggingFolder = LoggingFolder
         Logging.PBLCVersion = PBLCVersion
+        Logging.LoggingLevel = LoggingLevel
 
         Logging.Start()
         return
@@ -33,14 +35,22 @@ class Logging():
             - startup
             - info
             - warning
-            - error"""
+            - error
+            - debug"""
         
         log_types = {
             "startup":"[STARTUP]",
             "info":"[INFO]",
             "warning":"[WARNING]",
-            "error":"[ERROR]"
+            "error":"[ERROR]",
+            "debug": "[DEBUG]"
         }
+
+        if log_type == 'warning' and Logging.LoggingLevel == 'info':
+            return
+        
+        if log_type == 'debug' and not Logging.LoggingLevel == 'debug':
+            return
 
         current_thread = threading.current_thread().name
 

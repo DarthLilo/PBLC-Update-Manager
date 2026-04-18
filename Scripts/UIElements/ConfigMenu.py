@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QSize, Qt, pyqtProperty, QRect
-from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QSizePolicy, QVBoxLayout, QLineEdit, QLabel, QFrame, QSpacerItem, QHBoxLayout, QCompleter, QComboBox, QPushButton, QDialog, QScrollArea, QSpinBox, QFileDialog, QDialogButtonBox
+from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QSizePolicy, QVBoxLayout, QLineEdit, QLabel, QFrame, QSpacerItem, QHBoxLayout, QCompleter, QComboBox, QPushButton, QDialog, QScrollArea, QSpinBox, QFileDialog, QDialogButtonBox, QCheckBox
 from PyQt6.QtGui import QMovie, QAction, QIcon, QFontDatabase, QFont, QPixmap, QColor
 
 from .VerticalTab import VerticalTabWidget

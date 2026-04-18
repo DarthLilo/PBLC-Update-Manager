@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QSize, Qt, pyqtProperty, QRect
+from PyQt6.QtCore import QSize, Qt, pyqtProperty, QRect, QTimer
 from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QSizePolicy, QVBoxLayout, QLineEdit, QLabel, QFrame, QSpacerItem, QHBoxLayout, QCompleter, QComboBox, QPushButton, QProgressBar
 from PyQt6.QtGui import QMovie, QAction, QIcon, QFontDatabase, QFont, QPixmap, QColor
 
@@ -6,8 +6,12 @@ from .ActiveThreadsScrollMenu import ActiveThreadsScrollMenu
 from ..Config import Config
 from ..Networking import Networking
 from ..Logging import Logging
+from ..Cache import Cache
+from ..Assets import Assets
 
-import threading, datetime, time, traceback
+from PIL import Image, ImageQt
+
+import threading, datetime, time, traceback, os
 
 class ModpackDownloadScreen(QWidget):
     def __init__(self):
@@ -26,10 +30,17 @@ class ModpackDownloadScreen(QWidget):
         self.modpack_progress_layout = QVBoxLayout(self.modpack_progress_frame)
         self.modpack_progress_frame.setFrameStyle(QFrame.Shape.StyledPanel)
 
+        self.current_status = QLabel("")
+        self.current_status.setFont(QFont("IBM 3270", 16))
+        self.current_status.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.modpack_progress_layout.addWidget(self.current_status)
+
         self.current_progress_bar = QProgressBar()
         self.current_progress_bar.setValue(0)
         self.current_progress_bar.setFont(QFont("IBM 3270", 16))
         self.modpack_progress_layout.addWidget(self.current_progress_bar)
+
+        
 
         self.elapsed_time = QLabel("00:00:00")
         self.elapsed_time.setFont(QFont("IBM 3270", 16))
@@ -46,25 +57,32 @@ class ModpackDownloadScreen(QWidget):
         Logging.New("Clock started!")
         self.elapsed_time.setText("00:00:00")
         self.start_time = datetime.datetime.timestamp(datetime.datetime.now())
-        threading.Thread(target=lambda start_time=self.start_time:self.updateClock(start_time),daemon=True).start()
+
+        #threading.Thread(target=lambda start_time=self.start_time:self.updateClock(start_time),daemon=True).start()
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.updateClock)
+        self.timer.start(1000)
     
-    def updateClock(self, start_time):
+    def updateClock(self):
         try:
             if self._kill_clock:
-                self._kill_clock
+                self.timer.stop()
+                #self._kill_clock
                 Logging.New(f"Clock killed at {self.elapsed_time.text()}")
                 return
 
-            timestamp_start = datetime.datetime.fromtimestamp(start_time)
+            timestamp_start = datetime.datetime.fromtimestamp(self.start_time)
             timestamp_now = datetime.datetime.now()
 
             difference = round((timestamp_now-timestamp_start).total_seconds())
             hours, remainder = divmod(difference, 3600)
             minutes, seconds = divmod(remainder, 60)
+
             formatted_time = "{:02}:{:02}:{:02}".format(int(hours), int(minutes), int(seconds))
             self.elapsed_time.setText(formatted_time)
-            time.sleep(1)
-            self.updateClock(start_time)
+
+            #time.sleep(1)
+            #self.updateClock(start_time)
         except Exception as e:
             Logging.New(traceback.format_exc(),'error')
     
@@ -80,4 +98,10 @@ class ModpackDownloadScreen(QWidget):
     def setThreadDisplay(self,thread,author,name,version):
         target_thread = self.mod_download_threads_frame._threads[thread]
         target_thread.setName(f"{author}-{name}-{version}")
-        target_thread.setIcon(Networking.GetURLImage(f"https://gcdn.thunderstore.io/live/repository/icons/{author}-{name}-{version}.png").toqpixmap())
+        try:
+            target_thread.setIcon(ImageQt.toqpixmap(Image.open(os.path.join(Cache.ModIconCache,f"{author}-{name}-{version}.png"))))
+        except FileNotFoundError:
+            target_thread.setIcon(ImageQt.toqpixmap(Image.open(Assets.modpackIcon(""))))
+    
+    def setStatus(self,message):
+        self.current_status.setText(message)

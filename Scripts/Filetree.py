@@ -4,6 +4,8 @@ from .Logging import Logging
 from .Util import Util
 from .Config import Config
 from .Game import Game
+from PyQt6.QtWidgets import QMessageBox
+from PyQt6.QtGui import QIcon
 
 
 class Filetree():
@@ -35,7 +37,7 @@ class Filetree():
         if destination == None:
             destination = os.path.splitext(zip)[0]
 
-        Logging.New(f"Decompressing archive {os.path.basename(zip)}...")
+        Logging.New(f"Decompressing archive {os.path.basename(zip)}...",'debug')
         with zipfile.ZipFile(zip,'a',zipfile.ZIP_DEFLATED) as zipf:
             try:
                 zipf.extractall(destination)
@@ -44,7 +46,7 @@ class Filetree():
         try:
             os.remove(zip)
         except PermissionError:
-            Logging.New("Zip file is being used by another process, couldn't remove!")
+            Logging.New("Zip file is being used by another process, couldn't remove!",'warning')
         return destination
     
     def SortFiles(modpack_dir, folder):
@@ -96,26 +98,37 @@ class Filetree():
         return steam_install_path
     
     def LocateGame(game,config_id,steam_id,save_path=True):
-        custom_path = Config.Read("general",config_id,"value")
-        if custom_path and os.path.exists(custom_path):
-            return custom_path
+        try:
+            custom_path = Config.Read("general",config_id,"value")
+            if custom_path and os.path.exists(custom_path):
+                return custom_path
 
-        Logging.New(f"Locating {game} path...")
+            Logging.New(f"Locating {game} path...")
 
-        steamapps = Filetree.LocateSteam()+"\\steamapps"
-        library_folders = steamapps+"\\libraryfolders.vdf"
-        libdata = vdf.load(open(library_folders))
+            steamapps = Filetree.LocateSteam()+"\\steamapps"
+            if not os.path.exists(steamapps):
+                steamapps == "C:\\Program Files (x86)\\Steam\\steamapps"
+            library_folders = steamapps+"\\libraryfolders.vdf"
+            libdata = vdf.load(open(library_folders))
 
-        for library in libdata['libraryfolders']:
-            cur_lib = libdata['libraryfolders'][library]
-            apps = cur_lib["apps"]
-            if steam_id in apps:
-                game_path = os.path.normpath(f"{cur_lib['path']}/steamapps/common/{game}")
-                Logging.New(f"Located {game} path: {game_path}")
+            for library in libdata['libraryfolders']:
+                cur_lib = libdata['libraryfolders'][library]
+                apps = cur_lib["apps"]
+                if steam_id in apps:
+                    game_path = os.path.normpath(f"{cur_lib['path']}/steamapps/common/{game}")
+                    Logging.New(f"Located {game} path: {game_path}")
 
-                if save_path:
-                    Config.Write("general",config_id,game_path,True)
-                return game_path
+                    if save_path:
+                        Config.Write("general",config_id,game_path,True)
+                    return game_path
+        except Exception as e:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Icon.Warning)
+            msg.setText(traceback.format_exc())
+            msg.setWindowTitle("Error when locating game path")
+            msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+
+            result = msg.exec()
     
     def DirSize(target_path):
         total_size = 0
@@ -127,11 +140,10 @@ class Filetree():
     
     def VerifyGamePath(path):
         Logging.New("Verifying Game path...")
-        Logging.New(path)
         return os.path.exists(path)
     
     def IsProcessRunning(process_name):
-        Logging.New(f"Checking for {process_name}")
+        Logging.New(f"Checking for {process_name}",'debug')
         cmd = 'tasklist /fi "imagename eq {}"'.format(process_name)
         try:
             output = subprocess.check_output(cmd, shell=True).decode('utf-8')

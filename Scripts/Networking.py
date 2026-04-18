@@ -55,7 +55,7 @@ class Networking:
         try:
             package_request = requests.get(url,stream=True)
         except Exception as e:
-            Logging.New(f"Error when downloading {url}, please verify your internet connection and try again!")
+            Logging.New(f"Error when downloading {url}, please verify your internet connection and try again!",'error')
             return
         download_percentage = 0
 
@@ -88,7 +88,7 @@ class Networking:
             gdown.download(id=source,output=destination,quiet=True)
             return "finished"
         except gdown.exceptions.FileURLRetrievalError:
-            Logging.New(f"{source} has too many requests!")
+            Logging.New(f"{source} has too many requests!",'error')
             return "too_many_requests"
     
     def GetURLImage(url):
@@ -118,7 +118,7 @@ class Networking:
         try:
             github_api_response = json.loads(request.urlopen(Networking.github_repo_latest_release).read().decode())
         except Exception as e:
-            Logging.New("Error when checking for updates, please verify your connection to the internet!")
+            Logging.New("Error when checking for updates, please verify your connection to the internet!",'error')
             return
         latest_manager =  str(github_api_response['tag_name'])
 

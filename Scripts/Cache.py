@@ -1,9 +1,7 @@
 from .Logging import Logging
 from .Networking import Networking
-from .Filetree import Filetree
-from .Maths import Maths
 from .Game import Game
-import requests, pickle, json, os, shutil, threading
+import pickle, json, os, shutil, threading
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
@@ -13,6 +11,7 @@ class Cache():
     PackageCache = ""
     CacheFolder = ""
     ModCache = ""
+    ModIconCache = ""
     Packages = {}
     SelectedModpack = ""
     LoadedMods = {}
@@ -29,9 +28,13 @@ class Cache():
         Cache.PackageIndex = os.path.join(Cache.CacheFolder,Game.package_index)
         Cache.PackageCache = os.path.join(Cache.CacheFolder,Game.package_cache)
         Cache.ModCache = os.path.join(Cache.CacheFolder,"ModCache",Game.game_id)
+        Cache.ModIconCache = os.path.join(Cache.CacheFolder,"ModIconCache",Game.game_id)
 
         if not os.path.exists(Cache.ModCache):
             os.makedirs(Cache.ModCache,exist_ok=True)
+        
+        if not os.path.exists(Cache.ModIconCache):
+            os.makedirs(Cache.ModIconCache,exist_ok=True)
         
         if not os.path.exists(Cache.PackageIndex) or not os.path.exists(Cache.PackageCache):
             Cache.StartCache = True
@@ -156,6 +159,7 @@ class Cache():
         def Clear():
             for folder in os.listdir(Cache.ModCache):
                 os.remove(f"{Cache.ModCache}/{folder}")
+            shutil.rmtree(Cache.ModIconCache)
             Logging.New("Cleared Mod Cache!")
 
 class CacheWorkerObject(QObject):

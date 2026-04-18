@@ -1,8 +1,6 @@
 import winreg, traceback, json, validators
 from urllib import request
 from .Logging import Logging
-from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel
-from PyQt6.QtGui import QIcon
 
 class Util:
     def ReadReg(ep, p = r"", k = ''):

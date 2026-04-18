@@ -13,7 +13,7 @@ from .Networking import Networking
 from .UIElements.GameFrame import GameFrame
 from .Game import Game
 
-import time, random, threading, os
+import time, threading
 
 
 class UI(QWidget):
@@ -93,6 +93,7 @@ class UI(QWidget):
         #Starting
         self.ShowLoadingScreen()
         Modpacks.UpdatePercentageFunc = self.UpdatePercentageBar
+        Modpacks.UpdateDownloadStatus = self.UpdateDownloadStatus
         Modpacks.UpdateThreadDisplay = self.UpdateThreadDisplay
         Modpacks.CloseDownloadScreenFunc = self.CloseDownloadScreen
         Modpacks.CacheLoadingScreenFunc = self.ShowLoadingScreenCacheUpdate
@@ -127,7 +128,7 @@ class UI(QWidget):
 
         if prev_menu:
             self.screen_container.removeWidget(prev_menu)
-            Logging.New(f"Removed {prev_menu} from widget stack")
+            Logging.New(f"Removed {prev_menu} from widget stack",'debug')
 
         self.screen_container.removeWidget(self._screen_loading_cache_update)
         self.screen_container.removeWidget(self._screen_edit_modpack)
@@ -178,7 +179,7 @@ class UI(QWidget):
 
         if self._screen_modpack_selection:
             self.screen_container.removeWidget(self._screen_modpack_selection)
-            Logging.New(f"Removed {self._screen_modpack_selection} from widget stack")
+            Logging.New(f"Removed {self._screen_modpack_selection} from widget stack",'debug')
 
         self.screen_container.addWidget(self._screen_edit_modpack)
         return
@@ -246,8 +247,11 @@ class UI(QWidget):
         self._screen_edit_modpack.RedrawModFrames()
 
     def UpdatePercentageBar(self,index,percentage):
-        #Logging.New(f"thread [{index}] percentage [{percentage}]")
         self._screen_download_threads.setPercentageBar(index,percentage)
+        return
+    
+    def UpdateDownloadStatus(self,message):
+        self._screen_download_threads.setStatus(message)
         return
     
     def UpdateThreadDisplay(self,index,author,name,version):

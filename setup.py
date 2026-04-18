@@ -8,7 +8,7 @@ build_options = {'packages': [],
                  'include_files': ["Updater.py","ProgramAssets",("python_install.bat","lib/python_install.bat")]}
 
 executables = [
-    Executable('main.py', base='Win32GUI', target_name = 'PBLC Update Manager',icon='ProgramAssets/pill_bottle.ico'),
+    Executable('main.py', base='gui', target_name = 'PBLC Update Manager',icon='ProgramAssets/pill_bottle.ico'),
     Executable('main.py', base='Console', target_name = 'PBLC Update Manager Console',icon='ProgramAssets/pill_bottle.ico')
 ]
 

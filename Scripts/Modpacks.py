@@ -9,10 +9,12 @@ from .Filetree import Filetree
 from .Assets import Assets
 from .Game import Game
 from time import sleep
-import os, json, shutil, threading, gdown, traceback, win10toast
+import os, json, shutil, threading, gdown, traceback, win11toast
 from packaging import version
 
 from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import QFileDialog, QMessageBox
 
 class Modpacks:
 
@@ -22,6 +24,7 @@ class Modpacks:
     TSURLPrefix = ""
     ModpackData = {}
     UpdatePercentageFunc = None
+    UpdateDownloadStatus = None
     UpdateThreadDisplay = None
     CloseDownloadScreenFunc = None
     CacheLoadingScreenFunc = None
@@ -120,7 +123,7 @@ class Modpacks:
     def Deselect():
         Cache.LoadedMods.clear()
         Cache.SelectedModpack = ""
-        Logging.New("Deselected current modpack")
+        Logging.New("Deselected current modpack",'debug')
     
     def Delete(author,name):
 
@@ -213,7 +216,8 @@ class Modpacks:
         
         # Swap to loading screen
 
-        if callable(downloadScreenFunc): downloadScreenFunc("Downloading Overrides")
+        downloadScreenFunc.emit("Downloading Overrides")
+        #if callable(downloadScreenFunc): downloadScreenFunc("Downloading Overrides")
 
         modpack_data = Modpacks.ModpackData
         download_loc = f"{Cache.SelectedModpack}/override.zip"
@@ -250,15 +254,27 @@ class Modpacks:
         Modpacks.ModpackData = {}
         Logging.New("Finished modpack download, starting closure proceedures")
         
-        if callable(closeSignalFunc): closeSignalFunc()
+        #if callable(closeSignalFunc): closeSignalFunc()
+        closeSignalFunc.emit()
         if callable(finish_func): finish_func()
 
-        notif = win10toast.ToastNotifier()
-        notif.show_toast(
-            "Modpack Finished!",f'The modpack [{modpack_data['author']}-{modpack_data['name']}] has finished installing!',Assets.getResource(Assets.ResourceTypes.app_icon)
-        )
+        launch_hero = {
+            'src': Assets.getResource(Assets.ResourceTypes.launch_hero),
+            'placement': 'hero'
+        }
 
-        #Modpacks._screenFinishUpdate()
+        win11toast.toast(
+            "Modpack Finished",
+            f'The modpack [{modpack_data['author']}-{modpack_data['name']}] has finished installing!',
+            icon=Assets.getResource(Assets.ResourceTypes.app_icon),
+            image=launch_hero,
+            audio={
+                'src': 'ms-winsoundevent:Notification.Reminder',
+                'loop': 'true'
+            },
+            scenario='incomingCall',
+            button='Dismiss'
+        )
 
     def ScanForUpdates():
 
@@ -267,7 +283,7 @@ class Modpacks:
             return
         
         if not Cache.Exists():
-            Logging.New("Cannot run updater without having files cached, please cache and try again!")
+            Logging.New("Cannot run updater without having files cached, please cache and try again!",'warning')
             return
         
         for mod in Cache.LoadedMods:
@@ -293,7 +309,7 @@ class Modpacks:
         try:
             modpack_data = Util.UrlPathDecoder(modpack)
         except Exception as e:
-            Logging.New("Error when getting modpack data from provided location, please verify your internet connection and try again!")
+            Logging.New("Error when getting modpack data from provided location, please verify your internet connection and try again!",'error')
             return
 
         if Time.IsOlder(os.path.getmtime(f"{Cache.CacheFolder}/{Modpacks.PackageIndex}"),modpack_data['cache_timestamp']):
@@ -424,11 +440,80 @@ class Modpacks:
         else:
             return ("","")
 
+    def DisplayPopupMessage(message,title):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Information)
+        msg.setText(message)
+        msg.setWindowTitle(title)
+        msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+        msg.setWindowIcon(QIcon(Assets.getResource(Assets.ResourceTypes.app_icon)))
+
+        result = msg.exec()
+
+    def CompareModpackData():
+        """Compares the current modpack with a selected modpack json file"""
+
+        file_name, _ = QFileDialog.getOpenFileName(None,"Open File","",("Modpack Files (*.json)"))
+        compared_modpack = Util.OpenJson(file_name)
+        thunderstore_packages = compared_modpack['contents']['thunderstore_packages']
+        external_thunderstore_packages = {}
+        for package in thunderstore_packages:
+            external_thunderstore_packages[f"{package['author']}-{package['name']}"] = package
+
+
+        internal_thunderstore_packages = {}
+        for mod in Cache.LoadedMods:
+            mod_data = Util.OpenJson(Cache.LoadedMods[mod]['json_file'])
+            internal_thunderstore_packages[f"{mod_data['author']}-{mod_data['name']}"] = {
+                "author": mod_data['author'],
+                "name" : mod_data['name'],
+                "version": mod_data['mod_version']
+            }
+        
+        if internal_thunderstore_packages == external_thunderstore_packages:
+            Modpacks.DisplayPopupMessage("Package lists are identical","Comparison Results")
+            return
+        
+        source_keys = set(internal_thunderstore_packages.keys())
+        external_keys = set(external_thunderstore_packages.keys())
+
+        missing_mods = external_keys - source_keys
+        extra_mods = source_keys - external_keys
+        common_mods = source_keys & external_keys
+        version_mismatches = []
+
+        for mod in common_mods:
+            source_version = internal_thunderstore_packages[mod]['version']
+            external_version = external_thunderstore_packages[mod]['version']
+
+            if source_version != external_version:
+                version_mismatches.append({
+                    "mod": mod,
+                    "source_version": source_version,
+                    "external_version": external_version
+                })
+
+        missing_mods_formatted = [f"{mod}-{external_thunderstore_packages[mod]['version']}" for mod in missing_mods]
+        extra_mods_formatted = [f"{mod}-{internal_thunderstore_packages[mod]['version']}" for mod in extra_mods]
+        version_mismatches_formatted = [f"{mod['mod']} {mod['source_version']} != {mod['external_version']}" for mod in version_mismatches]
+
+        Modpacks.DisplayPopupMessage(
+            f"Found differences in your mod list!\nCheck the log for more details.\n{len(missing_mods)} Missing Mod(s), {len(extra_mods)} Extra mod(s), {len(version_mismatches)} Version Mismatch(es)",
+            "Comparison Results"
+        )
+
+        Logging.New(f"Missing Mod(s):\n{missing_mods_formatted}")
+        Logging.New(f"Extra Mod(s):\n{extra_mods_formatted}")
+        Logging.New(f"Version Mismatches Mod(s):\n{version_mismatches_formatted}")
+
+        return
+
     class DownloadManagement:
         def StartWorkerObject(update=False,finish_func=None,screen_type=0):
 
             worker_object = QueueWorkerObject()
             worker_object.progress_output.connect(Modpacks.UpdatePercentageFunc)
+            worker_object.status_update.connect(Modpacks.UpdateDownloadStatus)
             worker_object.thread_display_update.connect(Modpacks.UpdateThreadDisplay)
             worker_object.close_download_screen.connect(Modpacks.CloseDownloadScreenFunc)
             worker_object.loading_screen_trigger.connect(Modpacks.CacheLoadingScreenFunc)
@@ -483,17 +568,17 @@ class Modpacks:
                 return
             
             if url and not Networking.UrlValidator(url):
-                Logging.New("Please enter a valid link!")
+                Logging.New("Please enter a valid link!",'error')
                 return
 
             
             if not url:
                 if not author or not mod or not mod_version.strip():
-                    Logging.New(f"Not enough mod info to get a download! [{author}-{mod}-{mod_version}]")
+                    Logging.New(f"Not enough mod info to get a download! [{author if author else "?"}-{mod if mod else "?"}-{mod_version if mod_version.strip() else "?"}]",'error')
                     return
 
             if url and not Cache.Exists():
-                Logging.New("Cannot download from a URL without having the package index! Please cache first!")
+                Logging.New("Cannot download from a URL without having the package index! Please cache first!",'warning')
                 return
             
             if Modpacks.Mods.Installed(author,mod,url):
@@ -671,17 +756,14 @@ class QueueWorkerObject(QObject):
     loading_screen_trigger = pyqtSignal(str)
     finish_func = pyqtSignal()
     set_global_percent = pyqtSignal(float)
+    status_update = pyqtSignal(str)
 
     def run(self,update=False, screen_type=0):
 
         if screen_type == 0:
             QueueMan.Start(overrides_function=Modpacks.DownloadOverrides,
-                                                   emit_method=self.progress_output.emit,
-                                                   thread_display_method=self.thread_display_update.emit,
-                                                   close_download_method=self.close_download_screen.emit,
-                                                   loading_screen_method=self.loading_screen_trigger.emit,
-                                                   set_global_percent_method=self.set_global_percent.emit,
-                                                   finish_func=self.finish_func.emit,update=update)
+                                                    worker=self,
+                                                    update=update)
             
         elif screen_type == 1:
-            QueueMan.Start(finish_func=self.finish_func.emit,update=update)
+            QueueMan.Start(worker=self,update=update)

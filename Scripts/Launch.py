@@ -4,8 +4,11 @@ from .Filetree import Filetree
 from .Assets import Assets
 from .Thunderstore import Thunderstore
 from .Game import Game
-import os, subprocess, win10toast
+from .Config import Config
+import os, subprocess, win11toast, threading, traceback
 from PyQt6.QtCore import QTimer
+from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import QMessageBox
 
 class Launch:
 
@@ -30,7 +33,7 @@ class Launch:
     
     def Setup():
         if not Filetree.VerifyGamePath(Launch.GamePath):
-            Logging.New(f"Error finding {Game.game_id} path! Please set one manually in config!")
+            Logging.New(f"Error finding {Game.game_id} path! Please set one manually in config!",'warning')
             return False
 
         if not Filetree.VerifyList([
@@ -56,20 +59,29 @@ class Launch:
     def Start(author,name,extra=False):
 
         if not Filetree.VerifyGamePath(Launch.GamePath):
-            Logging.New(f"Error finding {Game.game_id} path! Please set one manually in config!")
+            Logging.New(f"Error finding {Game.game_id} path! Please set one manually in config!",'warning')
             return False
 
         modpack_path = Modpacks.Path(author,name)
         if not os.path.exists(modpack_path):
-            Logging.New("Please select a modpack to launch!",'error')
+            Logging.New("Please select a modpack to launch!",'warning')
             return
         
         Launch.author = author
         Launch.name = name
         Launch.modpack_path = modpack_path
         
-        Logging.New("Preforming update checks...")
-        Modpacks.UpdateVerify(author,name,lambda: Launch.actualLaunch(extra))
+        skip_launch_update = Config.Read("debug","skip_update_check_on_launch","value")
+
+        print(f"actual value {skip_launch_update}")
+
+        if skip_launch_update == "True":
+            Logging.New("Skipping update checker.")
+            Launch.actualLaunch(extra)
+        else:
+            Logging.New("Preforming update checks...")
+            Modpacks.UpdateVerify(author,name,lambda: Launch.actualLaunch(extra)) 
+        
     
     def actualLaunch(extra=False):
 
@@ -89,23 +101,49 @@ class Launch:
         if extra:
             launch_command = [
                 f"{Launch.GamePath}/{Game.game_id}.exe",
+                # BepinEx V3
                 '--doorstop-enable', 'true',
                 '--doorstop-target', os.path.normpath(f"{Launch.modpack_path}/BepInEx/core/BepInEx.Preloader.dll"),
+                # BepinEx V4
                 '--doorstop-enabled', 'true',
                 '--doorstop-target-assembly', os.path.normpath(f"{Launch.modpack_path}/BepInEx/core/BepInEx.Preloader.dll")
             ]
         
         Logging.New(f"Starting Lethal Company using launch command:\n{launch_command}",'info')
+        try:
+            subprocess.Popen(launch_command,shell=True)
+            QTimer.singleShot(0, Launch.triggerNotif)
 
-        subprocess.Popen(launch_command,shell=True)
+        except Exception as e:
+            Logging.New(f"Uh oh, Critical error when launching the game!")
+            Logging.New(traceback.format_exc(),'error')
 
-        QTimer.singleShot(0, Launch.ShowNotif)
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Icon.Warning)
+            msg.setText("An unknown issue has occured when starting the game, please see the log for details!")
+            msg.setWindowTitle("Error when starting the game!")
+            msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+            msg.setWindowIcon(QIcon(Assets.getResource(Assets.ResourceTypes.app_icon)))
+
+        
         
         
         return True
     
+    def triggerNotif():
+        threading.Thread(target=Launch.ShowNotif,daemon=True).start()
+
     def ShowNotif():
-        notif = win10toast.ToastNotifier()
-        notif.show_toast(
-            "Starting Modpack!",f'Starting [{Launch.author}-{Launch.name}]!',Assets.getResource(Assets.ResourceTypes.app_icon),threaded=True
+
+        launch_hero = {
+            'src': Assets.getResource(Assets.ResourceTypes.launch_hero),
+            'placement': 'hero'
+        }
+
+        win11toast.toast(
+            "Starting Modpack!",
+            f'Starting [{Launch.author}-{Launch.name}]!',
+            icon=Assets.getResource(Assets.ResourceTypes.app_icon),
+            image=launch_hero,
+            audio='ms-winsoundevent:Notification.Reminder'
         )

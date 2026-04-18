@@ -15,7 +15,7 @@ class Registry:
             result = ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
 
             if result <= 32:
-                Logging.New("Admin permissions were denied, continuing with normal operation")
+                Logging.New("Admin permissions were denied, continuing with normal operation",'error')
                 return False
             
             sys.exit(0)
@@ -47,8 +47,8 @@ class Registry:
             Logging.New(f"Protocol set to {sys.executable}")
 
         except Exception as e:
-            Logging.New("Error when setting protocol handler")
-            Logging.New(traceback.format_exc())
+            Logging.New("Error when setting protocol handler",'error')
+            Logging.New(traceback.format_exc(),'debug')
 
     def EnsureProtocolHandler():
         current_handler = Registry.GetProtocolHandler()
@@ -56,7 +56,7 @@ class Registry:
         if current_handler is None or Config.Read("advanced","overrite_protocol_key","value") == "True":
             Logging.New("Setting up protocol handler, this will be removed if R2MM is installed later!")
             perms = Registry.RestartAsAdmin()
-            Logging.New(perms)
+            Logging.New(perms,'debug')
             if not perms:
                 return
             Registry.SetProtocolHandler()

@@ -8,7 +8,6 @@ class Config():
 
     def __init__(self, DataFolder):
         Config.ConfigFilePath = f"{DataFolder}/config.ini"
-        Logging.New("Starting config system...", 'startup')
 
         Config.CheckForConfig() # Locate config
         Config.Load() # Load config
@@ -20,7 +19,6 @@ class Config():
         """Runs a check to see if the config file exists, if not, generate a new one"""
 
         if not os.path.exists(Config.ConfigFilePath): # Generate a new config if none found
-            Logging.New("No config file found, regenerating...")
             Config.Reset()
         
         return
@@ -41,7 +39,7 @@ class Config():
 
         config.write()
 
-        Logging.New("Reset Config")
+        #Logging.New("Reset Config")
 
         return
     
@@ -75,8 +73,23 @@ class Config():
                 "max_download_threads": {
                     "value": 6,
                     "default": 6,
-                    "description": "Decides how many threads",
+                    "description": "Decides how many threads should be used when downloading",
                     "type": "int"
+                }
+            },
+            "debug": {
+                "skip_update_check_on_launch": {
+                    "value": False,
+                    "default": False,
+                    "description": "Skips checking for updates on modpack launch if you are having internet issues",
+                    "type": "bool"
+                },
+                "logging_level": {
+                    "value": "info",
+                    "values": ["info","warning","debug"],
+                    "default": "info",
+                    "description": "Determines the level of logging for the log files",
+                    "type": "enum"
                 }
             },
             "advanced": {
@@ -116,7 +129,7 @@ class Config():
             data = Config.Data[container][setting][target]
         except (KeyError) as e:
             Logging.New(traceback.format_exc(),'error')
-            Logging.New(f"{container}/{setting}/{target} does not exist!",'warning')
+            Logging.New(f"{container}/{setting}/{target} does not exist!",'error')
         
         return data
     
