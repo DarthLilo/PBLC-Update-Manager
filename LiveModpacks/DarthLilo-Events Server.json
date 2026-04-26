@@ -1,9 +1,9 @@
 {
     "author": "DarthLilo",
     "name": "Events Server",
-    "version": "2.1.0",
-    "update_date": "04-18-2026",
-    "cache_timestamp": 1776555034.5015485,
+    "version": "2.2.0",
+    "update_date": "04-25-2026",
+    "cache_timestamp": 1777163831.2150924,
     "online_link": "https://raw.githubusercontent.com/DarthLilo/PBLC-Update-Manager/refs/heads/master/LiveModpacks/DarthLilo-Events%20Server.json",
     "icon_url": "https://i.imgur.com/RUPqNH7.png",
     "contents": {
@@ -31,7 +31,7 @@
             {
                 "author": "AudioKnight",
                 "name": "StarlancerAIFix",
-                "version": "3.12.0"
+                "version": "3.13.0"
             },
             {
                 "author": "bctix",
@@ -66,7 +66,7 @@
             {
                 "author": "ButteryStancakes",
                 "name": "ButteryFixes",
-                "version": "1.17.2"
+                "version": "1.17.4"
             },
             {
                 "author": "ButteryStancakes",
@@ -76,17 +76,22 @@
             {
                 "author": "ButteryStancakes",
                 "name": "EnemySoundFixes",
-                "version": "1.9.3"
+                "version": "1.9.5"
             },
             {
                 "author": "ButteryStancakes",
                 "name": "JetpackFixes",
-                "version": "1.6.0"
+                "version": "1.6.1"
             },
             {
                 "author": "ButteryStancakes",
                 "name": "KickWithoutBan",
                 "version": "1.0.1"
+            },
+            {
+                "author": "ButteryStancakes",
+                "name": "MaskFixes",
+                "version": "1.6.0"
             },
             {
                 "author": "ButteryStancakes",
@@ -107,6 +112,11 @@
                 "author": "coderCleric",
                 "name": "Poltergeist",
                 "version": "1.2.11"
+            },
+            {
+                "author": "CREATIVE",
+                "name": "JesterMusicBox",
+                "version": "1.0.0"
             },
             {
                 "author": "darmuh",
@@ -181,7 +191,7 @@
             {
                 "author": "Fandovec03",
                 "name": "SpiderPositionFix",
-                "version": "1.6.1"
+                "version": "1.6.2"
             },
             {
                 "author": "fivetoofive",
@@ -214,6 +224,21 @@
                 "version": "2.0.7"
             },
             {
+                "author": "Generic_GMD",
+                "name": "Generic_Interiors",
+                "version": "4.1.1"
+            },
+            {
+                "author": "Generic_GMD",
+                "name": "Generic_Scraps",
+                "version": "1.0.2"
+            },
+            {
+                "author": "giosuel",
+                "name": "Imperium",
+                "version": "1.3.0"
+            },
+            {
                 "author": "Hamunii",
                 "name": "AutoHookGenPatcher",
                 "version": "1.0.9"
@@ -231,7 +256,7 @@
             {
                 "author": "HQHQTeam",
                 "name": "VLog",
-                "version": "3.0.6"
+                "version": "3.0.8"
             },
             {
                 "author": "IAmBatby",
@@ -240,13 +265,13 @@
             },
             {
                 "author": "JacobG5",
-                "name": "JLL",
-                "version": "1.9.10"
+                "name": "DestroyItemInSlotFix",
+                "version": "1.0.0"
             },
             {
                 "author": "JacobG5",
-                "name": "ReverbTriggerFix",
-                "version": "0.3.1"
+                "name": "JLL",
+                "version": "1.10.0"
             },
             {
                 "author": "Jordo",
@@ -280,8 +305,13 @@
             },
             {
                 "author": "loaforc",
+                "name": "FacilityMeltdown",
+                "version": "2.7.4"
+            },
+            {
+                "author": "loaforc",
                 "name": "loaforcsSoundAPI",
-                "version": "2.0.9"
+                "version": "2.0.10"
             },
             {
                 "author": "Lordfirespeed",
@@ -360,13 +390,18 @@
             },
             {
                 "author": "mrov",
+                "name": "LightsOut",
+                "version": "0.2.1"
+            },
+            {
+                "author": "mrov",
                 "name": "MrovLib",
-                "version": "0.4.2"
+                "version": "0.4.3"
             },
             {
                 "author": "mrov",
                 "name": "TerminalFormatter",
-                "version": "0.2.34"
+                "version": "0.2.35"
             },
             {
                 "author": "mrov",
@@ -375,8 +410,13 @@
             },
             {
                 "author": "mr_hat",
+                "name": "BasedDecorPlacement",
+                "version": "0.0.6"
+            },
+            {
+                "author": "mr_hat",
                 "name": "NicheTweaks",
-                "version": "0.4.0"
+                "version": "0.4.1"
             },
             {
                 "author": "necrowing",
@@ -384,9 +424,19 @@
                 "version": "1.1.0"
             },
             {
+                "author": "Nikki",
+                "name": "Slaughterhouse",
+                "version": "1.2.1"
+            },
+            {
                 "author": "NotAtomicBomb",
                 "name": "TerminalApi",
                 "version": "1.5.6"
+            },
+            {
+                "author": "notnotnotswipez",
+                "name": "MoreCompany",
+                "version": "1.14.0"
             },
             {
                 "author": "Onyx_Inoculum",
@@ -397,6 +447,11 @@
                 "author": "Ozone",
                 "name": "Runtime_Netcode_Patcher",
                 "version": "0.2.5"
+            },
+            {
+                "author": "Packs",
+                "name": "TeleportDeclineFixed",
+                "version": "1.2.1"
             },
             {
                 "author": "pacoito",
@@ -417,6 +472,16 @@
                 "author": "Pooble",
                 "name": "LCBetterSaves",
                 "version": "1.7.3"
+            },
+            {
+                "author": "qwbarch",
+                "name": "Concentus",
+                "version": "2.3.0"
+            },
+            {
+                "author": "qwbarch",
+                "name": "OpusDotNet",
+                "version": "1.0.30"
             },
             {
                 "author": "Renegades",
@@ -476,7 +541,7 @@
             {
                 "author": "TeamXiaolan",
                 "name": "DawnLib",
-                "version": "0.9.9"
+                "version": "0.9.10"
             },
             {
                 "author": "TestAccount666",
@@ -517,6 +582,11 @@
                 "author": "Treyotech",
                 "name": "Treys_Health_Text",
                 "version": "1.3.3"
+            },
+            {
+                "author": "VirusTLNR",
+                "name": "MaskedInvisFix",
+                "version": "0.0.3"
             },
             {
                 "author": "WhiteSpike",
@@ -569,50 +639,25 @@
                 "version": "1.0.0"
             },
             {
-                "author": "CREATIVE",
-                "name": "JesterMusicBox",
-                "version": "1.0.0"
+                "author": "ZetaArcade",
+                "name": "Useful_Zap_Gun",
+                "version": "0.6.0"
             },
             {
-                "author": "notnotnotswipez",
-                "name": "MoreCompany",
-                "version": "1.13.3"
+                "author": "Generic_GMD",
+                "name": "Generic_Doorscript",
+                "version": "1.0.2"
             },
             {
-                "author": "ButteryStancakes",
-                "name": "MaskFixes",
-                "version": "1.6.0"
-            },
-            {
-                "author": "qwbarch",
-                "name": "Concentus",
-                "version": "2.3.0"
-            },
-            {
-                "author": "qwbarch",
-                "name": "OpusDotNet",
-                "version": "1.0.30"
-            },
-            {
-                "author": "Flowprojects",
-                "name": "Mirage_v81",
-                "version": "1.29.1"
-            },
-            {
-                "author": "VirusTLNR",
-                "name": "MaskedInvisFix",
-                "version": "0.0.3"
-            },
-            {
-                "author": "qwbarch",
-                "name": "MirageCore",
-                "version": "1.0.4"
+                "author": "Beaniebe",
+                "name": "Beanie_Lib",
+                "version": "1.0.8"
             }
         ],
         "overrides": [
             {
-                "gdrive": "1hUttNteL383LXW9AVl9eLA55ZwS0dHrO",
-                "dropbox": "https://www.dropbox.com/scl/fi/pwnnhc2o9bnkzctkupe7h/EventsServerOverrides-v29-v81.zip?rlkey=6t90rc622d722knmtf1a0641d&st=iyrz4x6d&dl=1"
+                "gdrive": "1cGqOBzZGrJ3sM0hFfD00Goo65-hKS2ov",
+                "dropbox": "https://www.dropbox.com/scl/fi/qh18okd2oi54inx0tzsr6/EventsServerOverrides-v30-v81.zip?rlkey=15axmro060kdpll9cpbh0hyqj&st=iwmyk3kk&dl=1"
             }
         ]
     },
